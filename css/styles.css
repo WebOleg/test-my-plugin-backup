@@ -1,0 +1,134 @@
+
+.cards-field-form {
+  width: 100%;
+  position: relative;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin-top: 20px;
+  padding: 0;
+}
+
+.cards-field-form label {
+    font-size: 0.75rem;
+}
+
+.cards-field {
+    width: 97%;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.125);
+    background-color: #f2f2f2;
+    height: 42px;
+}
+
+.cards-field input{
+    display: inline;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    width: 70% !important;
+    vertical-align: middle;
+    height: 38px;
+    position: relative;
+    top: -15px;
+    box-shadow: none;
+}
+.cards-bg {
+    display: inline-block;
+    width: 28%;
+    height: 38px;
+    border: none;
+    background: url(../img/cards-min-min.png) no-repeat 50% 50%;
+    top: 1px;
+    background-color: #f2f2f2;
+    position: relative;
+    left: -1px;
+    background-size: contain;
+}
+
+/*--------------------------------------------------------------------------------*/
+
+.tabs {
+  display: block;
+}
+
+.tabs>div {
+  display: none;
+  border: 1px solid #e0e0e0;
+  padding: 10px 15px;
+  font-size: 16px;
+}
+.stabs>div {
+  display: block;
+  border: 1px solid #e0e0e0;
+  padding: 10px 15px;
+  font-size: 14px;
+}
+.tabs>div.active {
+  display: block;
+}
+
+/*
+.tabs select~#content-1, option[value="1"]:checked  {
+  display: block;
+  font-weight: bold;  color:red;
+}
+.tabs select~#content-2, option[value="2"]:checked  {
+  display: block;
+  font-weight: bold;  color:red;
+}
+*/
+.tabs select,
+.tabs-main select,
+.stabs select  {
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid #e0e0e0;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  /*-webkit-appearance: button;
+  -moz-appearance: button;
+  appearance: button;*/
+
+  background: url(../img/br_down.png) no-repeat right #ddd;
+  -webkit-appearance: none;
+  background-position-x: 95%;
+  background-size: 13px;
+} 
+
+.tabs select:checked  {
+  /*-webkit-appearance: button;
+  -moz-appearance: button;
+        appearance: button;*/
+  background: url(../img/br_down.png) no-repeat right #ddd;
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+} 
+
+#content-1 label,
+#content-2 label {
+    font-size: 13px;
+}
+
+.loading {
+  display:none;
+  position:absolute; 
+  z-index:3000; 
+  background:url(../img/load.gif) center, no-repeat;
+  background-size: cover;
+  top: 45%;
+  left: 40%;
+  width: 150px;
+  height: 150px;
+  font-size: 24px;
+  text-align: center;
+}
