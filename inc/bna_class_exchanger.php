@@ -1,29 +1,29 @@
 <?php
 
 /* Payment connection class     */
-/* author: https://ktscript.ru  */
+
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Gateway
  *
- * @author 		ktscript
- * @category 	'Paylinks Payment Connection' Class
+ * @author 		BNA
+ * @category 	'BNA Payment Connection' Class
  * @version     1.0
  */
 
-require_once dirname(__FILE__). "/pl_class_encryption.php";
+require_once dirname(__FILE__). "/bna_class_encryption.php";
 
 /**
  * Error constants
  *
  * @var string
  */
-define ('PAYLINKS_EXCHANGE_ERROR_VALIDATE_ARGS', -1);
-define ('PAYLINKS_EXCHANGE_ERROR_REQUEST_ANSWER', -10);
-define ('PAYLINKS_EXCHANGE_ERROR_REQUEST_PARAMS', -11);
-define ('PAYLINKS_EXCHANGE_ERROR_REQUEST_TOKEN', -20);
+define ('BNA_EXCHANGE_ERROR_VALIDATE_ARGS', -1);
+define ('BNA_EXCHANGE_ERROR_REQUEST_ANSWER', -10);
+define ('BNA_EXCHANGE_ERROR_REQUEST_PARAMS', -11);
+define ('BNA_EXCHANGE_ERROR_REQUEST_TOKEN', -20);
 
-if (!class_exists('PaylinksAccountManager')) {
-  class PaylinksExchanger 
+if (!class_exists('BNAAccountManager')) {
+  class BNAExchanger 
   {
 		/**
 		 * Params
@@ -41,31 +41,31 @@ if (!class_exists('PaylinksAccountManager')) {
     public function __construct($args = null) 
     {
       if ( !$this->validate_payment_args ($args) ) {
-        $this->error_log(PAYLINKS_EXCHANGE_ERROR_VALIDATE_ARGS);
+        $this->error_log(BNA_EXCHANGE_ERROR_VALIDATE_ARGS);
         return null;
       }
 
       $this->paylinks_args = $args;
-      $credentials = base64_encode (json_encode( 
-        (object) ['login' => $this->paylinks_args['login'], 'transactionPassword' => $this->paylinks_args['transactionPassword']] 
-      ));
+      //$credentials = base64_encode (json_encode( 
+        //(object) ['login' => $this->paylinks_args['login'], 'transactionPassword' => $this->paylinks_args['transactionPassword']] 
+      //));
 
-      $headers = array(
-        'Content-Type: application/json',
-        'Access-Control-Allow-Origin: ' . $this->paylinks_args['serverUrl'],
-        'Origin: '.	(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]",
-        'Authorization: Basic '.$credentials
-      );
+      //$headers = array(
+        //'Content-Type: application/json',
+        //'Access-Control-Allow-Origin: ' . $this->paylinks_args['serverUrl'],
+        //'Origin: '.	(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]",
+        //'Authorization: Basic '.$credentials
+      //);
 
-      $result = $this->connect( 'https://authgatewaystaging.paylinks.ca/v1/auth/token', [], $headers, true );
-      $result = json_decode ( decryptString($result, $this->paylinks_args['secretKey']), true );
+      //$result = $this->connect( 'https://authgatewaystaging.paylinks.ca/v1/auth/token', [], $headers, true );
+      //$result = json_decode ( decryptString($result, $this->paylinks_args['secretKey']), true );
       
-      if ( !isset($result['token']) ) {
-        $this->error_log(PAYLINKS_EXCHANGE_ERROR_REQUEST_TOKEN);
-        return null;
-      }
+      //if ( !isset($result['token']) ) {
+        //$this->error_log(BNA_EXCHANGE_ERROR_REQUEST_TOKEN);
+        //return null;
+      //}
 
-      $this->token = $result['token'];
+      //$this->token = $result['token'];
 
       return 0;
     }
@@ -78,7 +78,7 @@ if (!class_exists('PaylinksAccountManager')) {
 		 */
     private function validate_payment_args($args)
     {
-      $fields = ['serverUrl', 'protocol', 'transactionPassword', 'secretKey', 'login'];
+      $fields = ['serverUrl', 'protocol',  'secretKey', 'login'];//'transactionPassword',
       $args_keys = array_keys ($args);
 
       foreach ($fields as $field) {
@@ -97,21 +97,27 @@ if (!class_exists('PaylinksAccountManager')) {
 		 */
     public function query ($url_method, $postparams = null, $custom_request = 'POST')
     {
+		//$accessKey = 'Ot7itRJklD7Sb2Yn';
+		//$secretKey = 'HOMyb$C}KTq;5;izD:QxKdi}w3UWuJr0';
+		$credentials = base64_encode( $this->paylinks_args['login'] . ':' . $this->paylinks_args['secretKey'] );
+		
       $headers = array(
           'Content-Type: application/json',
-          'Authorization: Bearer ' . $this->token,
-          'Access-Control-Allow-Origin: ' . $this->paylinks_args['serverUrl'],
-          'Origin: '.	(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"
+          'Authorization: Basic '.$credentials,
+          //'Access-Control-Allow-Origin: ' . $this->paylinks_args['serverUrl'],
+          //'Origin: '.	(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"
       );
 
       if ( count($this->cookies) > 0 ) {
-        array_push($headers, 'Cookie: '.$this->cookies[0][1]);
+        //array_push($headers, 'Cookie: '.$this->cookies[0][1]);
       }
 
-      $postparams = encryptString( json_encode( $postparams ), $this->paylinks_args['secretKey'] );
-      $result = $this->connect($url_method, (object) [ 'data' => $postparams ], $headers, false, $custom_request);
+      //$postparams = encryptString( json_encode( $postparams ), $this->paylinks_args['secretKey'] );
+      //$result = $this->connect($url_method, (object) [ 'data' => $postparams ], $headers, false, $custom_request);
+      $result = $this->connect($url_method, $postparams, $headers, false, $custom_request);
 
-      return json_decode(decryptString($result, $this->paylinks_args['secretKey']), true);
+      //return json_decode(decryptString($result, $this->paylinks_args['secretKey']), true);
+      return $result;
     }
 
 		/**
@@ -144,7 +150,7 @@ if (!class_exists('PaylinksAccountManager')) {
         curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($params_post));
       } 
 
-      if ( is_array($params_post) || !empty($params_post) || $custom_request === 'GET') {       
+      if ( is_array($params_post) || !empty($params_post) || $custom_request === 'GET' || $custom_request === 'DELETE') {       
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $custom_request);
       } 
 
@@ -179,17 +185,17 @@ if (!class_exists('PaylinksAccountManager')) {
       $this->errno = $error_code;
 
       switch ($error_code) {
-        case PAYLINKS_EXCHANGE_ERROR_VALIDATE_ARGS:
+        case BNA_EXCHANGE_ERROR_VALIDATE_ARGS:
           $message = "Input args is not correct";
           break;
-        case PAYLINKS_EXCHANGE_ERROR_REQUEST_ANSWER:
+        case BNA_EXCHANGE_ERROR_REQUEST_ANSWER:
           $message = "Can't connect to payment system.";
           break;
           break;
-        case PAYLINKS_EXCHANGE_ERROR_REQUEST_TOKEN:
+        case BNA_EXCHANGE_ERROR_REQUEST_TOKEN:
           $message = "The token was not transferred.";
           break;
-        case PAYLINKS_EXCHANGE_ERROR_REQUEST_PARAMS:
+        case BNA_EXCHANGE_ERROR_REQUEST_PARAMS:
           $message = "Incorrect parameters in the request.";
           break;
       }

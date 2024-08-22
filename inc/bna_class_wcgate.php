@@ -1,28 +1,28 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Smart Payment Gateway
  *
- * @author 		ktscript
+ * @author 		BNA
  * @category 	'Payment Gateway' Class 
  * @version     1.0
  */
 
 if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-require_once dirname(__FILE__). "/pl_class_jsonmessage.php";
+require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
 
 /**
- * Registering the Paylinks Gateway
+ * Registering the BNA Gateway
  * @since 1.0.0
  * @param array $gateways all woo gateways
  * @return array $gateways + our custom
  */
-function wc_paylinks_add_to_gateways( $gateways ) 
+function wc_bna_add_to_gateways( $gateways ) 
 {
-	$gateways[] = 'WC_Paylinks_Gateway';
+	$gateways[] = 'WC_BNA_Gateway';
 	return $gateways;
 }
-add_filter( 'woocommerce_payment_gateways', 'wc_paylinks_add_to_gateways' );
+add_filter( 'woocommerce_payment_gateways', 'wc_bna_add_to_gateways' );
 
 
 /**
@@ -32,32 +32,32 @@ add_filter( 'woocommerce_payment_gateways', 'wc_paylinks_add_to_gateways' );
  * @param array $links all plugin links
  * @return array $links all plugin links + our custom links
  */
-function wc_paylinks_gateway_plugin_links( $links ) 
+function wc_bna_gateway_plugin_links( $links ) 
 {
 	$plugin_links = array(
-		'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=paylinks_gateway' ) . '">' 
-			. __( 'Configure', 'wc-gateway-paylinks' ) . '</a>'
+		'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=bna_gateway' ) . '">' 
+			. __( 'Configure', 'wc-bna-gateway' ) . '</a>'
 	);
 
 	return array_merge( $plugin_links, $links );
 }
-add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_paylinks_gateway_plugin_links' );
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_bna_gateway_plugin_links' );
 
 
 /**
- * Paylinks Payment Gateway (расширяем WC_Payment_Gateway)
+ * BNA Payment Gateway (extend WC_Payment_Gateway)
  *
- * @class 		WC_Paylinks_Gateway
+ * @class 		WC_BNA_Gateway
  * @extends		WC_Payment_Gateway
  * @version		1.0.0
  * @package		WooCommerce/Classes/Payment
  */
-add_action( 'plugins_loaded', 'wc_paylinks_gateway_init', 10 );
-add_filter( 'request', array( 'WC_Paylinks_Gateway' , 'get_request'));
+add_action( 'plugins_loaded', 'wc_bna_gateway_init', 10 );
+add_filter( 'request', array( 'WC_BNA_Gateway' , 'get_request'));
 
-function wc_paylinks_gateway_init() {
+function wc_bna_gateway_init() {
 
-	class WC_Paylinks_Gateway extends WC_Payment_Gateway {
+	class WC_BNA_Gateway extends WC_Payment_Gateway {
 
 		public static $order_id;
 
@@ -66,11 +66,11 @@ function wc_paylinks_gateway_init() {
 		 */
 		public function __construct() {
 	  
-			$intro			 		  = "Gateway Paylinks Payment";
-			$this->id                 = 'paylinks_gateway';
+			$intro			 		  = "BNA Smart Payment Gateway";
+			$this->id                 = 'bna_gateway';
 			$this->has_fields         = false;
-			$this->method_title       = __( 'Paylinks', 'wc-gateway-paylinks' );
-			$this->method_description = __( $intro, 'wc-gateway-paylinks' );
+			$this->method_title       = __( 'BNA', 'wc-bna-gateway' );
+			$this->method_description = __( $intro, 'wc-bna-gateway' );
 			$this->supports           = array( 'products', 'refunds' );
 		  
 			// Load the settings.
@@ -104,7 +104,7 @@ function wc_paylinks_gateway_init() {
 		*/
 		public function site_load_styles()
 		{
-			$fees = json_decode(get_option('wc_paylinks_gateway_fees'));
+			$fees = json_decode(get_option('wc_bna_gateway_fees'));
 			wp_register_style('wc_gwpay_check_css', $this->plugin_url . 'css/styles.css' );
 			wp_register_style('wc_gwpay_check_css1', $this->plugin_url . 'js/datepicker/css/datepicker.min.css' );
 			wp_enqueue_script( 'wc_gwpl', $this->plugin_url.'js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
@@ -148,7 +148,7 @@ function wc_paylinks_gateway_init() {
 			$hst = $surcharge * 13 / 100; //HST Ontario
 			$surcharge = round( round($surcharge, 2) + round($hst, 2), 2 );
 
-			$args = WC_Paylinks_Gateway::get_merchant_params();
+			$args = WC_BNA_Gateway::get_merchant_params();
 			if ( empty($args) ) {
 				wc_add_notice(  'Error configuring payment parameters.', 'error' );
 				return false;
@@ -168,7 +168,7 @@ function wc_paylinks_gateway_init() {
 
 				$item_fee = new WC_Order_Item_Fee();
 
-				$item_fee->set_name( __('Paylinks fee', 'wc-gateway-paylinks') ); 
+				$item_fee->set_name( __('BNA fee', 'wc-bna-gateway') ); 
 				$item_fee->set_amount( $surcharge ); 
 				$item_fee->set_tax_class( '' ); 
 				$item_fee->set_tax_status( 'none' ); 
@@ -195,64 +195,64 @@ function wc_paylinks_gateway_init() {
 			$this->form_fields = array( 
 		  
 				'enabled' => array(
-					'title'   => __( 'Enable/Disable', 'wc-gateway-paylinks' ),
+					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Enable Paylinks Payment', 'wc-gateway-paylinks' ),
+					'label'   => __( 'Enable BNA Payment', 'wc-bna-gateway' ),
 					'default' => 'yes'
 				),
 				'title' => array(
-					'title'       => __( 'Title', 'wc-gateway-paylinks' ),
+					'title'       => __( 'Title', 'wc-bna-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'Name of the payment gateway on the checkout page', 'wc-gateway-paylinks'),
-					'default'     => __( 'Paylinks Payment', 'wc-gateway-paylinks' ),
+					'description' => __( 'Name of the payment gateway on the checkout page', 'wc-bna-gateway'),
+					'default'     => __( 'BNA Payment', 'wc-bna-gateway' ),
 					'desc_tip'    => true,
 				),
 				'description' => array(
-					'title'       => __( 'Description', 'wc-gateway-paylinks' ),
+					'title'       => __( 'Description', 'wc-bna-gateway' ),
 					'type'        => 'textarea',
-					'description' => __( 'Description of the payment method. You can write whatever you think is necessary to describe the payment service', 'wc-gateway-paylinks' ),
+					'description' => __( 'Description of the payment method. You can write whatever you think is necessary to describe the payment service', 'wc-bna-gateway' ),
 					'default'     => 'Online payments by card visa, amex, mastercard, etc., through the payment service',
 					'desc_tip'    => true,
 				),
 				'instructions' => array(
-					'title'       => __( 'Instructions for the customer', 'wc-gateway-paylinks' ),
+					'title'       => __( 'Instructions for the customer', 'wc-bna-gateway' ),
 					'type'        => 'textarea',
-					'description' => __( 'Instructions for the customer when creating an order. The notification appears both on the thankyou_page and in the body of the email', 'wc-gateway-paylinks' ),
+					'description' => __( 'Instructions for the customer when creating an order. The notification appears both on the thankyou_page and in the body of the email', 'wc-bna-gateway' ),
 					'default'     => '',
 					'desc_tip'    => true,
 				),
 				'applyFee' => array(
-					'title'   => __( 'Enable/Disable', 'wc-gateway-paylinks' ),
+					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Allow recurring payments', 'wc-gateway-paylinks' ),
+					'label'   => __( 'Allow recurring payments', 'wc-bna-gateway' ),
 					'default' => 'false'
 				),
 				'applyFee' => array(
-					'title'   => __( 'Enable/Disable', 'wc-gateway-paylinks' ),
+					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Apply Paylinks Payment Fee', 'wc-gateway-paylinks' ),
+					'label'   => __( 'Apply BNA Payment Fee', 'wc-bna-gateway' ),
 					'default' => 'false'
 				),
 				'serverUrl'	=> array(
-					'title'       => __( 'Server Paylinks', 'wc-gateway-paylinks' ),
+					'title'       => __( 'Server BNA', 'wc-bna-gateway' ),
 					'type'        => 'text',
-					'default'     => 'https://gatewaystaging.paylinks.ca',
+					'default'     => 'https://stage-api-service.bnasmartpayment.com',
 				),
 				'protocol'	=> array(
-					'title'       => __( 'Protocol version', 'wc-gateway-paylinks' ),
+					'title'       => __( 'Protocol version', 'wc-bna-gateway' ),
 					'type'        => 'text',
 					'default'     => 'v1',
 				),
 				'login' => array(
-					'title'       => __( 'Login', 'wc-gateway-paylinks' ),
+					'title'       => __( 'Login', 'wc-bna-gateway' ),
 					'type'        => 'text',
 				),
-				'transactionPassword' => array(
-					'title'       => __( 'Transaction password', 'wc-gateway-paylinks' ),
-					'type'        => 'password'
-				),
+				//'transactionPassword' => array(
+					//'title'       => __( 'Transaction password', 'wc-bna-gateway' ),
+					//'type'        => 'password'
+				//),
 				'secretKey' => array(
-					'title'       => __( 'Secret key', 'wc-gateway-paylinks' ),
+					'title'       => __( 'Secret key', 'wc-bna-gateway' ),
 					'type'        => 'password'
 				),
 			);
@@ -295,7 +295,7 @@ function wc_paylinks_gateway_init() {
 			$payorID = get_user_meta (get_current_user_id(), 'payorID', true);
 			if ( !empty($payorID) ) {
 				$paymentMethods =  $wpdb->get_results(
-					"SELECT * FROM ".$wpdb->prefix.PAYLINKS_TABLE_SETTINGS." WHERE payorId='$payorID'"
+					"SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'"
 				);
 			}
 
@@ -318,19 +318,19 @@ function wc_paylinks_gateway_init() {
 			global $wpdb;
 
 			$params = $wpdb->get_var($wpdb->prepare("SELECT option_value FROM $wpdb->options WHERE option_name=%s", 
-			'woocommerce_paylinks_gateway_settings'));
+			'woocommerce_bna_gateway_settings'));
 	
 			if (!$params) return null;
 
 			preg_match_all('`"([^"]*)"`', $params, $params);
 
 			return array(
-				'serverUrl' 			=> 	WC_Paylinks_Gateway::get_next_arrval($params[1], 'serverUrl'), 
-				'protocol' 				=> 	WC_Paylinks_Gateway::get_next_arrval($params[1], 'protocol'), 
-				'transactionPassword'	=>	WC_Paylinks_Gateway::get_next_arrval($params[1], 'transactionPassword'), 
-				'applyFee'				=>	WC_Paylinks_Gateway::get_next_arrval($params[1], 'applyFee'),
-				'secretKey'				=>	WC_Paylinks_Gateway::get_next_arrval($params[1], 'secretKey'),
-				'login'					=>	WC_Paylinks_Gateway::get_next_arrval($params[1], 'login')
+				'serverUrl' 			=> 	WC_BNA_Gateway::get_next_arrval($params[1], 'serverUrl'), 
+				'protocol' 				=> 	WC_BNA_Gateway::get_next_arrval($params[1], 'protocol'), 
+				//'transactionPassword'	=>	WC_BNA_Gateway::get_next_arrval($params[1], 'transactionPassword'), 
+				'applyFee'				=>	WC_BNA_Gateway::get_next_arrval($params[1], 'applyFee'),
+				'secretKey'				=>	WC_BNA_Gateway::get_next_arrval($params[1], 'secretKey'),
+				'login'					=>	WC_BNA_Gateway::get_next_arrval($params[1], 'login')
 			);
 		}
 
@@ -369,13 +369,13 @@ function wc_paylinks_gateway_init() {
 			static::$order_id = $order_id;
 			$order = wc_get_order( $order_id );
 
-			$args = WC_Paylinks_Gateway::get_merchant_params();
+			$args = WC_BNA_Gateway::get_merchant_params();
 			if ( empty($args) ) {
 				wc_add_notice(  'Error configuring payment parameters.', 'error' );
 				return false;
 			}
 
-			$fees = json_decode(get_option('wc_paylinks_gateway_fees'));
+			$fees = json_decode(get_option('wc_bna_gateway_fees'));
 
 			$items = [];
 			foreach( WC()->cart->get_cart() as $cart_item_key => $cart_item ){
@@ -391,10 +391,10 @@ function wc_paylinks_gateway_init() {
 				$items[] = (object) $item; 
 			}
 
-			$api = new PaylinksExchanger($args);
+			$api = new BNAExchanger($args);
 
 			if ( empty($_POST['paymentType']) ) {
-				throw new Exception("Can't find Paylinks payment type");
+				throw new Exception("Can't find BNA payment type");
 			}
 
 			$data =  (object) [
@@ -442,7 +442,7 @@ function wc_paylinks_gateway_init() {
 			$paymentTypeMethod = '';
 
 			switch ($_POST['paymentType']) {
-				case PAYLINKS_PAYMENT_TYPE_CREDITCARD: 
+				case BNA_PAYMENT_TYPE_CREDITCARD: 
 					$paymentTypeMethod = 'credit-card';
 					if ( empty($_POST['paymentMethodCC']) ) {
 						$params = array (
@@ -461,7 +461,7 @@ function wc_paylinks_gateway_init() {
 					}
 					self::add_payment_fee ($order, $fees->creditCardPercentageFee, $fees->creditCardFlatFee);
 					break;
-				case PAYLINKS_PAYMENT_TYPE_DIRECTDEBIT:
+				case BNA_PAYMENT_TYPE_DIRECTDEBIT:
 					$paymentTypeMethod = 'direct-debit';
 					if ( empty($_POST['paymentMethodDD']) ) {
 						$params = array (
@@ -478,7 +478,7 @@ function wc_paylinks_gateway_init() {
 					}
 					self::add_payment_fee ($order, $fees->directDebitPercentageFee, $fees->directDebitFlatFee);
 					break;
-				case PAYLINKS_PAYMENT_TYPE_ETRANFER:
+				case BNA_PAYMENT_TYPE_ETRANFER:
 					$paymentTypeMethod = 'e-transfer';
 					$params = array (
 						"paymentType" 		=> "ETRANSFER",
@@ -537,7 +537,7 @@ function wc_paylinks_gateway_init() {
 			if ( !empty($response['success']) ) {
 				$status = $order->get_status();
 				if ( !in_array($status, ['pending', 'completed', 'cancelled', 'processing'] )) {
-					$order->update_status('pending', __('Pending.', 'wc-gateway-paylinks'));
+					$order->update_status('pending', __('Pending.', 'wc-bna-gateway'));
 				}
 				sleep(10);
 				return array(
@@ -545,11 +545,11 @@ function wc_paylinks_gateway_init() {
 					'redirect'  => $this->get_return_url( $order )
 				);
 			} else {
-				$order->update_status('on-hold', __('Pending.', 'wc-gateway-paylinks'));
+				$order->update_status('on-hold', __('Pending.', 'wc-bna-gateway'));
 			}
 			
 			throw new Exception(
-				__("Communication error with the payment system. Try again later.", 'wc-gateway-paylinks')
+				__("Communication error with the payment system. Try again later.", 'wc-bna-gateway')
 			);
 		}
 
@@ -581,7 +581,7 @@ function wc_paylinks_gateway_init() {
 					echo wpautop( wptexturize( $this->instructions));
 				}
 			} elseif ( $status !== 'cancelled' ) {
-				$order->update_status('on-hold', __('Waiting for payment', 'wc-gateway-paylinks'));
+				$order->update_status('on-hold', __('Waiting for payment', 'wc-bna-gateway'));
 			}
 		}
 
@@ -595,7 +595,7 @@ function wc_paylinks_gateway_init() {
 			$request = urldecode($_SERVER['REQUEST_URI']);
 
 			if ( stristr($request, '/paylinks/') ) {
-				global $wpdb, $woocommerce, $PaylinksAccountManager, $PaylinksSubscriptions;
+				global $wpdb, $woocommerce, $BNAAccountManager, $BNASubscriptions;
 
 				$endpoint = explode ('/', trim($request, '/'));
 				$endpoint = array_pop ($endpoint);
@@ -604,9 +604,9 @@ function wc_paylinks_gateway_init() {
 				
 				if ( !empty($data) ) {
 
-					$args = WC_Paylinks_Gateway::get_merchant_params();
+					$args = WC_BNA_Gateway::get_merchant_params();
 					if ( empty($args) ) {
-						PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_ERRORPARAMS);
+						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
 						wp_die();
 					}
 
@@ -617,10 +617,10 @@ function wc_paylinks_gateway_init() {
 							self::endpoint_transactions( $result );
 							break;
 						case 'subscriptions':
-							$PaylinksSubscriptions::endpoint_subscriptions( $result );
+							$BNASubscriptions::endpoint_subscriptions( $result );
 							break;
 						case 'account':
-							$PaylinksAccountManager::endpoint_account( $result );
+							$BNAAccountManager::endpoint_account( $result );
 							break;
 					}
 				}
@@ -640,20 +640,20 @@ function wc_paylinks_gateway_init() {
 			$paymentTypeMethod = "account";
 			$paymentMethod = "all-payors";
 
-			$updatetime = get_option( 'wc_paylinks_gateway_fees_updatetime' );
+			$updatetime = get_option( 'wc_bna_gateway_fees_updatetime' );
 			if ( !empty($updatetime) ) {
 				if ( date('Y-m-d', strtotime($updatetime)) === date('Y-m-d') ) {
 					return null;
 				}
 			} 
 
-			$args = WC_Paylinks_Gateway::get_merchant_params();
+			$args = WC_BNA_Gateway::get_merchant_params();
 			if ( empty($args) ) {
-				PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_ERRORPARAMS);
+				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
 				wp_die();
 			}
 
-			$api = new PaylinksExchanger($args);
+			$api = new BNAExchanger($args);
 			
 			$response = $api->query(
 				$args['serverUrl'].'/'.$args['protocol'].'/'.$paymentTypeMethod.'/'.$paymentMethod, [], 'GET'
@@ -661,13 +661,13 @@ function wc_paylinks_gateway_init() {
 
 			if ( !empty($response['success']) ) {
 
-				if ( get_option( 'wc_paylinks_gateway_fees_updatetime' ) === false ) {
-					add_option( 'wc_paylinks_gateway_fees', json_encode($response['data']['dataFees']) );
-					add_option( 'wc_paylinks_gateway_fees_updatetime', date('Y-m-d') ); 
+				if ( get_option( 'wc_bna_gateway_fees_updatetime' ) === false ) {
+					add_option( 'wc_bna_gateway_fees', json_encode($response['data']['dataFees']) );
+					add_option( 'wc_bna_gateway_fees_updatetime', date('Y-m-d') ); 
 				}
 				else {
-					update_option( 'wc_paylinks_gateway_fees', json_encode($response['data']['dataFees']), true );
-					update_option( 'wc_paylinks_gateway_fees_updatetime', date('Y-m-d'), true); 
+					update_option( 'wc_bna_gateway_fees', json_encode($response['data']['dataFees']), true );
+					update_option( 'wc_bna_gateway_fees_updatetime', date('Y-m-d'), true); 
 				}
 
 			}
@@ -680,7 +680,7 @@ function wc_paylinks_gateway_init() {
 		 */
 		public static function endpoint_transactions ($result)
 		{
-			global $wpdb, $woocommerce, $PaylinksSubscriptions;
+			global $wpdb, $woocommerce, $BNASubscriptions;
 	
 			if ( !isset($result['data']['transactionInfo']['invoiceId']) ) exit();
 			$order = wc_get_order($result['data']['transactionInfo']['invoiceId']);
@@ -689,13 +689,13 @@ function wc_paylinks_gateway_init() {
 			switch ($result['data']['transactionStatus']) {
 				case 'APPROVED': 
 					if ( isset($result['data']['recurringPayment']) && $order->get_status() == 'completed' ) {
-						$new_order_id = $PaylinksSubscriptions::create_subscription_order ( $order->get_id() );
+						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );
 						$new_order = wc_get_order( $new_order_id );
-						$new_order->update_status('completed', __('Order completed.', 'wc-gateway-paylinks'));
+						$new_order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
 						$new_order->payment_complete();
 						wc_reduce_stock_levels ($new_order->get_id());
 					} else if ( !in_array($result['data']['transactionType'], ['REFUND', 'CHARGEDBACK', 'RETURN']) ) {
-						$order->update_status('completed', __('Order completed.', 'wc-gateway-paylinks'));
+						$order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
 						$order->payment_complete();
 						wc_reduce_stock_levels ($order->get_id());
 						$woocommerce->cart->empty_cart();
@@ -703,7 +703,7 @@ function wc_paylinks_gateway_init() {
 					break;
 				case 'DECLINED':
 					if ( !isset($result['data']['recurringPayment']) && $order->get_status() !== 'completed' ) {
-						$order->update_status('on-hold', __('Waiting for payment.', 'wc-gateway-paylinks'));
+						$order->update_status('on-hold', __('Waiting for payment.', 'wc-bna-gateway'));
 					}
 					break;
 				
@@ -716,7 +716,7 @@ function wc_paylinks_gateway_init() {
 						$refund = wc_create_refund(
 							array(
 								'amount' => $amount,
-								'reason' => __("Order Cancelled", 'wc-gateway-paylinks'),
+								'reason' => __("Order Cancelled", 'wc-bna-gateway'),
 								'order_id' => $order->get_id(),
 								'refund_payment' => true
 							)
@@ -724,16 +724,16 @@ function wc_paylinks_gateway_init() {
 						if ( is_wp_error($refund) ) {
 							error_log($refund->get_error_message());
 						} else {
-							$order->update_status('refunded', __('Order Cancelled And Completely Refunded', 'wc-gateway-paylinks'));
+							$order->update_status('refunded', __('Order Cancelled And Completely Refunded', 'wc-bna-gateway'));
 						}
 					} else {
-						error_log(__('Refund requested exceeds remaining order balance of ' . $order->get_total(), 'wc-gateway-paylinks'));
+						error_log(__('Refund requested exceeds remaining order balance of ' . $order->get_total(), 'wc-bna-gateway'));
 					}     
 					break;
 				case 'BATCHED':
 				case 'PENDING':
 				default:
-					$order->update_status('pending', __('Pending.', 'wc-gateway-paylinks'));
+					$order->update_status('pending', __('Pending.', 'wc-bna-gateway'));
 			}
 
 			$payorId 	= get_user_meta ($order->get_user_id(), 'payorID', true);
@@ -745,7 +745,7 @@ function wc_paylinks_gateway_init() {
 				$payorId = $newPayorId;
 			}
 			$wpdb->insert( 
-				$wpdb->prefix.PAYLINKS_TABLE_TRANSACTIONS,  
+				$wpdb->prefix.BNA_TABLE_TRANSACTIONS,  
 				array( 
 					'order_id'				=> empty( $new_order ) ? $order->get_id() : $new_order->get_id(),
 					'transactionToken'		=> $result['data']['transactionInfo']['transactionToken'],

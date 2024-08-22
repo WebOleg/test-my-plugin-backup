@@ -9,19 +9,19 @@
 
 if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-require_once dirname(__FILE__). "/pl_class_jsonmessage.php";
+require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
 
 /**
  * Paylinks plugin subscription class
  *
- * @class 		PaylinksSubscriptions
- * @new			PaylinksSubscriptions
+ * @class 		BNASubscriptions
+ * @new			BNASubscriptions
  * @version		1.0.0
  * @package		WooCommerce/Classes/Payment
  */
-if (!class_exists('PaylinksSubscriptions')) {
+if (!class_exists('BNASubscriptions')) {
 
-	class PaylinksSubscriptions {
+	class BNASubscriptions {
 	 
 		public function __construct ()
 		{		
@@ -45,12 +45,12 @@ if (!class_exists('PaylinksSubscriptions')) {
 			$base_order = wc_get_order($result['data']['transactionInfo']['invoiceId']);
 
             $subscription =  $wpdb->get_results(
-                "SELECT * FROM ".$wpdb->prefix.PAYLINKS_TABLE_RECURRING." WHERE recurringId='{$result['data']['recurringId']}'"
+                "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['data']['recurringId']}'"
             );
 
             if ( empty( $subscription ) || count( $subscription ) < 1) {
                 $wpdb->insert( 
-                    $wpdb->prefix.PAYLINKS_TABLE_RECURRING,  
+                    $wpdb->prefix.BNA_TABLE_RECURRING,  
                     array( 
                         'user_id'				=> $base_order->get_user_id(),
                         'order_id'		        => $result['data']['transactionInfo']['invoiceId'],
@@ -69,7 +69,7 @@ if (!class_exists('PaylinksSubscriptions')) {
                     )
                 );
             } else {
-                $wpdb->query("UPDATE ".$wpdb->prefix.PAYLINKS_TABLE_RECURRING
+                $wpdb->query("UPDATE ".$wpdb->prefix.BNA_TABLE_RECURRING
                     ." SET "
                         ."status='{$result['data']['status']}', "
                         .( isset($result['data']['nextChargeDate']) 
@@ -237,20 +237,20 @@ if (!class_exists('PaylinksSubscriptions')) {
 			$paymentMethod 		= 'delete-recurring';
 			
 			if( isset($_POST['nonce'])) {
-				if ( !wp_verify_nonce( $_POST['nonce'], PAYLINKS_CONST_NONCE_NAME) ) {
-					PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_ERRORNONCE);
+				if ( !wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME) ) {
+					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORNONCE);
 					wp_die();
 				}
 								
 				$subscription_id = $_POST['id'];
 				if ( empty($subscription_id) ) {
-					PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_DELPAYMENT_ERRORID);
+					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERRORID);
 					wp_die();
 				}
 
-				$args = WC_Paylinks_Gateway::get_merchant_params();
+				$args = WC_BNA_Gateway::get_merchant_params();
 				if ( empty($args) ) {
-					PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_ERRORPARAMS);
+					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
 					wp_die();
 				}
 
@@ -259,10 +259,10 @@ if (!class_exists('PaylinksSubscriptions')) {
 				$user_id = get_current_user_id();
 				$payorID = get_user_meta ($user_id, 'payorID', true);
 				
-				$reccuringInfo =  $wpdb->get_row("SELECT * FROM ".$wpdb->prefix.PAYLINKS_TABLE_RECURRING." WHERE id={$subscription_id}");
+				$reccuringInfo =  $wpdb->get_row("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE id={$subscription_id}");
 
 				if ( empty($reccuringInfo) || empty($payorID) ) {
-					PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_ERRORPAYOR);
+					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
 					wp_die();
 				}
 
@@ -279,8 +279,8 @@ if (!class_exists('PaylinksSubscriptions')) {
 				);
 	
 				empty($response['success']) ? 
-						PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_DELPAYMENT_ERROR) : 
-						PaylinksJsonMsgAnswer::send_json_answer(PAYLINKS_MSG_DELPAYMENT_SUCCESS);
+						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERROR) : 
+						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_SUCCESS);
 			}
 		
 			wp_die();

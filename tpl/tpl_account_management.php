@@ -1,9 +1,9 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Gateway
  *
- * @author 	ktscript
- * @category 	'Paylinks My-account managing' Template
+ * @author 	BNA
+ * @category 	'BNA My-account managing' Template
  * @version     1.0
  */
 
@@ -14,7 +14,7 @@ $current_user_id = get_current_user_id();
 ?>
 
 <section class="section my-account-orders">
-    <div class="col-xs-12">
+	<div class="col-xs-12">
         <label for="option-tabs">Manage payment methods:</label>
         <div class="tabs-main" id="option-tabs">
             <input type="radio" name="tab-btn" id="tab-btn-0" value="" <?= empty($payorID) ? 'checked' : 'disabled';?> >
@@ -23,6 +23,8 @@ $current_user_id = get_current_user_id();
             <label for="tab-btn-1" style="<?= empty($payorID) ? 'display:none;' : 'display:inline-block;';?>" >Update payor</label>
             <input type="radio" name="tab-btn" id="tab-btn-2" value="" <?= empty($payorID) ? 'disabled' : '';?> >
             <label for="tab-btn-2" style="<?= empty($payorID) ? 'display:none;' : 'display:inline-block;';?>" >Update address</label>
+            <input type="radio" name="tab-btn" id="tab-btn-3" value="" <?= empty($payorID) ? 'disabled' : '';?> >
+            <label for="tab-btn-3" style="<?= empty($payorID) ? 'display:none;' : 'display:inline-block;';?>" >Delate payor</label>
 
             <div id="content-0">
                 <div class="payorTab">s
@@ -47,6 +49,11 @@ $current_user_id = get_current_user_id();
                                 <label>E-mail </label>
                                 <input type="text" name="email" autocomplete="off" maxlength="100" placeholder="E-mail" 
                                     value="<?=wp_get_current_user()->user_email;?>" readonly>
+                            </div>
+                            <div class="form-row form-row-wide">
+                                <label>Phone code <span class="required">*</span></label>
+                                <input type="text" name="phoneCode" autocomplete="off" maxlength="4" placeholder="+1" 
+                                     value="<?= get_user_meta( $current_user_id,   'billing_phone_code', true ); ?>">
                             </div>
                             <div class="form-row form-row-wide">
                                 <label>Phone number <span class="required">*</span></label>
@@ -79,7 +86,7 @@ $current_user_id = get_current_user_id();
                         </div>
                         <div class="form-row form-row-wide">
                             <button type="submit" class="button alt btn-margin" id="create_payor" 
-                                name="create_payor"><?=__('Create', 'wc-gateway-paylinks'); ?></button>
+                                name="create_payor"><?=__('Create', 'wc-bna-gateway'); ?></button>
                         </div>                    
                     </form>
                 </div>
@@ -101,12 +108,17 @@ $current_user_id = get_current_user_id();
                             <div class="form-row form-row-wide">
                                 <label>Company name </label>
                                 <input type="text" name="companyName" autocomplete="off" maxlength="100" placeholder="COMPANY NAME" 
-                                    value="<?= get_user_meta( $current_user_id, 'billing_company', true ); ?>">
+                                    value="<?php echo get_user_meta( $current_user_id, 'billing_company', true ); ?>">
                             </div>
                             <div class="form-row form-row-wide">
                                 <label>E-mail </label>
                                 <input type="text" name="email" autocomplete="off" maxlength="100" placeholder="E-mail" 
                                     value="<?=wp_get_current_user()->user_email;?>" readonly>
+                            </div>
+                            <div class="form-row form-row-wide">
+                                <label>Phone code <span class="required">*</span></label>
+                                <input type="text" name="phoneCode" autocomplete="off" maxlength="4" placeholder="+1" 
+                                     value="<?= get_user_meta( $current_user_id,   'billing_phone_code', true ); ?>">
                             </div>
                             <div class="form-row form-row-wide">
                                 <label>Phone number <span class="required">*</span></label>
@@ -121,7 +133,7 @@ $current_user_id = get_current_user_id();
                         </div>
                         <div class="form-row form-row-wide">
                             <button type="submit" class="button alt btn-margin" id="update_payor" 
-                                name="update_payor"><?=__('Update', 'wc-gateway-paylinks'); ?></button>
+                                name="update_payor"><?=__('Update', 'wc-bna-gateway'); ?></button>
                         </div>
                     </form>
                 </div>
@@ -163,11 +175,38 @@ $current_user_id = get_current_user_id();
                             </div>  
                         </div>
                         <div class="form-row form-row-wide">
-                            <button type="submit" class="button alt btn-margin" id="update_address" name="update_address"><?=__('Update', 'wc-gateway-paylinks'); ?></button>
+                            <button type="submit" class="button alt btn-margin" id="update_address" name="update_address"><?=__('Update', 'wc-bna-gateway'); ?></button>
                         </div>
                     </form>
                 </div>
             </div>
+            <div id="content-3">
+                <div class="payorTab">  
+                    <form class="form_delete_payor">
+                        <div class="payor-tab">
+							<div class="form-row form-row-wide">
+                                <label>First name </label>
+                                <input type="text" name="firstName" autocomplete="off" maxlength="100" placeholder="FIRST NAME" readonly
+                                    value="<?= get_user_meta( $current_user_id, 'billing_first_name', true ); ?>" require>
+                            </div>
+                            <div class="form-row form-row-wide">
+                                <label>Last name </label>
+                                <input type="text" name="lastName" autocomplete="off" maxlength="100" placeholder="LAST NAME" readonly
+                                    value="<?= get_user_meta( $current_user_id, 'billing_last_name', true ); ?>">
+                            </div>
+                            <div class="form-row form-row-wide">
+                                <label>E-mail </label>
+                                <input type="text" name="email" autocomplete="off" maxlength="100" placeholder="E-mail" 
+                                    value="<?=wp_get_current_user()->user_email;?>" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row form-row-wide">
+                            <button type="submit" class="button alt btn-margin" id="delete_payor" name="delete_payor"><?=__('Delete', 'wc-bna-gateway'); ?></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
         </div>
     </div>
     <div class="loading"></div>

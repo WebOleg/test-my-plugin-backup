@@ -15,14 +15,50 @@
     {
         $(".loading").hide();
     }
-
-    $('#update_payor').on('click', function(event){
+    
+    // create payor
+    $('#create_payor').on('click', function(event){
         event.stopPropagation();
         event.preventDefault(); 
 
         let self = $(this);
         self.prop('disabled', true);
 
+        startLoadingAnimation();
+
+        $.ajax({
+            url         : wc_gwpl.url,
+            type        : 'POST', 
+            dataType    : "json",
+            data        : {
+                action    : 'create_payor',
+                nonce     : wc_gwpl.nonce,
+                fieldtext : $('.form_create_payor').serializeArray() 
+            },
+            success: function( data ) {
+                stopLoadingAnimation();
+                let message = $('.woocommerce-notices-wrapper');
+                message.get(0).scrollIntoView();
+                message.html(data.message);
+                self.prop('disabled', false);
+                
+                setTimeout(function() {
+					window.location.href;
+				}, 3000);
+            },
+            error: function( data ){
+                console.log(data);
+            }
+        });    
+    });
+
+    // update_payor
+    $('#update_payor').on('click', function(event){
+        event.stopPropagation();
+        event.preventDefault(); 
+
+        let self = $(this);
+        self.prop('disabled', true);
 
         startLoadingAnimation();
 
@@ -36,7 +72,6 @@
                 fieldtext : $('.form_update_payor').serializeArray() 
             },
             success: function( data ) {
-
                 stopLoadingAnimation();
                 let message = $('.woocommerce-notices-wrapper');
                 message.get(0).scrollIntoView();
@@ -49,13 +84,13 @@
         });    
     });
 
+    // update address
     $('#update_address').on('click', function(event){
         event.stopPropagation();
         event.preventDefault(); 
 
         let self = $(this);
         self.prop('disabled', true);
-
 
         startLoadingAnimation();
 
@@ -69,13 +104,47 @@
                 fieldtext : $('.form_update_address').serializeArray() 
             },
             success: function( data ) {
-
                 stopLoadingAnimation();
                 let message = $('.woocommerce-notices-wrapper');
                 message.get(0).scrollIntoView();
                 message.html(data.message);
                 self.prop('disabled', false);
                 
+            },
+            error: function( data ){
+                console.log(data);
+            }
+        });    
+    });
+    
+    // delete payor
+    $('#delete_payor').on('click', function(event){
+        event.stopPropagation();
+        event.preventDefault(); 
+
+        let self = $(this);
+        self.prop('disabled', true);
+
+        startLoadingAnimation();
+
+        $.ajax({
+            url         : wc_gwpl.url,
+            type        : 'POST', 
+            dataType    : "json",
+            data        : {
+                action    : 'delete_payor',
+                nonce     : wc_gwpl.nonce,
+            },
+            success: function( data ) {
+                stopLoadingAnimation();
+                let message = $('.woocommerce-notices-wrapper');
+                message.get(0).scrollIntoView();
+                message.html(data.message);
+                self.prop('disabled', false);
+                
+                setTimeout(function() {
+					window.location.href;
+				}, 3000);
             },
             error: function( data ){
                 console.log(data);

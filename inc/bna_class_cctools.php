@@ -1,8 +1,8 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BMA Gateway
  *
- * @category 	'Paylinks Validate Credit Cards' Module
+ * @category 	'BNA Validate Credit Cards' Module
  * @version     1.0
  */
 

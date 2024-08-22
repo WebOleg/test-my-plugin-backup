@@ -1,9 +1,9 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Gateway
  *
- * @author 	ktscript
- * @category 	'Paylinks subscription' Template
+ * @author 	BNA
+ * @category 	'BNA subscription' Template
  * @version     1.0
  */
 
@@ -99,8 +99,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                                                     echo "<p>Refunded: {$desc->transactionInfo->refundedAmount}</p>";
 
                                             ?>
-                                            <p>Paylinks fee: <?=$desc->transactionInfo->paylinksFee;?></p>
-                                            <p>Paylinks Hst fee: <?=$desc->transactionInfo->paylinksHstFee;?></p>
+                                            <p>BNA fee: <?=$desc->transactionInfo->paylinksFee;?></p>
+                                            <p>BNA Hst fee: <?=$desc->transactionInfo->paylinksHstFee;?></p>
                                             <?php
                                                 switch ($desc->transactionInfo->transactionType) {
                                                     case 'VISA':

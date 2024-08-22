@@ -1,8 +1,8 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Gateway
  *
- * @author 	ktscript
+ * @author 	BNA
  * @category 	'Payment checkout fileds' Template 
  * @version     1.0
  */
@@ -129,9 +129,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 	<div class="save-pm-div form-row form-row-wide">
 		<label>
-			<input type="hidden" id="recurring" name="recurring" value="<?= PAYLINKS_SUBSCRIPTION_SETTING_REPEAT; ?>">
-			<input type="hidden" id="startDate" name="startDate" value="<?= PAYLINKS_SUBSCRIPTION_SETTING_STARTDATE;?>">
-			<input type="hidden" id="numberOfPayments" name="numberOfPayments" value="<?= PAYLINKS_SUBSCRIPTION_SETTING_NUMPAYMENT; ?>">
+			<input type="hidden" id="recurring" name="recurring" value="<?= BNA_SUBSCRIPTION_SETTING_REPEAT; ?>">
+			<input type="hidden" id="startDate" name="startDate" value="<?= BNA_SUBSCRIPTION_SETTING_STARTDATE;?>">
+			<input type="hidden" id="numberOfPayments" name="numberOfPayments" value="<?= BNA_SUBSCRIPTION_SETTING_NUMPAYMENT; ?>">
 			<input class="save-pm-checkbox" type="checkbox" name="create_subscription" checked>
 			Create subscription (<a href="#" id="showHideSettings">show settings</a>)
 		</label>
@@ -145,7 +145,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<label>Repeat <span class="required">*</span></label>
 					<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="Please choose...">
 						<?php
-							$selected = PAYLINKS_SUBSCRIPTION_SETTING_REPEAT;
+							$selected = BNA_SUBSCRIPTION_SETTING_REPEAT;
 							$duration = ['day', 'week', 'two weeks', 'month', 'three month', 'six month', 'year'];
 							$durOptions = ['daily', 'weekly', 'bi-weekly', 'monthly', 'every-3-months', 'every-6-months' , 'yearly'];
 
@@ -276,7 +276,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		allFeeSum = roundAccurately(allFeeSum + parseFloat(allFeeSum*13/100), 2);
 
 		feeTab.innerHTML = 
-			'<th>Paylinks Fee (Includes HST)	</th>'
+			'<th>BNA Fee (Includes HST)	</th>'
 			+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
 			+ allFeeSum.toFixed(2).replace('.', ',')
 			+ '<span class="woocommerce-Price-currencySymbol">'
@@ -412,7 +412,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		first_payment_date.disabled=true;
 		first_payment_date.classList.remove('activate_input');
 		//first_payment_date.value = new Date().toISOString().slice(0, 10);
-		document.getElementById('startDate').value = "<?=PAYLINKS_SUBSCRIPTION_SETTING_STARTDATE;?>";
+		document.getElementById('startDate').value = "<?=BNA_SUBSCRIPTION_SETTING_STARTDATE;?>";
 	});
 
 	let btn_firstPayment = document.getElementById('btn_firstPayment');
@@ -435,7 +435,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		number_of_payment.classList.remove('activate_input');
 		document.getElementById('qtyminus').disabled=true;
 		document.getElementById('qtyplus').disabled=true;
-		document.getElementById('numberOfPayments').value = "<?=PAYLINKS_SUBSCRIPTION_SETTING_NUMPAYMENT;?>";
+		document.getElementById('numberOfPayments').value = "<?=BNA_SUBSCRIPTION_SETTING_NUMPAYMENT;?>";
 	});
 	
 	let btn_numPayment = document.getElementById('btn_numPayment');

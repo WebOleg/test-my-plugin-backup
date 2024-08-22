@@ -1,15 +1,15 @@
 <?php
 /**
- * Plugin Name: WooCommerce Paylinks Gateway
- * Description: Official Paylinks payment system plug-in for Woocommerce
- * Author: ktscript
- * Author URI: http://www.ktscript.ru
+ * Plugin Name: WooCommerce BNA Payment Gateway
+ * Description: Official BNA payment system plug-in for Woocommerce
+ * Author: BNA
+ * Author URI: https://bnasmartpayment.com/
  * Version: 1.0.0
- * Text Domain: wc-gateway-paylinks
+ * Text Domain: wc-bna-gateway
  * Domain Path: /i18n/languages/
  *
- * @package   WC-Gateway-Paylinks
- * @author    ktscript
+ * @package   WC-BNA-Gateway
+ * @author    BNA
  * @category  Admin
  * @copyright Copyright (c) 2021 
  *
@@ -17,12 +17,25 @@
  
 defined( 'ABSPATH' ) or exit;
 
-require_once dirname(__FILE__). "/inc/pl_class_exchanger.php";
-require_once dirname(__FILE__). "/inc/pl_class_cctools.php";
-require_once dirname(__FILE__). "/inc/pl_class_wcgate.php";
-require_once dirname(__FILE__). "/inc/pl_class_manageaccount.php";
-require_once dirname(__FILE__). "/inc/pl_class_subscriptions.php";
-require_once dirname(__FILE__). "/inc/pl_class_jsonmessage.php";
+function my_log( $str ) {
+	//$str = unserialize($str);
+	if ( is_array($str) ) {
+		$str = implode(',', $str);
+	}
+	$log_str = "Logged On: " . date("m/d/Y H:i:s") . "\n" . $str . "\n-------------\n";
+	$loghandle = fopen(dirname(__FILE__) . "/../my_logs.txt", "a+");
+        fwrite($loghandle, $log_str);
+        fclose($loghandle);
+}
+
+
+
+require_once dirname(__FILE__). "/inc/bna_class_exchanger.php";
+require_once dirname(__FILE__). "/inc/bna_class_cctools.php";
+require_once dirname(__FILE__). "/inc/bna_class_wcgate.php";
+require_once dirname(__FILE__). "/inc/bna_class_manageaccount.php";
+require_once dirname(__FILE__). "/inc/bna_class_subscriptions.php";
+require_once dirname(__FILE__). "/inc/bna_class_jsonmessage.php";
 
 // Make sure WooCommerce is active
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
@@ -30,34 +43,34 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 }
 
 // Basic params in constants
-define ('PAYLINKS_TABLE_TRANSACTIONS', 'paylinks_transactions');
-define ('PAYLINKS_TABLE_SETTINGS', 'paylinks_settings');
-define ('PAYLINKS_TABLE_RECURRING', 'paylinks_recurring');
+define ('BNA_TABLE_TRANSACTIONS', 'bna_transactions');
+define ('BNA_TABLE_SETTINGS', 'bna_settings');
+define ('BNA_TABLE_RECURRING', 'bna_recurring');
 
-define ('PAYLINKS_PAYMENT_TYPE_ETRANFER', -1);
-define ('PAYLINKS_PAYMENT_TYPE_CREDITCARD', 1);
-define ('PAYLINKS_PAYMENT_TYPE_DIRECTDEBIT', 2);
-define ('PAYLINKS_PAYMENT_TYPE_DIRECTCREDIT', 4);
+define ('BNA_PAYMENT_TYPE_ETRANFER', -1);
+define ('BNA_PAYMENT_TYPE_CREDITCARD', 1);
+define ('BNA_PAYMENT_TYPE_DIRECTDEBIT', 2);
+define ('BNA_PAYMENT_TYPE_DIRECTCREDIT', 4);
 
-define ('PAYLINKS_SUBSCRIPTION_SETTING_REPEAT', 'monthly');
-define ('PAYLINKS_SUBSCRIPTION_SETTING_STARTDATE', 0);//date('Y-m-d'));
-define ('PAYLINKS_SUBSCRIPTION_SETTING_NUMPAYMENT', 0);
+define ('BNA_SUBSCRIPTION_SETTING_REPEAT', 'monthly');
+define ('BNA_SUBSCRIPTION_SETTING_STARTDATE', 0);//date('Y-m-d'));
+define ('BNA_SUBSCRIPTION_SETTING_NUMPAYMENT', 0);
 
 
 /*
-* Paylinks plugin management class
+* BNA plugin management class
 */
-if (!class_exists('PaylinksPluginManager')) {
+if (!class_exists('BNAPluginManager')) {
 
-	class PaylinksPluginManager {
+	class BNAPluginManager {
 	 
 		public function __construct ()
 		{		
 			$this->plugin_name = plugin_basename(__FILE__);
 			$this->plugin_url = trailingslashit(plugin_dir_url((__FILE__)));
-			register_activation_hook( $this->plugin_name, array('PaylinksPluginManager', 'activate') );
-			register_deactivation_hook( $this->plugin_name, array('PaylinksPluginManager', 'deactivate') );
-			register_uninstall_hook( $this->plugin_name, array('PaylinksPluginManager', 'uninstall') );
+			register_activation_hook( $this->plugin_name, array('BNAPluginManager', 'activate') );
+			register_deactivation_hook( $this->plugin_name, array('BNAPluginManager', 'deactivate') );
+			register_uninstall_hook( $this->plugin_name, array('BNAPluginManager', 'uninstall') );
 
 			add_filter( 'woocommerce_checkout_fields' , array(&$this,'custom_override_checkout_fields') );
 
@@ -96,7 +109,7 @@ if (!class_exists('PaylinksPluginManager')) {
 			}
 
 			$sql_table = 
-				'CREATE TABLE `'.$wpdb->prefix.PAYLINKS_TABLE_TRANSACTIONS.'` (
+				'CREATE TABLE `'.$wpdb->prefix.BNA_TABLE_TRANSACTIONS.'` (
 					`id` bigint(20) unsigned NOT NULL auto_increment,
 					`order_id` varchar(100) NOT NULL,
 					`transactionToken` varchar(100) NOT NULL,
@@ -106,12 +119,12 @@ if (!class_exists('PaylinksPluginManager')) {
 					`created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 					PRIMARY KEY (`id`)
 					)' .$charset_collate.";";
-			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.PAYLINKS_TABLE_TRANSACTIONS."'") != $wpdb->prefix.PAYLINKS_TABLE_TRANSACTIONS ) {
+			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.BNA_TABLE_TRANSACTIONS."'") != $wpdb->prefix.BNA_TABLE_TRANSACTIONS ) {
 				dbDelta($sql_table);
 			}
 
 			$sql_table = 
-				'CREATE TABLE `'.$wpdb->prefix.PAYLINKS_TABLE_SETTINGS.'` (
+				'CREATE TABLE `'.$wpdb->prefix.BNA_TABLE_SETTINGS.'` (
 					`id` bigint(20) unsigned NOT NULL auto_increment,
 					`user_id` bigint(20) unsigned NOT NULL,
 					`payorId`	varchar(100) NOT NULL,
@@ -123,12 +136,12 @@ if (!class_exists('PaylinksPluginManager')) {
 					`created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 					PRIMARY KEY (`id`)
 					)' .$charset_collate.";";
-			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.PAYLINKS_TABLE_SETTINGS."'") != $wpdb->prefix.PAYLINKS_TABLE_SETTINGS ) {
+			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.BNA_TABLE_SETTINGS."'") != $wpdb->prefix.BNA_TABLE_SETTINGS ) {
 				dbDelta($sql_table);
 			}	
 			
 			$sql_table = 
-			'CREATE TABLE `'.$wpdb->prefix.PAYLINKS_TABLE_RECURRING.'` (
+			'CREATE TABLE `'.$wpdb->prefix.BNA_TABLE_RECURRING.'` (
 				`id` bigint(20) unsigned NOT NULL auto_increment,
 				`user_id` bigint(20) unsigned NOT NULL,
 				`order_id` varchar(100) NOT NULL,
@@ -143,7 +156,7 @@ if (!class_exists('PaylinksPluginManager')) {
 				`created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY (`id`)
 				)' .$charset_collate.";";
-			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.PAYLINKS_TABLE_RECURRING."'") != $wpdb->prefix.PAYLINKS_TABLE_RECURRING ) {
+			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.BNA_TABLE_RECURRING."'") != $wpdb->prefix.BNA_TABLE_RECURRING ) {
 				dbDelta($sql_table);
 			}
 		}
@@ -164,8 +177,8 @@ if (!class_exists('PaylinksPluginManager')) {
 		public static function uninstall() 
 		{
 			global $wpdb;
-			$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->prefix.PAYLINKS_TABLE_TRANSACTIONS);
-			$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->prefix.PAYLINKS_TABLE_SETTINGS);
+			$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->prefix.BNA_TABLE_TRANSACTIONS);
+			$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->prefix.BNA_TABLE_SETTINGS);
 		}
 
 		/**
@@ -225,19 +238,19 @@ if (!class_exists('PaylinksPluginManager')) {
 		{
 			$fields['billing']['billing_street_name'] = array(
 				'type' => 'text', 
-				'label' => __('Street name', 'wc-gateway-paylinks'),
+				'label' => __('Street name', 'wc-bna-gateway'),
 				'required' => true,
 				'class' => array('form-row-wide'),
 			);
 			$fields['billing']['billing_street_number'] = array(
 				'type' => 'text', 
-				'label' => __('Street number', 'wc-gateway-paylinks'),
+				'label' => __('Street number', 'wc-bna-gateway'),
 				'required' => true,
 				'class' => array('form-row-wide'),
 			);
 			$fields['billing']['billing_apartment'] = array(
 				'type' => 'text', 
-				'label' => __('Apartment', 'wc-gateway-paylinks'),
+				'label' => __('Apartment', 'wc-bna-gateway'),
 				'required' => false,
 				'class' => array('form-row-wide'),
 			);
@@ -283,18 +296,18 @@ if (!class_exists('PaylinksPluginManager')) {
 			global $wpdb;
 
 			echo '<p class="form-field form-field-wide">&nbsp;</p>';
-			echo '<h3>'.__('Extra Details', 'wc-gateway-paylinks').'</h3>';
+			echo '<h3>'.__('Extra Details', 'wc-bna-gateway').'</h3>';
 
-			$paymentInfo =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.PAYLINKS_TABLE_TRANSACTIONS." WHERE order_id=".$order->get_id());
+			$paymentInfo =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_TRANSACTIONS." WHERE order_id=".$order->get_id());
 			foreach($paymentInfo as $pi_key => $pi_val) {
 				$data = json_decode($pi_val->transactionDescription); 
 				?>
-					<p class="form-field form-field-wide"><strong><?=__( 'Transaction #', 'wc-gateway-paylinks' ).$pi_key;?>:</strong></p>
-					<p class="form-field form-field-wide"><?=__( 'Transaction token', 'wc-gateway-paylinks' );?>: <?=$pi_val->transactionToken;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Reference number', 'wc-gateway-paylinks' );?>: <?=$pi_val->referenceNumber;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Type', 'wc-gateway-paylinks' );?>: <?=$data->transactionType;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Status', 'wc-gateway-paylinks' );?>: <?=$data->transactionStatus;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Created', 'wc-gateway-paylinks' );?>: <?=$pi_val->created_time;?></p>
+					<p class="form-field form-field-wide"><strong><?=__( 'Transaction #', 'wc-bna-gateway' ).$pi_key;?>:</strong></p>
+					<p class="form-field form-field-wide"><?=__( 'Transaction token', 'wc-bna-gateway' );?>: <?=$pi_val->transactionToken;?></p>
+					<p class="form-field form-field-wide"><?=__( 'Reference number', 'wc-bna-gateway' );?>: <?=$pi_val->referenceNumber;?></p>
+					<p class="form-field form-field-wide"><?=__( 'Type', 'wc-bna-gateway' );?>: <?=$data->transactionType;?></p>
+					<p class="form-field form-field-wide"><?=__( 'Status', 'wc-bna-gateway' );?>: <?=$data->transactionStatus;?></p>
+					<p class="form-field form-field-wide"><?=__( 'Created', 'wc-bna-gateway' );?>: <?=$pi_val->created_time;?></p>
 					<p class="form-field form-field-wide">&nbsp;</p>
 				<?php
 			}
@@ -302,7 +315,8 @@ if (!class_exists('PaylinksPluginManager')) {
 	}
 }
 
-global $PaylinksAccountManager, $PaylinksPluginManager, $PaylinksJsonMsgAnswer, $PaylinksSubscriptions;
-$PaylinksPluginManager  = new PaylinksPluginManager();
-$PaylinksAccountManager = new PaylinksAccountManager();
-$PaylinksSubscriptions = new PaylinksSubscriptions();
+global $BNAAccountManager, $BNAPluginManager, $BNAJsonMsgAnswer, $BNASubscriptions;
+$BNAPluginManager  = new BNAPluginManager();
+$BNAAccountManager = new BNAAccountManager();
+$BNASubscriptions = new BNASubscriptions();
+

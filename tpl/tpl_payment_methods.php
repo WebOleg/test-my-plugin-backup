@@ -1,9 +1,9 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Gateway
  *
- * @author 	ktscript
- * @category 	'Paylinks Payment Method' Template
+ * @author 	BNA
+ * @category 	'BNA Payment Method' Template
  * @version     1.0
  */
 
@@ -100,7 +100,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                     <div class="isoPayorTable" style="<?= empty($payorID) ? 'display:block;' : 'display:none;'; ?>" >
                         <p>
                             <div class="woocommerce-error">
-                                <?=__('Sorry. Please create a payer account first.', 'wc-gateway-paylinks');?>
+                                <?=__('Sorry. Please create a payer account first.', 'wc-bna-gateway');?>
                             </div>
                         </p>
                     </div>
@@ -112,9 +112,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                         <div class="form-row form-row-wide">
                             <label>Choose payment method:</label>
                             <select class="stab input-text" name="paymentType" aria-placeholder="Please choose...">
-                                <option id="tab-opt-1" value="<?=PAYLINKS_PAYMENT_TYPE_CREDITCARD;?>" selected>Credit card</option>
-                                <option id="tab-opt-2" value="<?=PAYLINKS_PAYMENT_TYPE_DIRECTDEBIT;?>">Direct Debit</option>
-                                <option id="tab-opt-3" value="<?=PAYLINKS_PAYMENT_TYPE_DIRECTCREDIT;?>">Direct Credit</option>
+                                <option id="tab-opt-1" value="<?=BNA_PAYMENT_TYPE_CREDITCARD;?>" selected>Credit card</option>
+                                <option id="tab-opt-2" value="<?=BNA_PAYMENT_TYPE_DIRECTDEBIT;?>">Direct Debit</option>
+                                <option id="tab-opt-3" value="<?=BNA_PAYMENT_TYPE_DIRECTCREDIT;?>">Direct Credit</option>
                             </select>
                         </div>
 
@@ -196,7 +196,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                             <div class="clear"></div>
                         </div> 
                         <div class="form-row form-row-wide">
-                            <button type="submit" class="button alt btn-add-payment" id="save_payment" name="save_payment"><?=__('Save', 'wc-gateway-paylinks'); ?></button>
+                            <button type="submit" class="button alt btn-add-payment" id="save_payment" name="save_payment"><?=__('Save', 'wc-bna-gateway'); ?></button>
                         </div>
                     </div>
                 </form>
