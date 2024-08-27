@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
 
 <section class="section my-account-orders">
-    <div class="col-xs-12">
+    <div>
         <label for="option-tabs">Manage payment methods:</label>
         <div class="tabs-main" id="option-tabs">
             <input type="radio" name="tab-btn" id="tab-btn-1" value="" <?= empty($payorID) ? 'disabled' : '';?> checked>
@@ -84,7 +84,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                                             </td>
                                             <!--<td class="ant-table-cell"><?=$p_method->paymentsRecurrings > 0 ? 'YES' : 'NO';?></td>-->
                                             <td class="ant-table-cell">
-                                                <button type="button" class="btn-del-payment" data-id="<?=$p_method->id;?>">
+                                                <button type="button" class="btn-del-payment wp-element-button wp-element-button" data-id="<?=$p_method->id;?>">
                                                     <div>
                                                         <img src="<?=$this->plugin_url.'/img/trash-solid.svg';?>" >
                                                     </div>
@@ -196,7 +196,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                             <div class="clear"></div>
                         </div> 
                         <div class="form-row form-row-wide">
-                            <button type="submit" class="button alt btn-add-payment" id="save_payment" name="save_payment"><?=__('Save', 'wc-bna-gateway'); ?></button>
+                            <button type="submit" class="button alt btn-add-payment wp-element-button" id="save_payment" name="save_payment">
+								<?=__('Save', 'wc-bna-gateway'); ?>
+							</button>
                         </div>
                     </div>
                 </form>
@@ -267,6 +269,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 
 <style scoped="scoped">
+	.woocommerce-page label {
+		margin-bottom: 0px;
+	}
+	#option-tabs {
+		margin-top: 20px;
+	}
     .tabs-main {
         font-size: 0;
         display: block;
@@ -276,11 +284,16 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
     }
     .tabs-main>div, 
     .content-tab,
-    .payor-tab,
     .ddInstitutionNumber,
     .dcInstitutionNumber {
         display: none;
         border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        font-size: 16px;
+    }
+    .payor-tab {
+        display: none;
+        /*border: 1px solid #e0e0e0;*/
         padding: 10px 15px;
         font-size: 16px;
     }
@@ -299,9 +312,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         text-align: center;
         vertical-align: middle;
         user-select: none;
-        background-color: #f5f5f5;
+        background-color: #f9f9f9;
         border: 1px solid #e0e0e0;
-        padding: 2px 8px;
+        padding: 12px 10px;
         font-size: 16px;
         line-height: 1.5;
         transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
@@ -313,8 +326,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         border-left: none;
     }
     .tabs-main>input[type="radio"]:checked+label {
-        background-color: #fff;
-        border-bottom: 1px solid #fff;
+        /*background-color: #fff;*/
+        border-bottom: 1px solid #f9f9f9;
     }
     .payorTab {
         overflow-x: auto;

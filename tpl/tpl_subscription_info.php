@@ -11,7 +11,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
 
 <section class="section my-account-orders">
-    <div class="col-xs-12">
+	<div>
+		<div class="woocommerce-orders-table__filters">
+			<div class="woocommerce-orders-table__filter"><?php _e( 'Last Week', 'wc-bna-gateway' ); ?></div>
+			<div class="woocommerce-orders-table__filter"><?php _e( 'Last Month', 'wc-bna-gateway' ); ?></div>
+			<div class="woocommerce-orders-table__filter filter-active"><?php _e( 'Last 3 Months', 'wc-bna-gateway' ); ?></div>
+			<div class="woocommerce-orders-table__filter"><?php _e( 'Last Year', 'wc-bna-gateway' ); ?></div>
+		</div>
+	</div>
+    <div>
         <div class="payor-tab">
             <div class="payorTab">
                 <table style="table-layout: auto;">
@@ -141,6 +149,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 
 <style scoped="scoped">
+	table {
+		width: 100%;
+	}
     details summary::-webkit-details-marker {
         display: none
     }

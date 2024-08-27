@@ -1,13 +1,4 @@
-/**
-* Layout
-*/
-.woocommerce-cart main .woocommerce,
-.woocommerce-account main .woocommerce ,
-.woocommerce-checkout main .woocommerce {
-	max-width: 1440px;
-}
 
-/* old styles */
 .cards-field-form {
   width: 100%;
   position: relative;

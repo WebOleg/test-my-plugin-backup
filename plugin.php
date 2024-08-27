@@ -28,7 +28,15 @@ function my_log( $str ) {
         fclose($loghandle);
 }
 
+// Plugin PATH:
+if ( ! defined( 'BNA_PLUGIN_DIR_PATH' ) ) {
+	define( 'BNA_PLUGIN_DIR_PATH', plugin_dir_path( __FILE__ ) );
+}
 
+// Plugin Url:
+if ( ! defined( 'BNA_PLUGIN_DIR_URL' ) ) {
+	define( 'BNA_PLUGIN_DIR_URL', plugin_dir_url( __FILE__ ) );
+}
 
 require_once dirname(__FILE__). "/inc/bna_class_exchanger.php";
 require_once dirname(__FILE__). "/inc/bna_class_cctools.php";
@@ -80,7 +88,7 @@ if (!class_exists('BNAPluginManager')) {
 			add_filter( 'woocommerce_states', array(&$this, 'custom_woocommerce_states') );
 			add_filter( 'woocommerce_countries', array(&$this, 'custom_woocommerce_countries') );
 
-			
+			add_filter( 'woocommerce_locate_template', array( $this, 'bna_wc_template' ), 10, 3 );
 		}
 
 		/**
@@ -312,6 +320,30 @@ if (!class_exists('BNAPluginManager')) {
 				<?php
 			}
 		}
+		
+		/**
+		 * Filter templates path to use in this plugin instead of the one in WooCommerce.
+		 *
+		 * @param string $template      Default template file path.
+		 * @param string $template_name Template file slug.
+		 * @param string $template_path Template file name.
+		 *
+		 * @return string The new Template file path.
+		 */
+		function bna_wc_template( $template, $template_name, $template_path ) {
+			if ( 'navigation.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/navigation.php';
+			} elseif ( 'dashboard.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/dashboard.php';
+			} elseif ( 'orders.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/orders.php';
+			} elseif ( 'my-address.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/my-address.php';
+			}
+
+			return $template;
+		}
+
 	}
 }
 
@@ -320,3 +352,16 @@ $BNAPluginManager  = new BNAPluginManager();
 $BNAAccountManager = new BNAAccountManager();
 $BNASubscriptions = new BNASubscriptions();
 
+// Changed column names on woocommerce/templates/myaccount/orders.php
+add_filter(
+	'woocommerce_account_orders_columns',
+	function( $columns ) {
+		$columns['order-number']  = __( 'Order Number', 'wc-bna-gateway' );
+		$columns['order-date']    = __( 'Order Placed', 'wc-bna-gateway' );
+		$columns['order-status']  = __( 'Order Status', 'wc-bna-gateway' );
+		$columns['order-total']   = __( 'Order Total', 'wc-bna-gateway' );
+		$columns['order-actions'] = '';
+		
+		return $columns;
+	}
+);
