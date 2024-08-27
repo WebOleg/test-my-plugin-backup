@@ -51,6 +51,9 @@ if (!class_exists('BNAAccountManager')) {
 			add_action( 'woocommerce_account_' . self::$endpoint_recurring_payments .  '_endpoint', array( $this, 'endpoint_content_recurring_payments' ) );
 
 			add_action( 'wp_enqueue_scripts', array(&$this, 'site_load_styles'));
+			add_action( 'wp_enqueue_scripts', function() {
+				wp_enqueue_style( 'wc-bna-front-styles', $this->plugin_url.'css/front-styles.css', '', time() );
+			}, 99 );
 
 			add_action('wp_ajax_create_payor', array(&$this, 'ajax_create_payor'));
 			add_action('wp_ajax_update_payor', array(&$this, 'ajax_update_payor'));
@@ -66,7 +69,7 @@ if (!class_exists('BNAAccountManager')) {
 		* @since		1.0.0
 		*/
 		public function site_load_styles()
-		{
+		{			
 			wp_register_style('wc_gwpl_css_1', $this->plugin_url . 'js/datepicker/css/datepicker.min.css' );
 			wp_enqueue_script ( 'wc_gwpl_1', $this->plugin_url.'js/bankNames.js', array(), '1.0.0', true );
 			wp_register_script( 'wc_gwpl_2', $this->plugin_url.'js/ajax_io.js', array('jquery'), time(), true );
@@ -587,7 +590,7 @@ if (!class_exists('BNAAccountManager')) {
 					$wpdb->query( "DELETE FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'" );			
 				}
 				
-				empty( $response ) ? 
+				! empty( $response ) ? 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS );
 			}

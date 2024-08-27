@@ -2,9 +2,9 @@
 /**
  * Woocommerce BNA Gateway
  *
- * @author 	BNA
- * @category 	'BNA My-account managing' Template
- * @version     1.0
+ * @author 	 BNA
+ * @category 'BNA My-account managing' Template
+ * @version    1.0
  */
 
 
@@ -14,7 +14,7 @@ $current_user_id = get_current_user_id();
 ?>
 
 <section class="section my-account-orders">
-	<div class="col-xs-12">
+	<div>
         <label for="option-tabs">Manage payment methods:</label>
         <div class="tabs-main" id="option-tabs">
             <input type="radio" name="tab-btn" id="tab-btn-0" value="" <?= empty($payorID) ? 'checked' : 'disabled';?> >
@@ -27,7 +27,7 @@ $current_user_id = get_current_user_id();
             <label for="tab-btn-3" style="<?= empty($payorID) ? 'display:none;' : 'display:inline-block;';?>" >Delate payor</label>
 
             <div id="content-0">
-                <div class="payorTab">s
+                <div class="payorTab">
                     <form class="form_create_payor"> 
                         <div class="payor-tab">
                             <div class="form-row form-row-wide">
@@ -85,7 +85,7 @@ $current_user_id = get_current_user_id();
                             ?>
                         </div>
                         <div class="form-row form-row-wide">
-                            <button type="submit" class="button alt btn-margin" id="create_payor" 
+                            <button type="submit" class="button alt btn-margin wp-element-button" id="create_payor" 
                                 name="create_payor"><?=__('Create', 'wc-bna-gateway'); ?></button>
                         </div>                    
                     </form>
@@ -132,7 +132,7 @@ $current_user_id = get_current_user_id();
                             </div>
                         </div>
                         <div class="form-row form-row-wide">
-                            <button type="submit" class="button alt btn-margin" id="update_payor" 
+                            <button type="submit" class="button alt btn-margin  wp-element-button" id="update_payor" 
                                 name="update_payor"><?=__('Update', 'wc-bna-gateway'); ?></button>
                         </div>
                     </form>
@@ -175,7 +175,9 @@ $current_user_id = get_current_user_id();
                             </div>  
                         </div>
                         <div class="form-row form-row-wide">
-                            <button type="submit" class="button alt btn-margin" id="update_address" name="update_address"><?=__('Update', 'wc-bna-gateway'); ?></button>
+                            <button type="submit" class="button alt btn-margin wp-element-button" id="update_address" name="update_address">
+								<?=__('Update', 'wc-bna-gateway'); ?>
+							</button>
                         </div>
                     </form>
                 </div>
@@ -201,7 +203,9 @@ $current_user_id = get_current_user_id();
                             </div>
                         </div>
                         <div class="form-row form-row-wide">
-                            <button type="submit" class="button alt btn-margin" id="delete_payor" name="delete_payor"><?=__('Delete', 'wc-bna-gateway'); ?></button>
+                            <button type="submit" class="button alt btn-margin wp-element-button" id="delete_payor" name="delete_payor">
+								<?=__('Delete', 'wc-bna-gateway'); ?>
+							</button>
                         </div>
                     </form>
                 </div>
@@ -231,6 +235,15 @@ $current_user_id = get_current_user_id();
 </script>
 
 <style scoped="scoped">
+	.woocommerce-page label {
+		margin-bottom: 0px;
+	}
+	#option-tabs {
+		margin-top: 20px;
+	}
+	#create_payor {
+		margin-left: 15px;
+	}
     .tabs-main {
         font-size: 0;
         display: block;
@@ -240,10 +253,15 @@ $current_user_id = get_current_user_id();
     }
     .tabs-main>div, 
     .content-tab,
-    .institutionNumber,
-    .payor-tab {
+    .institutionNumber {
         display: none;
         border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        font-size: 16px;
+    }
+     .payor-tab {
+        display: none;
+        /*border: 1px solid #e0e0e0;*/
         padding: 10px 15px;
         font-size: 16px;
     }
@@ -262,9 +280,10 @@ $current_user_id = get_current_user_id();
         text-align: center;
         vertical-align: middle;
         user-select: none;
-        background-color: #f5f5f5;
-        border: 1px solid #e0e0e0;
-        padding: 2px 8px;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        padding: 12px 10px;
         font-size: 16px;
         line-height: 1.5;
         transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
@@ -272,12 +291,12 @@ $current_user_id = get_current_user_id();
         position: relative;
         top: 1px;
     }
-    .tabs-main>label:not(:first-of-type) {
+    .tabs-main>label:not(:nth-child(2n)) { /*(:first-of-type)*/
         border-left: none;
     }
     .tabs-main>input[type="radio"]:checked+label {
-        background-color: #fff;
-        border-bottom: 1px solid #fff;
+        /*background-color: #fff;*/
+        border-bottom: 1px solid #f9f9f9;
     }
     .payorTab {
         overflow-x: auto;
@@ -291,7 +310,7 @@ $current_user_id = get_current_user_id();
         width: 50% !important;
     }
     .btn-margin {
-        margin: 20px auto;
+        margin: 20px auto 20px 18px;
     }
     .btn-del-payment {
         border-radius: 5px;
