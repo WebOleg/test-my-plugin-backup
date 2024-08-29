@@ -601,7 +601,7 @@ function wc_bna_gateway_init() {
 				$endpoint = array_pop ($endpoint);
 
 				$data = file_get_contents ("php://input");
-				
+			
 				if ( !empty($data) ) {
 
 					$args = WC_BNA_Gateway::get_merchant_params();

@@ -22,10 +22,13 @@ if (!class_exists('BNAAccountManager')) {
 		 *
 		 * @var string
 		 */
-		public static $endpoint_account_management 	= 'pl-account-management';
-		public static $endpoint_payment_methods 	= 'pl-payment-methods';
-		public static $endpoint_transaction_info 	= 'pl-transaction-info';
-		public static $endpoint_recurring_payments 	= 'pl-recurring-payments';
+		public static $endpoint_account_management = 'pl-account-management';
+		public static $endpoint_payment_methods = 'pl-payment-methods';
+		public static $endpoint_transaction_info = 'pl-transaction-info';
+		public static $endpoint_recurring_payments = 'pl-recurring-payments';
+		public static $endpoint_add_credit_card = 'bna-add-credit-card';
+		public static $endpoint_bank_account_info = 'bna-bank-account-info';
+		public static $endpoint_e_transfer_info = 'bna-e-transfer-info';
 
 		/**
 		 * Plugin actions.
@@ -49,6 +52,9 @@ if (!class_exists('BNAAccountManager')) {
 			add_action( 'woocommerce_account_' . self::$endpoint_payment_methods .  '_endpoint', array( $this, 'endpoint_content_payment_methods' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_transaction_info .  '_endpoint', array( $this, 'endpoint_content_transaction_info' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_recurring_payments .  '_endpoint', array( $this, 'endpoint_content_recurring_payments' ) );
+			add_action( 'woocommerce_account_' . self::$endpoint_add_credit_card .  '_endpoint', array( $this, 'endpoint_content_add_credit_card' ) );
+			add_action( 'woocommerce_account_' . self::$endpoint_bank_account_info .  '_endpoint', array( $this, 'endpoint_content_bank_account_info' ) );
+			add_action( 'woocommerce_account_' . self::$endpoint_e_transfer_info .  '_endpoint', array( $this, 'endpoint_content_e_transfer_info' ) );
 
 			add_action( 'wp_enqueue_scripts', array(&$this, 'site_load_styles'));
 			add_action( 'wp_enqueue_scripts', function() {
@@ -96,6 +102,9 @@ if (!class_exists('BNAAccountManager')) {
 			add_rewrite_endpoint( self::$endpoint_payment_methods, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_transaction_info, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_recurring_payments, EP_ROOT | EP_PAGES );
+			add_rewrite_endpoint( self::$endpoint_add_credit_card, EP_ROOT | EP_PAGES );
+			add_rewrite_endpoint( self::$endpoint_bank_account_info, EP_ROOT | EP_PAGES );
+			add_rewrite_endpoint( self::$endpoint_e_transfer_info, EP_ROOT | EP_PAGES );
 			$wp_rewrite->flush_rules();
 		}
 
@@ -107,9 +116,12 @@ if (!class_exists('BNAAccountManager')) {
 		 */
 		public function get_query_vars( $vars ) {
 			$vars[ self::$endpoint_account_management ] = self::$endpoint_account_management;
-			$vars[ self::$endpoint_payment_methods ] 	= self::$endpoint_payment_methods;
-			$vars[ self::$endpoint_transaction_info ] 	= self::$endpoint_transaction_info;
+			$vars[ self::$endpoint_payment_methods ] = self::$endpoint_payment_methods;
+			$vars[ self::$endpoint_transaction_info ] = self::$endpoint_transaction_info;
 			$vars[ self::$endpoint_recurring_payments ] = self::$endpoint_recurring_payments;
+			$vars[ self::$endpoint_add_credit_card ] = self::$endpoint_add_credit_card;
+			$vars[ self::$endpoint_bank_account_info ] = self::$endpoint_bank_account_info;
+			$vars[ self::$endpoint_e_transfer_info ] = self::$endpoint_e_transfer_info;
 
 			return $vars;
 		}
@@ -123,7 +135,7 @@ if (!class_exists('BNAAccountManager')) {
 		public function endpoint_title( $title ) {
 			global $wp_query;
 			
-			if (  !(is_main_query() && in_the_loop() && is_account_page()) || is_admin() ) return $title;
+			if ( ! (is_main_query() && in_the_loop() && is_account_page()) || is_admin() ) return $title;
 			
 			if ( isset( $wp_query->query_vars[ self::$endpoint_account_management ] ) ) {
 				$title = __( 'Account management', 'wc-bna-gateway' );
@@ -142,6 +154,21 @@ if (!class_exists('BNAAccountManager')) {
 
 			if ( isset( $wp_query->query_vars[ self::$endpoint_recurring_payments ] ) ) {
 				$title = __( 'Recurring payments', 'wc-bna-gateway' );
+				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
+			}
+			
+			if ( isset( $wp_query->query_vars[ self::$endpoint_add_credit_card ] ) ) {
+				$title = __( 'Add credit card', 'wc-bna-gateway' );
+				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
+			}
+			
+			if ( isset( $wp_query->query_vars[ self::$endpoint_bank_account_info ] ) ) {
+				$title = __( 'Add bank account info', 'wc-bna-gateway' );
+				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
+			}
+			
+			if ( isset( $wp_query->query_vars[ self::$endpoint_e_transfer_info ] ) ) {
+				$title = __( 'Add e-transfer info', 'wc-bna-gateway' );
 				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
 			}
 
@@ -317,6 +344,48 @@ if (!class_exists('BNAAccountManager')) {
 				"SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE user_id='{$userID}' ORDER BY created_time DESC"
 			);
 			require_once dirname(__FILE__). "/../tpl/tpl_subscription_info.php";
+		}
+		
+		/**
+		 * Managing endpoint content add credit card
+		 *
+		 * @return view
+		 */
+		public function endpoint_content_add_credit_card() {
+			global $wpdb;
+
+			self::loading_scripts();
+
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
+			require_once dirname(__FILE__). "/../tpl/tpl_add_credit_card.php";
+		}
+		
+		/**
+		 * Managing endpoint content bank account info
+		 *
+		 * @return view
+		 */
+		public function endpoint_content_bank_account_info() {
+			global $wpdb;
+
+			self::loading_scripts();
+
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
+			require_once dirname(__FILE__). "/../tpl/tpl_bank_account_info.php";
+		}
+		
+		/**
+		 * Managing endpoint content e-transfer info
+		 *
+		 * @return view
+		 */
+		public function endpoint_content_e_transfer_info() {
+			global $wpdb;
+
+			self::loading_scripts();
+
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
+			require_once dirname(__FILE__). "/../tpl/tpl_e_transfer_info.php";
 		}
 
 		/**
@@ -621,7 +690,13 @@ if (!class_exists('BNAAccountManager')) {
 
 				foreach( $request as $rq)
 					$form[$rq['name']] = $rq['value'];
-	
+					
+				if ( ! empty( $form['cc_expire'] ) ) {
+					$cc_expire = explode( '/', $form['cc_expire'] );
+					$form['cc_expire_month'] = $cc_expire[0];
+					$form['cc_expire_year'] = $cc_expire[1];
+				}
+
 				$args = WC_BNA_Gateway::get_merchant_params();
 				if ( empty( $args) ) {
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
@@ -636,59 +711,24 @@ if (!class_exists('BNAAccountManager')) {
 					wp_die();
 				}
 
-				$data = (object) [ 
-					"payorId" => $payorID,
-					"paymentMethod" => (object) [
-						"currency"	=> get_woocommerce_currency()
-					]
-				];
-				
-				switch ( $form['paymentType'] ) {
-					case BNA_PAYMENT_TYPE_CREDITCARD: 
-						$params = array (
-							"paymentType"		=> check_cc( $form['cc_number'] ),
-							"cardNumber"		=> $form['cc_number'],
-							"securityCode"		=> $form['cc_code'],
-							"expiryMonth"		=> $form['cc_expire_month'],
-							"expiryYear"		=> $form['cc_expire_year'],
-							"cardHolder"		=> $form['cc_holder']
-						);
-						foreach ( $params as $p_key => $p_val) 
-							$data->{"paymentMethod"}->{$p_key} = $p_val;
-						break;
-					case BNA_PAYMENT_TYPE_DIRECTDEBIT:
-						$params = array (
-							"paymentType" 		=> "DIRECT-DEBIT",
-							"institutionNumber"	=> $form['ddBankName'] !== 'other' ? $form['ddBankName'] : $form['ddInstitutionNumber'],
-							"accountNumber"		=> $form['ddAccountNumber'],
-							"transitNumber"		=> $form['ddTransitNumber']
-						);
-						foreach ( $params as $p_key => $p_val)
-							$data->paymentMethod->{$p_key} = $p_val;
-						break;
-					case BNA_PAYMENT_TYPE_DIRECTCREDIT:
-						$params = array (
-							"paymentType" 		=> "DIRECT-CREDIT",
-							"institutionNumber"	=> $form['dcBankName'] !== 'other' ? $form['dcBankName'] : $form['dcInstitutionNumber'],
-							"accountNumber"		=> $form['dcAccountNumber'],
-							"transitNumber"		=> $form['dcTransitNumber']
-						);
-						foreach ( $params as $p_key => $p_val)
-							$data->paymentMethod->{$p_key} = $p_val;
-						break;
-
-					default:
-						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ADDPAYMENT_ERRPAYMENTTYPE);
-						wp_die();				
-				}
+				$data = array (
+					'cardNumber'	=> $form['cc_number'],
+					'cardHolder'		=> $form['cc_holder'],
+					'cardType'			=> 'credit',
+					'cardIdNumber'	=> $form['cc_code'],
+					'expiryMonth'	=> $form['cc_expire_month'],
+					'expiryYear'		=> $form['cc_expire_year'],
+				);
 
 				$response = $api->query(
-					$args['serverUrl'].'/'.$args['protocol'].'/'.$paymentTypeMethod.'/'.$paymentMethod,  
+					$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/card',  
 					$data,
-					'PUT'
+					'POST'
 				);
+				
+				$response = json_decode( $response, true );
 	
-				empty( $response['success'] ) ? 
+				empty( $response['id'] ) ? 
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ADDPAYMENT_ERROR) :
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ADDPAYMENT_SUCCESS) ;
 			}

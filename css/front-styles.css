@@ -55,10 +55,11 @@ body.woocommerce-checkout .woocommerce {
 .woocommerce-account .woocommerce form .required {
 	color: var(--bna-color);
 }
-body.woocommerce-account .woocommerce input {
+body.woocommerce-account .woocommerce input,
+body.woocommerce-account .woocommerce input.tpl-input {
 	color: var(--bna-color);
 	background: #FFF;
-	width: 100%;
+	width: calc(100% - 12px);
 	padding: 12px 0px 12px 12px;
 	border: 1px solid #CCC;
 	border-radius: 2px;
@@ -70,6 +71,20 @@ body.woocommerce-account .woocommerce input {
 .woocommerce-account .woocommerce a:not(.wp-element-button),
 .woocommerce-checkout .woocommerce a {
 	text-decoration: none;
+}
+body.woocommerce-account .woocommerce .tpl-button {
+	background-color: var(--bna-a-hover-color);
+	border: 1px solid var(--bna-a-hover-color);
+	color: #FFF;
+	font-weight: 700;
+	font-size: 18px;
+	line-height: 21px;
+	padding: 10px 40px;
+	border-radius: 4px;
+	width: 340px;
+	max-width: 340px;
+	display: block;
+	text-align: center;
 }
 .woocommerce-account .woocommerce .woocommerce-MyAccount-navigation {
 	flex: 0 0 350px;
@@ -114,6 +129,19 @@ body.woocommerce-account .woocommerce input {
 	.woocommerce-checkout .woocommerce {
 		flex-direction: column;
 	}
+}
+.loading {
+	display:none;
+	position:absolute; 
+	z-index:3000; 
+	background:url('../img/loading.gif') center, no-repeat;
+	background-size: cover;
+	top: 45%;
+	left: 40%;
+	width: 150px;
+	height: 150px;
+	font-size: 24px;
+	text-align: center;
 }
 
 /* Navigation */
@@ -360,6 +388,82 @@ button.wp-element-button {
 	}
 }
 
+/* tpl-payment-method */
+body.woocommerce-account .woocommerce .tpl-subtitle {
+	margin-top: 0px;
+	margin-bottom: 60px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method .tpl-few-buttons-wrapper {
+	margin-bottom: 60px;
+	display: flex;
+	flex-direction: row;
+	gap: 30px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method .tpl-few-buttons-wrapper .tpl-button.tpl-button-flex {
+	flex: 0 1 calc(33% - 30px);
+	width: auto;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method .tpl-button-wrapper {
+	margin-bottom: 60px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method .tpl-desc {
+	margin-bottom: 30px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method .method-img {
+	height: 60px;
+	width: auto;
+	object-fit: cover;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method a.method-delete {
+	color: var(--bna-a-hover-color);
+	text-decoration: underline;
+	font-weight: 700;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-text-required {
+	/*margin-bottom: 30px;*/
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-input-wrapper {
+	margin-top: 30px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-input-label {
+	margin-bottom: 10px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-two-inputs-wrapper {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	column-gap: 30px;
+	position: relative;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-two-inputs-wrapper .tpl-input-wrapper {
+	flex: 0 1 calc(50% - 15px);
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-three-inputs-wrapper {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	column-gap: 30px;
+	position: relative;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-three-inputs-wrapper .tpl-input-wrapper {
+	flex: 0 1 84px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-three-inputs-wrapper .tpl-CVC-text-wrapper {
+	flex: 0 1 calc(100% - 84px - 236px - 60px);
+	margin-top: 56px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-three-inputs-wrapper .tpl-CVC-img-wrapper {
+	flex: 0 1 236px;
+	margin-top: 50px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-button-wrapper.tpl-button-save-changes {
+	position: absolute;
+	bottom: 3px;
+}
+body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-two-inputs-wrapper .tpl-number-img-wrapper {
+	margin-top: 60px;
+}
+
 /* General classes */
 .woo-myaccount-title {
 	font-size: 20px;
@@ -375,8 +479,21 @@ button.wp-element-button {
 	font-weight: 400;
 	line-height: 30px;
 }
+.woo-myaccount-text-bigger {
+	font-size: 24px;
+	font-weight: 700;
+	line-height: 28.13px;
+}
 .woo-myaccount-text-large {
 	font-size: 40px;
 	font-weight: 700;
 	line-height: 46.88px;
+}
+
+
+.tpl-font-italic {
+	font-style: italic;
+}
+.tpl-mt-60 {
+	margin-top: 60px;
 }
