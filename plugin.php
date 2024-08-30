@@ -20,7 +20,8 @@ defined( 'ABSPATH' ) or exit;
 function my_log( $str ) {
 	//$str = unserialize($str);
 	if ( is_array($str) ) {
-		$str = implode(',', $str);
+		//$str = implode(',', $str);
+		$str = json_encode($str);
 	}
 	$log_str = "Logged On: " . date("m/d/Y H:i:s") . "\n" . $str . "\n-------------\n";
 	$loghandle = fopen(dirname(__FILE__) . "/../my_logs.txt", "a+");

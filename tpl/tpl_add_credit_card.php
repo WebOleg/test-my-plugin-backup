@@ -1,0 +1,66 @@
+<?php
+/**
+ * Woocommerce BNA Gateway
+ *
+ * @author 	BNA
+ * @category 'Add Credit Card' Template
+ * @version     1.0
+ */
+
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+?>
+<h3 class="woo-myaccount-text-bigger tpl-subtitle"><?php _e( 'Manage your Credit Cards', 'wc-bna-gateway' ); ?></h3>
+
+<div style="<?php echo empty( $payorID ) ? 'display:block;' : 'display:none;'; ?>" >
+	<p>
+		<div class="woocommerce-error">
+			<?php _e( 'Sorry. Please create a customer account first.', 'wc-bna-gateway' ); ?>
+		</div>
+	</p>
+</div>
+
+<form class="form_save_payment"  style="<?php echo empty( $payorID ) ? 'display:none;' : 'display:block;'; ?>" >
+	<div class="tpl-payment-method-cards">
+		<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+		
+		<div class="tpl-input-wrapper">
+			<div class="tpl-input-label"><?php _e( 'Cardholder Name', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
+			<span class="tpl-font-italic"><?php _e( '(the exact name as it appears on the front of your credit card)', 'wc-bna-gateway' ); ?></span></div>
+			<input class="tpl-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" value="">
+		</div>
+		
+		<div class="tpl-two-inputs-wrapper">
+			<div class="tpl-input-wrapper">
+				<div class="tpl-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input class="tpl-input" type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
+					onkeyup="return input_test(this);" value="">
+			</div>
+			
+			<div class="tpl-input-wrapper">
+				<div class="tpl-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input class="tpl-input" type="text" id="cc_expire_month" name="cc_expire" 
+					autocomplete="off" pattern="[01,02,03,04,05,06,07,08,09,10,11,12]{1}/[10-40]{1}" placeholder="MM/YY" onkeyup="return input_test(this);" maxlength="5" value="">
+			</div>
+		</div>
+			
+		<div class="tpl-three-inputs-wrapper">
+			<div class="tpl-input-wrapper">
+				<div class="tpl-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input  class="tpl-input" type="password" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
+					onkeyup="return input_test(this);" value="">
+			</div>
+			<div class="tpl-CVC-text-wrapper">
+				<div class="tpl-CVC-text">
+					<?php _e( 'CVC (CVV, CCV, SVC or CSC) is a card security verification code. Three or four digits printed, not embossed, on the back of the card. ', 'wc-bna-gateway' ); ?>
+				</div>
+			</div>
+			<div class="tpl-CVC-img-wrapper">
+				<img class="tpl-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Credit_Card_SVC.png'; ?>" />
+			</div>
+			<div  class="tpl-button-wrapper tpl-button-save-changes">
+				<button id="save_payment" class="tpl-button"><?php _e( 'Save Changes', 'wc-bna-gateway' ); ?></button>
+			</div>
+		</div>
+	</div>
+</form>
+<div class="loading"></div>
