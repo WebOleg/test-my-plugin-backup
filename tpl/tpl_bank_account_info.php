@@ -25,37 +25,38 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		
 		<div class="tpl-input-wrapper">
 			<div class="tpl-input-label">
-				<?php _e( 'Name on Bank Account', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
+				<?php _e( 'Name on Bank Account', 'wc-bna-gateway' ); ?><br>
 				<span class="tpl-font-italic"><?php _e( '(the full name of the person or business associated with the bank account.)', 'wc-bna-gateway' ); ?></span></div>
-			<input class="tpl-input" type="text" name="eft_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" value="">
+			<input class="tpl-input" type="text" name="eft_holder" autocomplete="off" maxlength="100" placeholder=""
 		</div>
 		
 		<div class="tpl-two-inputs-wrapper">
 			<div class="tpl-input-wrapper">
-				<div class="tpl-input-label"><?php _e( 'Branch/Transit Number *', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="tpl-input" type="text" name="eft_branch" autocomplete="off" maxlength="18" placeholder=""
-					onkeyup="return input_test(this);" value="">
+				<div class="tpl-input-label"><?php _e( 'Bank Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input class="tpl-input" type="text" name="bank_number" autocomplete="off" maxlength="18" placeholder=""
+					onkeyup="return input_test(this);" >
 			</div>
 			
 			<div class="tpl-input-wrapper">
-				<div class="tpl-input-label"><?php _e( 'Financial Institution Number *', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="tpl-input" type="text" id="cc_expire_month" name="eft_institution" 
-					autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="18" value="">
+				<div class="tpl-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input class="tpl-input" type="text" name="account_number" 
+					autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="18" >
 			</div>
 		</div>
 			
 		<div class="tpl-two-inputs-wrapper">
 			<div class="tpl-input-wrapper">
-				<div class="tpl-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input  class="tpl-input" type="password" name="eft_account" autocomplete="off" placeholder="" maxlength="3" 
-					onkeyup="return input_test(this);" value="">
+				<div class="tpl-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input  class="tpl-input" type="text" name="transit_number" autocomplete="off" placeholder="" maxlength="18" 
+					onkeyup="return input_test(this);" >
 			</div>
 			<div class="tpl-number-img-wrapper">
 				<img class="tpl-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Cheque_1.png'; ?>" />
 			</div>
 			<div  class="tpl-button-wrapper tpl-button-save-changes">
-				<button id="save_payment" class="tpl-button"><?php _e( 'Save Changes', 'wc-bna-gateway' ); ?></button>
+				<button id="save_payment" class="tpl-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
 			</div>
+			<input type="hidden" name="payment_type" value="eft">
 		</div>
 	</div>
 </form>

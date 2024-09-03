@@ -22,6 +22,7 @@ function my_log( $str ) {
 	if ( is_array($str) ) {
 		//$str = implode(',', $str);
 		$str = json_encode($str);
+		//$str = var_dump($str);
 	}
 	$log_str = "Logged On: " . date("m/d/Y H:i:s") . "\n" . $str . "\n-------------\n";
 	$loghandle = fopen(dirname(__FILE__) . "/../my_logs.txt", "a+");
@@ -332,6 +333,7 @@ if (!class_exists('BNAPluginManager')) {
 		 * @return string The new Template file path.
 		 */
 		function bna_wc_template( $template, $template_name, $template_path ) {
+			// my-account
 			if ( 'navigation.php' === basename( $template ) ) {
 				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/navigation.php';
 			} elseif ( 'dashboard.php' === basename( $template ) ) {
@@ -340,6 +342,30 @@ if (!class_exists('BNAPluginManager')) {
 				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/orders.php';
 			} elseif ( 'my-address.php' === basename( $template ) ) {
 				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/my-address.php';
+			}
+			
+			// cart
+			if ( 'cart.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/cart/cart.php';
+			} elseif ( 'cart-totals.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/cart/cart-totals.php';
+			}
+			
+			// checkout
+			if ( 'form-billing.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-billing.php';
+			} elseif ( 'form-checkout.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-checkout.php';
+			} elseif ( 'form-shipping.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-shipping.php';
+			} elseif ( 'payment.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/payment.php';
+			} elseif ( 'payment-method.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/payment-method.php';
+			} elseif ( 'review-order.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/review-order.php';
+			} elseif ( 'thankyou.php' === basename( $template ) ) {
+				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/thankyou.php';
 			}
 
 			return $template;

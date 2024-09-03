@@ -40,28 +40,49 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</thead>
 
 		<tbody>
-			<tr>
-				<td>
-					<img class="method-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/directCredit.svg'; ?>" />
-				</td>
-				<td>
-					E-mail@address
-				</td>
-				<td>
-					<a class="method-delete" href="#">Delete</a>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<img class="method-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/directCredit.svg'; ?>" >
-				</td>
-				<td>
-					E-mail@address
-				</td>
-				<td>
-					<a class="method-delete" href="#">Delete</a>
-				</td>
-			</tr>
+			<?php
+				foreach ( $paymentMethods as $p_method ) {
+					$imageName = '';
+					switch ( $p_method->paymentType ) {
+						case 'card':
+							$imageName = 'directCredit.svg';
+							break;
+						case 'eft':
+							$imageName = 'directDedit.svg';
+							break;
+						case 'e-transfer':
+							$imageName = 'eTransfer.svg';
+							break;
+					}
+					if ( empty($imageName) ) continue;
+					?>
+					<tr>
+						<td>
+							<img class="method-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/' . $imageName; ?>" alt="<?php echo $p_method->paymentType; ?>" />
+						</td>
+						<td>
+							<?php
+								$data = json_decode( $p_method->paymentDescription );
+								switch ( $p_method->paymentType ) {
+									case 'card':
+										echo $data->cardNumber . '<br>' . 'expiry: ' . $data->expiryMonth . '/' . $data->expiryYear;
+										break;
+									case 'eft':
+										echo 'Test EFT';
+										break;
+									case 'e-transfer':
+										echo 'Test E-Transfer';
+										break;
+								}							
+							?>
+						</td>
+						<td>
+							<a class="method-delete btn-del-payment" data-id="<?php echo $p_method->id; ?>" href="#"><?php _e( 'Delete', 'wc-bna-gateway' ); ?></a>
+						</td>
+					</tr>
+					<?php
+				}
+			?>					
 		</tbody>
 	</table>
 </div>
