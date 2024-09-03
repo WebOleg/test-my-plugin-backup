@@ -26,28 +26,28 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		<div class="tpl-input-wrapper">
 			<div class="tpl-input-label"><?php _e( 'Cardholder Name', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
 			<span class="tpl-font-italic"><?php _e( '(the exact name as it appears on the front of your credit card)', 'wc-bna-gateway' ); ?></span></div>
-			<input class="tpl-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" value="">
+			<input class="tpl-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" >
 		</div>
 		
 		<div class="tpl-two-inputs-wrapper">
 			<div class="tpl-input-wrapper">
 				<div class="tpl-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
 				<input class="tpl-input" type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
-					onkeyup="return input_test(this);" value="">
+					onkeyup="return input_test(this);">
 			</div>
 			
 			<div class="tpl-input-wrapper">
 				<div class="tpl-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="tpl-input" type="text" id="cc_expire_month" name="cc_expire" 
-					autocomplete="off" pattern="[01,02,03,04,05,06,07,08,09,10,11,12]{1}/[10-40]{1}" placeholder="MM/YY" onkeyup="return input_test(this);" maxlength="5" value="">
+				<input class="tpl-input" type="text" name="cc_expire" 
+					autocomplete="off" placeholder="MM/YY" onkeyup="return input_test(this);" maxlength="5">
 			</div>
 		</div>
 			
 		<div class="tpl-three-inputs-wrapper">
 			<div class="tpl-input-wrapper">
 				<div class="tpl-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input  class="tpl-input" type="password" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
-					onkeyup="return input_test(this);" value="">
+				<input  class="tpl-input" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
+					onkeyup="return input_test(this);">
 			</div>
 			<div class="tpl-CVC-text-wrapper">
 				<div class="tpl-CVC-text">
@@ -58,8 +58,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<img class="tpl-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Credit_Card_SVC.png'; ?>" />
 			</div>
 			<div  class="tpl-button-wrapper tpl-button-save-changes">
-				<button id="save_payment" class="tpl-button"><?php _e( 'Save Changes', 'wc-bna-gateway' ); ?></button>
+				<button id="save_payment" class="tpl-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
 			</div>
+			<input type="hidden" name="payment_type" value="card">
 		</div>
 	</div>
 </form>

@@ -464,6 +464,35 @@ body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-two-inputs-
 	margin-top: 60px;
 }
 
+/* Cart */
+body.woocommerce-cart .woocommerce form.woocommerce-cart-form {
+	flex: 0 1 65%;
+}
+body.woocommerce-cart .woocommerce .cart-collaterals {
+	flex: 0 1 auto;
+}
+
+/* Checkout */
+body.woocommerce-checkout .woocommerce {
+	flex-wrap: wrap;
+}
+body.woocommerce-checkout .woocommerce .woocommerce-form-coupon-toggle {
+	flex: 0 1 100%;
+}
+body.woocommerce-checkout .woocommerce form.checkout {
+	flex: 0 1 100%;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 30px;
+}
+body.woocommerce-checkout .woocommerce form.checkout .bna-customer-details {
+	flex: 0 1 47%;
+}
+body.woocommerce-checkout .woocommerce form.checkout .bna-order-review {
+	flex: 0 1 50%;
+}
+
+
 /* General classes */
 .woo-myaccount-title {
 	font-size: 20px;

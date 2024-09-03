@@ -77,7 +77,7 @@ function wc_bna_gateway_init() {
 			$this->init_form_fields();
 			$this->init_settings();
 
-			self::get_fees_request();
+			//self::get_fees_request();
 		  
 			// Define user set variables
 			$this->title        = $this->get_option( 'title' );
@@ -590,19 +590,19 @@ function wc_bna_gateway_init() {
 		 * @since		1.0.0
 		 * @param array $query
 		 */
-		public static function get_request($query) {
+		public static function get_request( $query ) {
 
-			$request = urldecode($_SERVER['REQUEST_URI']);
+			$request = urldecode( $_SERVER['REQUEST_URI'] );
 
-			if ( stristr($request, '/paylinks/') ) {
+			if ( stristr( $request, '/bnasmartpayment/' ) ) {
 				global $wpdb, $woocommerce, $BNAAccountManager, $BNASubscriptions;
 
-				$endpoint = explode ('/', trim($request, '/'));
-				$endpoint = array_pop ($endpoint);
+				$endpoint = explode( '/', trim( $request, '/' ) );
+				$endpoint = array_pop( $endpoint );
 
-				$data = file_get_contents ("php://input");
+				$data = file_get_contents( "php://input" );
 			
-				if ( !empty($data) ) {
+				if ( ! empty( $data) ) {
 
 					$args = WC_BNA_Gateway::get_merchant_params();
 					if ( empty($args) ) {
@@ -610,9 +610,10 @@ function wc_bna_gateway_init() {
 						wp_die();
 					}
 
-					$result = json_decode(decryptString($data, $args['secretKey']), true);
+					//$result = json_decode(decryptString($data, $args['secretKey']), true);
+					$result = json_decode( $data, true );
 
-					switch ($endpoint) {
+					switch ( $endpoint ) {
 						case 'transactions':
 							self::endpoint_transactions( $result );
 							break;

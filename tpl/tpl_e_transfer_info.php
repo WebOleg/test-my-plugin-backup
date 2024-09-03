@@ -25,12 +25,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		
 		<div class="tpl-input-wrapper">
 			<div class="tpl-input-label"><?php _e( 'New E-Mail', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-			<input class="tpl-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" value="">
+			<input class="tpl-input" type="email" name="email" autocomplete="off" maxlength="100" placeholder="Email">
 		</div>
 		
 		<div  class="tpl-button-wrapper tpl-mt-60">
-			<button id="save_payment" class="tpl-button"><?php _e( 'Save Changes', 'wc-bna-gateway' ); ?></button>
-		</div>		
+			<button id="save_payment" class="tpl-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
+		</div>
+		<input type="hidden" name="payment_type" value="e-transfer">
 	</div>
 </form>
 <div class="loading"></div>

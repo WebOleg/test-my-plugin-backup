@@ -676,9 +676,6 @@ if (!class_exists('BNAAccountManager')) {
 		{
 			global $wpdb;
 
-			$paymentTypeMethod 	= 'account';
-			$paymentMethod 		= 'add-paymentmethod';
-
 			if( isset( $_POST['nonce'] )) {
 				if ( !wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME) ) {
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORNONCE);
@@ -690,13 +687,7 @@ if (!class_exists('BNAAccountManager')) {
 
 				foreach( $request as $rq)
 					$form[$rq['name']] = $rq['value'];
-					
-				if ( ! empty( $form['cc_expire'] ) ) {
-					$cc_expire = explode( '/', $form['cc_expire'] );
-					$form['cc_expire_month'] = $cc_expire[0];
-					$form['cc_expire_year'] = $cc_expire[1];
-				}
-
+									
 				$args = WC_BNA_Gateway::get_merchant_params();
 				if ( empty( $args) ) {
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
@@ -710,24 +701,63 @@ if (!class_exists('BNAAccountManager')) {
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
 					wp_die();
 				}
+				
+				// add 'card' payment type
+				if ( $form['payment_type'] === 'card' ) {
+					$form['cc_expire_month'] = '';
+					$form['cc_expire_year'] = '';
+					if ( ! empty( $form['cc_expire'] ) ) {
+						$cc_expire = explode( '/', $form['cc_expire'] );
+						$form['cc_expire_month'] = $cc_expire[0];
+						$form['cc_expire_year'] = $cc_expire[1];
+					}
 
-				$data = array (
-					'cardNumber'	=> $form['cc_number'],
-					'cardHolder'		=> $form['cc_holder'],
-					'cardType'			=> 'credit',
-					'cardIdNumber'	=> $form['cc_code'],
-					'expiryMonth'	=> $form['cc_expire_month'],
-					'expiryYear'		=> $form['cc_expire_year'],
-				);
+					$data = array (
+						'cardNumber'	=> $form['cc_number'],
+						'cardHolder'		=> $form['cc_holder'],
+						'cardType'			=> 'credit',
+						'cardIdNumber'	=> $form['cc_code'],
+						'expiryMonth'	=> $form['cc_expire_month'],
+						'expiryYear'		=> $form['cc_expire_year'],
+					);
 
-				$response = $api->query(
-					$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/card',  
-					$data,
-					'POST'
-				);
+					$response = $api->query(
+						$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/card',  
+						$data,
+						'POST'
+					);
+				}
+				
+				// add 'e-transfer' payment type
+				if ( $form['payment_type'] === 'e-transfer' ) {
+					$data = array (
+						'interacEmail' => $form['email'],
+					);
+
+					$response = $api->query(
+						$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/e-transfer',  
+						$data,
+						'POST'
+					);
+				}
+				
+				// add 'eft' payment type
+				if ( $form['payment_type'] === 'eft' ) {
+					$data = array (
+						'bankNumber' => $form['bank_number'],
+						'accountNumber' => $form['account_number'],
+						'transitNumber' => $form['transit_number'],
+					);
+					
+					$response = $api->query(
+						$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/eft',  
+						$data,
+						'POST'
+					);
+				}
 				
 				$response = json_decode( $response, true );
-	
+
 				empty( $response['id'] ) ? 
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ADDPAYMENT_ERROR) :
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ADDPAYMENT_SUCCESS) ;
@@ -769,7 +799,7 @@ if (!class_exists('BNAAccountManager')) {
 				$api = new BNAExchanger( $args);
 
 				$user_id = get_current_user_id();
-				$payorID = get_user_meta ( $user_id, 'payorID', true);
+				$payorID = get_user_meta ( $user_id, 'payorID', true );
 				
 				$paymentInfo =  $wpdb->get_row("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS." WHERE id=$payment_id");
 
@@ -784,7 +814,7 @@ if (!class_exists('BNAAccountManager')) {
 				];
 
 				$response = $api->query(
-					$args['serverUrl'].'/'.$args['protocol'].'/'.$paymentTypeMethod.'/'.$paymentMethod,  
+					$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/' . $paymentInfo->paymentType,
 					$data,
 					'DELETE'
 				);
@@ -801,153 +831,156 @@ if (!class_exists('BNAAccountManager')) {
 		 * Endpoint for account
 		 * @since		1.0.0
 		 */
-		public static function endpoint_account ( $result)
+		public static function endpoint_account( $result )
 		{
 			global $wpdb, $BNAPluginManager;
 
 			if ( empty( $result['data']['payorId'] ) ) {
-				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
-				wp_die();
+				//BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
+				//wp_die();
 			}
 
-			$user = get_user_by('email', $result['data']['emailAddress'] );
-			if ( empty( $user) ) {
-				$config = $wpdb->get_row("SELECT user_id FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS. 
-					" WHERE payorId='".$result['data']['payorId']."'");
-				if ( empty( $config) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ENDPOINT_ACCOUNT_ERRUSER);
-					wp_die();
-				}
-				$user = get_user_by('ID', $config->user_id );
-			}
+			$user = get_user_by( 'email', $result['data']['emailAddress'] );
+
+			//if ( empty( $user) ) {
+				//$config = $wpdb->get_row("SELECT user_id FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS. 
+					//" WHERE payorId='".$result['data']['payorId']."'");
+				//if ( empty( $config) ) {
+					//BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ENDPOINT_ACCOUNT_ERRUSER);
+					//wp_die();
+				//}
+				//$user = get_user_by( 'ID', $config->user_id );
+			//}
 			
-			foreach ( $result['data'] as $rkey => $rval) {
-				$field = '';
-				switch ( $rkey) {
-					case 'payorId':		$field = 'payorID'; break;
-					case 'companyName':	$field = 'billing_company'; break;
-					case 'firstName':	$field = 'billing_first_name'; break;
-					case 'lastName':	$field = 'billing_last_name'; break;
-					case 'phone':		$field = 'billing_phone'; break;
-					case 'birthday':	$field = 'billing_birthday'; break;
-					case 'emailAddress':
-						$wpdb->query("UPDATE {$wpdb->users} SET user_email='{$rval}' WHERE ID={$user->ID}");
-						break;
-				}
+			//foreach ( $result['data'] as $rkey => $rval) {
+				//$field = '';
+				//switch ( $rkey) {
+					//case 'payorId':				$field = 'payorID'; break;
+					//case 'companyName':	$field = 'billing_company'; break;
+					//case 'firstName':			$field = 'billing_first_name'; break;
+					//case 'lastName':			$field = 'billing_last_name'; break;
+					//case 'phone':				$field = 'billing_phone'; break;
+					//case 'birthday':				$field = 'billing_birthday'; break;
+					//case 'emailAddress':
+						//$wpdb->query("UPDATE {$wpdb->users} SET user_email='{$rval}' WHERE ID={$user->ID}");
+						//break;
+				//}
 
-				if ( !empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
-			}
+				//if ( ! empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
+			//}
 
-			$country = $result['data']['address']['country'];
-			foreach (WC()->countries->countries as $c_key => $c_val) {
-				if ( strripos( $c_val, $country) !== false ) { 
-					$country = $c_key;
-					update_user_meta ( $user->ID, 'billing_country', $country );
-					break;
-				}
-			}
+			//$country = $result['data']['address']['country'];
+			//foreach (WC()->countries->countries as $c_key => $c_val) {
+				//if ( strripos( $c_val, $country) !== false ) { 
+					//$country = $c_key;
+					//update_user_meta ( $user->ID, 'billing_country', $country );
+					//break;
+				//}
+			//}
 
-			$province = $result['data']['address']['province'];
-			foreach (WC()->countries->get_states( $country ) as $p_key => $p_val) {
-				if ( strripos( $p_val, $province) !== false ) {
-					$province = $p_key;
-					update_user_meta ( $user->ID, 'billing_state', $province );
-					break;
-				}
-			}
+			//$province = $result['data']['address']['province'];
+			//foreach (WC()->countries->get_states( $country ) as $p_key => $p_val) {
+				//if ( strripos( $p_val, $province) !== false ) {
+					//$province = $p_key;
+					//update_user_meta ( $user->ID, 'billing_state', $province );
+					//break;
+				//}
+			//}
 
-			foreach ( $result['data']['address'] as $rkey => $rval) {
-				$field = '';
-				switch ( $rkey) {
-					case 'streetNumber':	$field = 'billing_street_number'; break;
-					case 'apartment':		$field = 'billing_apartment'; break;
-					case 'streetName':		$field = 'billing_street_name'; break;
-					case 'postalZip':		$field = 'billing_postcode'; break;
-					case 'city':			$field = 'billing_city'; break;
-				}
+			//foreach ( $result['data']['address'] as $rkey => $rval) {
+				//$field = '';
+				//switch ( $rkey) {
+					//case 'streetNumber':	$field = 'billing_street_number'; break;
+					//case 'apartment':		$field = 'billing_apartment'; break;
+					//case 'streetName':	$field = 'billing_street_name'; break;
+					//case 'postalZip':		$field = 'billing_postcode'; break;
+					//case 'city':				$field = 'billing_city'; break;
+				//}
 
-				if ( !empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
-			}
+				//if ( !empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
+			//}
 
-			update_user_meta ( $user->ID, 'billing_address_1', $result['data']['address']['streetName'] );
-			update_user_meta ( $user->ID, 'billing_address_2', 
-				'street #'.$result['data']['address']['streetNumber'] .
-					( 
-						empty( $result['data']['address']['apartment'] ) ? 
-						'' : 
-						', apt. '.$result['data']['address']['apartment'] 
-					)
-			);
+			//update_user_meta ( $user->ID, 'billing_address_1', $result['data']['address']['streetName'] );
+			//update_user_meta ( $user->ID, 'billing_address_2', 
+				//'street #'.$result['data']['address']['streetNumber'] .
+					//( 
+						//empty( $result['data']['address']['apartment'] ) ? 
+						//'' : 
+						//', apt. '.$result['data']['address']['apartment'] 
+					//)
+			//);
 			
-			$payorID = get_user_meta ( $user->ID, 'payorID', true);
+			$payorID = get_user_meta( $user->ID, 'payorID', true );
 
-			if ( !empty( $payorID) ) {
-				
-				$wpdb->query("DELETE FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'");
+			if ( ! empty( $payorID ) ) {
+				if ( ! empty( $result['type'] ) && $result['type'] === 'add_card' ) {
+			
+					$wpdb->query( "DELETE FROM ".$wpdb->prefix . BNA_TABLE_SETTINGS." WHERE payorId='$payorID'" );
 
-				foreach ( $result['data']['paymentTypes'] as $rkey => $rval) {
-					$paymentInfo = '';
-					switch ( $rval['paymentType'] ) {
-						case 'MASTERCARD':
-						case 'VISA':
-						case 'AMEX':
-							$paymentInfo = $rval['cardNumber'];
-							break;
-						case 'DIRECT-DEBIT':
-						case 'DIRECT-CREDIT':
-							$paymentInfo = $rval['accountNumber'] . '/' . $rval['transitNumber'];
-							break;
-						case 'ETRANSFER':
-							$paymentInfo = $rval['emailAddress'];
-							break;		
-					}
+					//foreach ( $result['data']['paymentTypes'] as $rkey => $rval ) {
+						//$paymentInfo = '';
+						//switch ( $rval['paymentType'] ) {
+							//case 'MASTERCARD':
+							//case 'VISA':
+							//case 'AMEX':
+								//$paymentInfo = $rval['cardNumber'];
+								//break;
+							//case 'DIRECT-DEBIT':
+							//case 'DIRECT-CREDIT':
+								//$paymentInfo = $rval['accountNumber'] . '/' . $rval['transitNumber'];
+								//break;
+							//case 'ETRANSFER':
+								//$paymentInfo = $rval['emailAddress'];
+								//break;		
+						//}
 
-					if ( !empty( $paymentInfo) ) {
-						$wpdb->insert( 
-							$wpdb->prefix.BNA_TABLE_SETTINGS,  
-							array( 
-								'user_id' 			=> 	$user->ID, 
-								'payorId' 			=> 	$payorID,
-								'paymentMethodId' 	=>  $rval['paymentMethodId'],
-								'paymentType' 		=>  $rval['paymentType'],
-								'paymentInfo' 		=> 	$paymentInfo,
-								'paymentsRecurrings'=>  0,
-								'paymentDescription'=> 	json_encode( $rval)
-							),
-							array( 
-								'%d','%s','%s','%s','%s','%s','%s'
-							)
-						);
-					}
+						if ( ! empty( $paymentInfo) ) {
+							$stmt = $wpdb->insert( 
+								$wpdb->prefix . BNA_TABLE_SETTINGS,  
+								array( 
+									'user_id' 			=> 	$user->ID, 
+									'payorId' 			=> 	$payorID,
+									'paymentMethodId' => esc_html( $result['paymentMethodId'] ),
+									'paymentType' 		=>  'card',
+									'paymentInfo' 		=> 	'test@test.com',
+									'paymentsRecurrings'=>  0,
+									'paymentDescription'=> 'Payment description', //json_encode( $rval )
+								),
+								array( 
+									'%d','%s','%s','%s','%s','%s','%s'
+								)
+							);							
+						}
+					//}
 				}
 			}	
 
-			$wpdb->query("DELETE FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE user_id='$user->ID'");
+			//$wpdb->query("DELETE FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE user_id='$user->ID'");
 
-			if ( isset( $result['data']['subscriptions'] ) ) {
+			//if ( isset( $result['data']['subscriptions'] ) ) {
 
-				foreach ( $result['data']['subscriptions'] as $rkey => $rval) {
-					$wpdb->insert( 
-						$wpdb->prefix.BNA_TABLE_RECURRING,  
-						array( 
-							'user_id'				=> $user->ID,
-							'order_id'		        => $rval['transactionInfo']['invoiceId'],
-							'recurringId'		    => $rval['recurringId'],
-							'recurring'		    	=> $rval['recurring'],
-							'status'		        => $rval['status'],
-							'startDate'		        => $rval['startDate'],
-							'nextChargeDate'		=> $rval['nextChargeDate'],
-							'expire'		        => empty( $rval['expire'] ) ? "" : $rval['expire'],
-							'numberOfPayments'      => isset( $rval['numberOfPayments'] ) ? $rval['numberOfPayments'] : -1,
-							'recurringDescription'  => json_encode((object)[ 'transactionInfo' => $rval['transactionInfo'], 
-								'cartItems' => $rval['cartItems']] )
-						),
-						array( 
-							'%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
-						)
-					);
-				}
-			}	
+				//foreach ( $result['data']['subscriptions'] as $rkey => $rval) {
+					//$wpdb->insert( 
+						//$wpdb->prefix.BNA_TABLE_RECURRING,  
+						//array( 
+							//'user_id'				=> $user->ID,
+							//'order_id'		        => $rval['transactionInfo']['invoiceId'],
+							//'recurringId'		    => $rval['recurringId'],
+							//'recurring'		    	=> $rval['recurring'],
+							//'status'		        => $rval['status'],
+							//'startDate'		        => $rval['startDate'],
+							//'nextChargeDate'		=> $rval['nextChargeDate'],
+							//'expire'		        => empty( $rval['expire'] ) ? "" : $rval['expire'],
+							//'numberOfPayments'      => isset( $rval['numberOfPayments'] ) ? $rval['numberOfPayments'] : -1,
+							//'recurringDescription'  => json_encode((object)[ 'transactionInfo' => $rval['transactionInfo'], 
+								//'cartItems' => $rval['cartItems']] )
+						//),
+						//array( 
+							//'%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
+						//)
+					//);
+				//}
+			//}	
 
 			wp_die();
 		}	
