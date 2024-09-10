@@ -45,10 +45,10 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					$imageName = '';
 					switch ( $p_method->paymentType ) {
 						case 'card':
-							$imageName = 'directCredit.svg';
+							$imageName = 'visa.svg';
 							break;
 						case 'eft':
-							$imageName = 'directDedit.svg';
+							$imageName = 'directCredit.svg';
 							break;
 						case 'e-transfer':
 							$imageName = 'eTransfer.svg';

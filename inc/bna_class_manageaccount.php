@@ -77,8 +77,10 @@ if (!class_exists('BNAAccountManager')) {
 		public function site_load_styles()
 		{			
 			wp_register_style('wc_gwpl_css_1', $this->plugin_url . 'js/datepicker/css/datepicker.min.css' );
+			wp_register_style('wc_gwpl_css_2', $this->plugin_url . 'js/select2/css/select2.min.css' );
 			wp_enqueue_script ( 'wc_gwpl_1', $this->plugin_url.'js/bankNames.js', array(), '1.0.0', true );
 			wp_register_script( 'wc_gwpl_2', $this->plugin_url.'js/ajax_io.js', array('jquery'), time(), true );
+			wp_register_script( 'wc_gwpl_4', $this->plugin_url.'js/select2/js/select2.min.js', array('jquery'), '', true );
 			wp_register_script( 'wc_gwpl_3', $this->plugin_url.'js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
 			wp_register_script( 'wc-country-select', site_url().'/wp-content/plugins/woocommerce/assets/js/frontend/country-select.min.js', array('jquery'), null, true );
 
@@ -204,9 +206,9 @@ if (!class_exists('BNAAccountManager')) {
 		{
 			//wp_deregister_script('jquery');
 			//wp_enqueue_script( 'jquery', "https://code.jquery.com/jquery-3.6.0.min.js", array(), null, true);
-			wp_enqueue_script( 'wc_gwpl_1');
-			wp_enqueue_script( 'wc_gwpl_2');
+			wp_enqueue_script( 'wc_gwpl_1');			
 			wp_enqueue_script( 'wc_gwpl_3');
+			wp_enqueue_script( 'wc_gwpl_4');
 			wp_enqueue_script( 'wc-country-select');
 			wp_enqueue_style('wc_gwpl_css_1');
 		}
@@ -470,31 +472,7 @@ if (!class_exists('BNAAccountManager')) {
 					'POST'
 				);
 				
-				// add fields to the database
 				$response = json_decode( $response, true );
-				
-				if ( ! empty( $response['id'] ) ) {
-					update_user_meta( $user_id, 'payorID', $response['id'] );
-					
-					$table = $wpdb->prefix . BNA_TABLE_SETTINGS;
-					$data = array( 'user_id' => $user_id, 'payorId' => $response['id'] );
-					$format = array( '%d', '%s' );
-					$wpdb->insert( $table, $data, $format );
-					
-					if ( ! empty( $filtered_data['companyName'] ) ) update_user_meta( $user_id, 'billing_company', $filtered_data['companyName'] );					
-					update_user_meta( $user_id, 'billing_first_name', $filtered_data['firstName'] );
-					update_user_meta( $user_id, 'billing_last_name', $filtered_data['lastName'] );
-					update_user_meta( $user_id, 'billing_phone_code', $filtered_data['phoneCode'] );					
-					update_user_meta( $user_id, 'billing_phone', $filtered_data['phoneNumber'] );
-					if ( ! empty( $filtered_data['birthDate'] ) ) update_user_meta( $user_id, 'billing_birthday', $filtered_data['birthDate'] );
-					update_user_meta( $user_id, 'billing_street_number', $filtered_data['address']['streetNumber'] );
-					update_user_meta( $user_id, 'billing_street_name', $filtered_data['address']['streetName'] );
-					if ( ! empty( $filtered_data['address']['apartment'] ) ) update_user_meta( $user_id, 'billing_apartment', $filtered_data['address']['apartment'] );
-					update_user_meta( $user_id, 'billing_postcode', $filtered_data['address']['postalCode'] );
-					update_user_meta( $user_id, 'billing_city', $filtered_data['address']['city'] );
-					update_user_meta( $user_id, 'billing_state', $filtered_data['address']['province'] );
-					update_user_meta( $user_id, 'billing_country', $filtered_data['address']['country'] );
-				}
 			
 				empty( $response['id'] ) ? 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
@@ -534,7 +512,7 @@ if (!class_exists('BNAAccountManager')) {
 				$api = new BNAExchanger( $args );
 				$user_id = get_current_user_id();
 				
-				$payorID = get_user_meta ( $user_id, 'payorID', true );
+				$payorID = get_user_meta( $user_id, 'payorID', true );
 				if ( empty( $payorID ) ) {
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPAYOR );
 					wp_die();

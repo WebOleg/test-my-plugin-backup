@@ -11,7 +11,254 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
 
 <fieldset id="wc-<?= esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
+	<style>
+		.bna-checkout-radio{
+			display:inline-block;
+			width: 22px;
+			height: 22px;
+			border-radius: 100%;
+			background-color: #fff;
+			border: 2px solid #646464;
+			cursor:pointer;
+			margin: 2px 0; 
+			position: relative;
+			vertical-align: middle;
+			margin: auto 20px auto 20px;
+		}
 
+		.bna-checkout-radio.selected{
+			border-color: #646464;
+		}
+		.bna-checkout-radio.selected:after {
+			content: "";
+			position: absolute;
+			width: 14px;
+			height: 14px;
+			border-radius: 100%;
+			left: 2px;
+			top: 2px;
+			display: block;
+			background: #646464;
+		}
+		
+	</style>
+	<div>
+		<div class="bna-payment-methods">
+			<div class="bna-payment-method__item">
+				<div class="bna-checkout-radio" data-payment-type="card"></div>
+				<?php _e( 'Credit Card', 'wc-bna-gateway' ); ?>
+				<div class="bna-checkout-images">
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/VISA_Logo.png'; ?>" alt="<?php _e( 'VISA_Logo', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Mastercard_Logo.png'; ?>" alt="<?php _e( 'Mastercard_Logo', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/AMEX_Logo.png'; ?>" alt="<?php _e( 'AMEX_Logo', 'wc-bna-gateway' ); ?>" />
+				</div>
+			</div>
+			<div class="bna-payment-method__content">
+				<div class="bna-payment-method__content-title"><?php _e( 'Select Credit Card you want to pay', 'wc-bna-gateway' ); ?></div>
+				<select class="bna-checkout-select-card" id="paymentMethodCC" name="paymentMethodCC" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">			
+					<?php
+						if ( is_array($paymentMethods) ) {
+							foreach ($paymentMethods as $pm_val) {
+								if ( $pm_val->paymentType === 'card' ) {
+									echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
+												$pm_val->paymentInfo . ':' . $pm_val->paymentType .
+											"</option>";
+								}
+							}
+						}
+					?>
+					<option value="new-card"><?php _e( 'New Card', 'wc-bna-gateway' ); ?></option>
+				</select>
+				
+				<div class="tpl-payment-method-cards">
+					<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+					
+					<div class="tpl-input-wrapper">
+						<div class="tpl-input-label"><?php _e( 'Cardholder Name', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
+						<span class="tpl-font-italic"><?php _e( '(the exact name as it appears on the front of your credit card)', 'wc-bna-gateway' ); ?></span></div>
+						<input class="tpl-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" >
+					</div>
+					
+					<div class="tpl-two-inputs-wrapper">
+						<div class="tpl-input-wrapper">
+							<div class="tpl-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="tpl-input" type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
+								onkeyup="return input_test(this);">
+						</div>
+						
+						<div class="tpl-input-wrapper">
+							<div class="tpl-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="tpl-input" type="text" name="cc_expire" 
+								autocomplete="off" placeholder="MM/YY" onkeyup="return input_test(this);" maxlength="5">
+						</div>
+					</div>
+						
+					<div class="tpl-three-inputs-wrapper">
+						<div class="tpl-input-wrapper">
+							<div class="tpl-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input  class="tpl-input" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
+								onkeyup="return input_test(this);">
+						</div>
+						<div class="tpl-CVC-text-wrapper">
+							<div class="tpl-CVC-text">
+								<?php _e( 'CVC (CVV, CCV, SVC or CSC) is a card security verification code. Three or four digits printed, not embossed, on the back of the card. ', 'wc-bna-gateway' ); ?>
+							</div>
+						</div>
+						<div class="tpl-CVC-img-wrapper">
+							<img class="tpl-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Credit_Card_SVC.png'; ?>" />
+						</div>
+					</div>
+					
+					<label class="bna-checkbox-container">
+						<input type="checkbox" name="save-credit-card">
+						<span class="checkmark"></span>
+						<?php _e( 'Save Credit Card', 'wc-bna-gateway' ); ?>
+					</label>
+				</div>
+								
+				<label class="bna-checkbox-container">
+					<input type="checkbox" name="create_subscription">
+					<span class="checkmark"></span>
+					<?php _e( 'Is this payment Recurring Payment?', 'wc-bna-gateway' ); ?>
+				</label>
+				
+				<!-- Recurring -->
+				<div class="tpl-recurring-cards">
+					<input type="hidden" id="recurring" name="recurring" value="<?php echo BNA_SUBSCRIPTION_SETTING_REPEAT; ?>">
+					<input type="hidden" id="startDate" name="startDate" value="<?php echo BNA_SUBSCRIPTION_SETTING_STARTDATE;?>">
+					<input type="hidden" id="numberOfPayments" name="numberOfPayments" value="<?php echo BNA_SUBSCRIPTION_SETTING_NUMPAYMENT; ?>">
+					
+					<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+					
+					<div class="tpl-input-wrapper">					
+						<div class="tpl-input-label tpl-mb-10"><?php _e( 'Select Frequency (“Monthly” by default)', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+						<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="Please choose...">
+							<?php
+								$selected = BNA_SUBSCRIPTION_SETTING_REPEAT;
+								$duration = ['day', 'week', 'two weeks', 'month', 'three month', 'six month', 'year'];
+								$durOptions = ['daily', 'weekly', 'bi-weekly', 'monthly', 'every-3-months', 'every-6-months' , 'yearly'];
+
+								foreach ($duration as $d_key => $d_val) {
+									$attr = $durOptions[$d_key] == $selected ? 'selected' : '';
+									echo "<option value='{$durOptions[$d_key]}' {$attr}>EVERY ".strtoupper($d_val)."</option>";
+								}
+							?>
+						</select>
+					</div>
+					
+					<div class="tpl-three-inputs-wrapper">
+						<div class="tpl-input-label"><?php _e( 'My First Payment Starts', 'wc-bna-gateway' ); ?></div>
+						<div class="tpl-input-wrapper">						
+							<input class="tpl-input tpl-radio-button" type="radio" id="btn_immediately" name="setting_first_payment" value="immediately" checked>
+							<span><?php _e( 'Immediately', 'wc-bna-gateway' ); ?></span>
+						</div>
+						
+						<div class="tpl-input-wrapper">						
+							<input class="tpl-input tpl-radio-button" type="radio" id="btn_firstPayment" name="setting_first_payment"  value="set-date">
+							<span><?php _e( 'Custom Date', 'wc-bna-gateway' ); ?></span>
+						</div>
+						
+						<div class="tpl-input-wrapper">						
+							<input class="tpl-input" type="text" id="setting_first_payment_date" name="setting_first_payment_date"  
+								placeholder="<?php _e( 'Select date', 'wc-bna-gateway' ); ?>" disabled readonly>
+						</div>
+					</div>
+					
+					<div class="tpl-three-inputs-wrapper">
+						<div class="tpl-input-label"><?php _e( 'Number of Payments', 'wc-bna-gateway' ); ?></div>
+						<div class="tpl-input-wrapper">						
+							<input class="tpl-input tpl-radio-button" type="radio" id="btn_noLimit" name="setting_billing_duration" value="immediately" checked>
+							<span><?php _e( 'NO LIMIT', 'wc-bna-gateway' ); ?></span>
+						</div>
+						
+						<div class="tpl-input-wrapper">						
+							<input class="tpl-input tpl-radio-button" type="radio" id="btn_numPayment" name="setting_billing_duration"  value="set-date">
+							<span><?php _e( 'CUSTOM NUMBER', 'wc-bna-gateway' ); ?></span>
+						</div>
+						
+						<div class="tpl-input-wrapper">						
+							<input value="1" class="tpl-input" type="text" name="setting_number_of_payment" id="setting_number_of_payment" disabled>
+							<input type="button" value="-" class="qtyminus" id="qtyminus" disabled>
+							<input type="button" value="+" class="qtyplus" id="qtyplus" disabled> 
+						</div>
+					</div>
+				
+					<label class="bna-checkbox-container">
+						<input type="checkbox" name="i-agree">
+						<span class="checkmark"></span>
+						<?php _e( 'I have read and agree to the terms presented in the ', 'wc-bna-gateway' ); ?>
+						<a href="#"><?php _e( 'Recurring Payment Agreement.', 'wc-bna-gateway' ); ?></a>
+					</label>
+				</div>
+			
+			</div>
+			
+			<div class="bna-payment-method__item">
+				<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
+				<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>
+				<div class="bna-checkout-images">
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>" />
+				</div>
+			</div>
+			<div class="bna-payment-method__item">
+				<div class="bna-checkout-radio"  data-payment-type="eft"></div>
+				<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>
+				<div class="bna-checkout-images">
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/pm_dc 3.png'; ?>" alt="<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>" />
+				</div>
+			</div>
+			
+			<input type="hidden" id="payment_type" name="payment-type" value="">
+		</div>
+	</div>
+	<script>
+	
+	jQuery('#paymentMethodCC').select2();
+	jQuery('#ssRepeat').select2();
+	
+	jQuery('#setting_first_payment_date').datepicker({
+		dateFormat: 'yyyy-mm-dd',
+		autoClose: true,
+	});
+	
+		
+	// select payment method (cc, i-transfer, eft, google pay, apple pay)
+	jQuery('.bna-payment-methods .bna-checkout-radio').click(function(){
+		jQuery(this).parent().parent().find('.bna-checkout-radio.selected').removeClass('selected');	
+		if ( jQuery('.bna-payment-method__content').is(':visible') ) { jQuery('.bna-payment-method__content').css('display', 'none'); }
+		jQuery(this).addClass('selected');
+		jQuery(this).parent().next().css('display', 'block');
+		jQuery(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
+		
+		jQuery('#payment_type').val( jQuery(this).data('payment-type') );
+	});
+	// select card (if select2 work)
+	jQuery('#paymentMethodCC').on("select2:select", function(e) {
+	  let data = e.params.data;
+	  if (data.id === 'new-card') {
+			jQuery('.bna-payment-method__content .tpl-payment-method-cards').addClass('tpl-active');
+		} else {
+			jQuery('.bna-payment-method__content .tpl-payment-method-cards').removeClass('tpl-active');
+		}
+    console.log(data);
+	});
+	// select checkbox recurring
+	var bnaPaymentRecurring = document.querySelector('.bna-checkbox-container input[name="create_subscription"]');
+	if (bnaPaymentRecurring) bnaPaymentRecurring.addEventListener('change', function(event) {
+		if (event.currentTarget.checked) {
+			bnaPaymentRecurring.parentElement.nextElementSibling.classList.add('tpl-active');
+		} else {
+			bnaPaymentRecurring.parentElement.nextElementSibling.classList.remove('tpl-active');
+		}
+	});
+	</script>
+	
+	<?php
+	
+	//var_dump($paymentMethods);
+	?>
+	
+	
 	<?php do_action( 'woocommerce_credit_card_form_start', $this->id ); ?>
 	<div>
 		<label for="option-tabs"><h3>Choose payment type:</h3>
@@ -25,22 +272,24 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 				<div class="tab active" id="content-1">
 					<div class="form-row form-row-wide"><label>Saved payment methods</label>
-						<select class="pm-cc input-text" name="paymentMethodCC" aria-placeholder="Please choose...">
+						<!--<select class="pm-cc input-text" name="paymentMethodCC" aria-placeholder="Please choose...">
 							<option id="tab-btn-1" value="0" selected>New Card</option>
 							<?php
-								if ( is_array($paymentMethods) ) {
-									foreach ($paymentMethods as $pm_val) {
-										if ( in_array($pm_val->paymentType, ['MASTERCARD', 'VISA', 'AMEX']) ) {
-											echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
-														$pm_val->paymentInfo . ':' . $pm_val->paymentType .
-													"</option>";
-										}
-									}
-								}
+								//if ( is_array($paymentMethods) ) {
+									//foreach ($paymentMethods as $pm_val) {
+										////if ( in_array($pm_val->paymentType, ['MASTERCARD', 'VISA', 'AMEX']) ) {
+										//if ( $pm_val->paymentType == 'card' ) {
+											//echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
+														//$pm_val->paymentInfo . ':' . $pm_val->paymentType .
+													//"</option>";
+										//}
+									//}
+								//}
 							?>
-						</select>
+						</select>-->
 					</div>
 					<div class="pm-cc-block">
+<!--
 						<div class="form-row form-row-wide">
 							<label>Card Holder <span class="required">*</span></label>
 							<input type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" value="">
@@ -63,6 +312,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 							<input type="password" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="4" 
 								value="" onkeyup="return digitValid(this);">
 						</div>
+-->
 					</div>
 					<div class="clear"></div>
 				</div>
@@ -157,21 +407,21 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					</select>
 				</div>
 				<div class="form-row form-row-wide">
-					<label>FIRST PAYMENT</label>
+					<!--<label>FIRST PAYMENT</label>
 					<div id="ck-button"><label><input type="radio" id="btn_immediately" name="setting_first_payment" class="radio-button" value="immediately" checked><span>IMMEDIATELY</span></label></div>
 					<div id="ck-button"><label><input type="radio" id="btn_firstPayment" name="setting_first_payment" class="radio-button" value="set-date"><span>FIRST PAYMENT</span></label></div>
 					<input type="text" class="datepicker-here" data-position="right top" id="setting_first_payment_date" name="setting_first_payment_date" 
-						autocomplete="off" maxlength="15" placeholder="Select date" data-date-format="yyyy-mm-dd "  disabled>
+						autocomplete="off" maxlength="15" placeholder="Select date" data-date-format="yyyy-mm-dd "  disabled>-->
 				</div>
 				<div class="form-row form-row-wide">
-					<label>BILLING DURATION</label>
+					<!--<label>BILLING DURATION</label>
 					<div id="ck-button"><label><input type="radio" id="btn_noLimit" name="setting_billing_duration" class="radio-button" value="immediately" checked><span>NO LIMIT</span></label></div>
 					<div id="ck-button"><label><input type="radio" id="btn_numPayment" name="setting_billing_duration" class="radio-button" value="set-date"><span># OF PAYMENTS</span></label></div>
 					<div class="quantity_inner">   
 						<input type='text' value='1' name='setting_number_of_payment' id="setting_number_of_payment" disabled/>
 						<input type='button' value='-' class='qtyminus' id='qtyminus' disabled/>
 						<input type='button' value='+' class='qtyplus' id='qtyplus' disabled/> 
-					</div>
+					</div>-->
 				</div>
 			</div>
 		</div>
@@ -179,23 +429,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	<div class="clear"></div>
 
 	
-	<div class="cards-field-form">
-		<svg version="1.1" viewBox="0 0 130 25" xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd">
-			<sodipodi:namedview id="base" bordercolor="#666666" borderopacity="1.0" inkscape:current-layer="layer1" />
-			<g transform="translate(-60.579 -177.99)" inkscape:groupmode="layer" inkscape:label="Layer 1">
-				<path d="m60.954 177.99h20.275v20.301h-20.65v-20.301zm19.525 0.75001h-19.15v18.801h19.15z" fill="#5c5c5c" inkscape:connector-curvature="0"/>
-				<g fill-rule="evenodd">
-					<path d="m67.535 179.63 4.1136 5.6283 3.5569 11.403h4.2141v-17.031l-3.5661 2.585-3.5306-2.585z" fill="#5c5c5c" inkscape:connector-curvature="0"/>
-					<path d="m64.535 196.66 1.1787-6.3447 5.6594-4.1024 3.2588 10.447-1.7747-1e-4 -3.5483-2.598-3.5483 2.598z" fill="#b0cc1f" inkscape:connector-curvature="0"/>
-					<path d="m62.388 179.63v2.271l2.598 3.5483-2.598 3.5483v7.6635h1.5768l1.2524-6.7409 5.9656-4.3244-4.361-5.9658z" fill="#00a1e3" inkscape:connector-curvature="0"/>
-				</g>
-				<path d="m92.699 192.68-5.5553-4.6827 5.5553-4.6743 1.2859 1.3029-4.0889 3.3546 4.0889 3.3967z" fill="#5c5c5c" inkscape:connector-curvature="0"/>
-				<path d="m104.27 188.15c0 0.76831-0.10982 1.4352-0.32643 1.9952-0.21667 0.56-0.51788 1.0272-0.90618 1.3987-0.3883 0.36851-0.84419 0.64438-1.3732 0.82451-0.52628 0.17727-1.1004 0.26748-1.7224 0.26748-0.20832 0-0.41931-0.0141-0.62763-0.0424-0.2081-0.0281-0.3967-0.0618-0.56839-0.10679v3.2728h-2.0122v-11.651h1.7393l0.05052 1.2383c0.1717-0.214 0.349-0.41092 0.53181-0.58551 0.18299-0.1772 0.3828-0.32639 0.59679-0.45021 0.21661-0.12379 0.44729-0.21661 0.69218-0.2843 0.24772-0.0645 0.52631-0.0985 0.83291-0.0985 0.49541 0 0.93441 0.0985 1.32 0.29552 0.38541 0.19999 0.70922 0.4813 0.96802 0.84709 0.2618 0.3659 0.46158 0.80769 0.59958 1.3255 0.1378 0.5206 0.20532 1.1059 0.20532 1.7533zm-2.1106 0.0816c0-0.46151-0.0337-0.8527-0.0985-1.1791-0.0676-0.32371-0.16027-0.59101-0.28427-0.79933-0.12383-0.20828-0.27563-0.36018-0.45311-0.45589-0.18009-0.0985-0.38551-0.1463-0.61619-0.1463-0.34051 0-0.66432 0.1379-0.9766 0.4137-0.3096 0.27281-0.63881 0.64732-0.98492 1.12v3.6613c0.16041 0.0591 0.35729 0.10971 0.5909 0.14919 0.23361 0.0366 0.47001 0.0562 0.71212 0.0562 0.31799 0 0.6078-0.0648 0.8696-0.1971 0.26158-0.13219 0.48397-0.31789 0.66678-0.55989 0.18592-0.24201 0.32639-0.5376 0.42499-0.8865 0.0986-0.349 0.14923-0.74009 0.14923-1.1763zm9.1095 4.2551-0.0477-1.0976c-0.17742 0.1886-0.36044 0.36012-0.55171 0.51499-0.19421 0.15762-0.4052 0.2927-0.63592 0.40812-0.23089 0.11529-0.4813 0.20539-0.7542 0.27009-0.27298 0.0619-0.57129 0.0928-0.895 0.0928-0.42767 0-0.80479-0.0619-1.1285-0.18842-0.32639-0.12668-0.59659-0.3012-0.81608-0.52909-0.2195-0.22522-0.38841-0.4953-0.50102-0.81619-0.1125-0.31792-0.1687-0.66982-0.1687-1.0553 0-0.39402 0.0844-0.75971 0.25319-1.0946 0.16612-0.33503 0.42214-0.6248 0.76553-0.86691 0.34339-0.24201 0.77389-0.43061 1.2862-0.56851 0.51492-0.13779 1.1171-0.20531 1.8094-0.20531h1.0975v-0.50378c0-0.21392-0.031-0.40812-0.09-0.57982-0.0619-0.17448-0.15759-0.32068-0.29271-0.44178-0.13511-0.12101-0.30959-0.21372-0.52338-0.28142-0.21671-0.0647-0.4785-0.0984-0.79371-0.0984-0.49241 0-0.9821 0.0562-1.4633 0.1688-0.48122 0.11257-0.94573 0.27009-1.3959 0.47558v-1.6098c0.3997-0.15748 0.8641-0.28991 1.3875-0.39391 0.5262-0.10417 1.0722-0.15769 1.6378-0.15769 0.62201 0 1.1539 0.0591 1.5985 0.17741 0.44729 0.11811 0.81319 0.29549 1.1003 0.53189 0.2897 0.23639 0.5038 0.53181 0.64159 0.88642 0.13519 0.35458 0.2055 0.76817 0.2055 1.2411v5.7213zm-0.28702-3.7008h-1.2297c-0.3405 0-0.6277 0.0311-0.86402 0.0985-0.2364 0.0647-0.4306 0.1548-0.5768 0.2703-0.14929 0.1154-0.25911 0.2504-0.32649 0.39959-0.0677 0.15191-0.10432 0.31228-0.10432 0.48401 0 0.34051 0.10982 0.59937 0.33211 0.7795 0.2195 0.17738 0.5178 0.26737 0.89771 0.26737 0.27869 0 0.57129-0.10139 0.87239-0.30409 0.30409-0.20528 0.63619-0.4952 0.9991-0.8751zm9.3573 2.7861c-0.29002 0.72608-0.59383 1.3622-0.90911 1.908-0.31792 0.54599-0.6641 1.0019-1.0441 1.3677-0.37991 0.3659-0.8019 0.6417-1.2663 0.82462-0.4644 0.18577-0.98488 0.27576-1.5619 0.27576-0.1379 0-0.28702-6e-3 -0.45032-0.0197-0.1603-0.014-0.32639-0.0338-0.49798-0.062v-1.7054c0.0676 0.0113 0.14058 0.0226 0.22789 0.0367 0.0845 0.0141 0.1746 0.0253 0.26741 0.0337 0.0928 8e-3 0.1886 0.0141 0.2842 0.0198 0.0957 6e-3 0.18581 8e-3 0.2673 8e-3 0.23078 0 0.4446-0.045 0.64438-0.13223 0.1971-0.0872 0.38001-0.2111 0.54892-0.3659 0.16598-0.15748 0.318-0.34328 0.4559-0.56278 0.13779-0.21671 0.2588-0.45311 0.3629-0.71191l-3.3235-8.3779h2.243l1.7392 4.7503 0.52049 1.5337 0.51219-1.4689 1.7561-4.8151h2.1585zm6.9511-9.1685h-2.3668v-1.5676h4.4296v10.083h2.4144v1.5675h-7.131v-1.5675h2.6538zm11.51-0.58551c0 0.18009-0.0339 0.35179-0.0986 0.51231-0.0646 0.1574-0.15759 0.2983-0.2757 0.41641-0.11828 0.11829-0.25608 0.211-0.41649 0.27859-0.1604 0.0704-0.3321 0.10411-0.52059 0.10411-0.18581 0-0.36033-0.0337-0.52352-0.10411-0.16041-0.0676-0.3012-0.1603-0.41938-0.27859-0.11822-0.11811-0.21093-0.25901-0.2757-0.41641-0.0676-0.16052-0.0984-0.33222-0.0984-0.51231 0-0.17999 0.0308-0.35168 0.0984-0.51209 0.0648-0.15769 0.15748-0.29831 0.2757-0.41942 0.11818-0.12107 0.25897-0.21657 0.41938-0.28427 0.16319-0.0703 0.33771-0.104 0.52352-0.104 0.18849 0 0.36019 0.0337 0.52059 0.104 0.16041 0.0677 0.29821 0.1632 0.41649 0.28427 0.11811 0.12111 0.21111 0.26173 0.2757 0.41942 0.0647 0.16041 0.0986 0.3321 0.0986 0.51209zm-2.2261 3.8582h-2.3668v-1.5674h4.4297v6.8104h2.4145v1.5675h-7.1311v-1.5675h2.6537zm11.578 6.8105v-5.4568c0-0.92018-0.34039-1.3789-1.0244-1.3789-0.3404 0-0.66421 0.1379-0.97642 0.4137-0.3096 0.27281-0.63899 0.64732-0.98499 1.12v5.302h-2.0121v-8.3779h1.7391l0.0506 1.2383c0.1717-0.214 0.349-0.41092 0.53188-0.58551 0.18292-0.1772 0.3828-0.32639 0.59673-0.45021 0.21667-0.12379 0.44739-0.21661 0.69229-0.2843 0.24751-0.0645 0.52609-0.0985 0.8329-0.0985 0.43071 0 0.80219 0.0704 1.1229 0.21121 0.31799 0.1379 0.58529 0.33771 0.79918 0.59369 0.21403 0.25322 0.37433 0.56282 0.48133 0.92311 0.10678 0.36019 0.1603 0.7626 0.1603 1.2072v5.6229zm9.4726 0-3.0926-4.1875v4.1875h-2.0096v-11.651h2.0096v6.8188l2.9267-3.5459h2.5158l-3.3967 3.8188 3.6781 4.5591zm11.006-2.4653c0 0.47836-0.104 0.88638-0.31499 1.2242-0.21389 0.33771-0.49259 0.61341-0.84148 0.82451-0.3489 0.21121-0.74581 0.3659-1.1875 0.46161-0.44189 0.0955-0.895 0.14341-1.3565 0.14341-0.6164 0-1.1706-0.0282-1.666-0.0843-0.4953-0.0591-0.96248-0.14362-1.4015-0.2534v-1.8123c0.5178 0.21399 1.0328 0.36868 1.5451 0.46439 0.51498 0.0957 0.99889 0.1464 1.4548 0.1464 0.5291 0 0.92301-0.0845 1.1848-0.2534 0.26169-0.16601 0.39109-0.38541 0.39109-0.6556 0-0.12682-0.0281-0.24211-0.0816-0.34621-0.0563-0.10421-0.15748-0.2055-0.30949-0.3011-0.15202-0.0958-0.3658-0.1941-0.63881-0.29549-0.2758-0.10121-0.63599-0.21671-1.0807-0.34339-0.41088-0.11543-0.77389-0.24483-1.0833-0.39123-0.31249-0.14619-0.56858-0.31789-0.77117-0.51488-0.20271-0.19699-0.35751-0.42781-0.45883-0.6895-0.10118-0.25891-0.1519-0.56561-0.1519-0.9174 0-0.3405 0.076-0.66421 0.23082-0.9652 0.1548-0.30399 0.38259-0.5685 0.6895-0.7965 0.30378-0.2279 0.68379-0.40799 1.1398-0.54042 0.45861-0.13219 0.9905-0.197 1.6012-0.197 0.5261 0 0.99342 0.0282 1.4015 0.0816 0.4052 0.0564 0.76538 0.11539 1.0806 0.18292v1.6408c-0.4784-0.1549-0.92869-0.26462-1.348-0.32649-0.4221-0.0618-0.83859-0.0956-1.2495-0.0956-0.4136 0-0.74299 0.0758-0.9935 0.22218-0.2505 0.1493-0.37701 0.35461-0.37701 0.6192 0 0.12672 0.0252 0.23922 0.076 0.33761 0.0478 0.0986 0.14641 0.19709 0.2926 0.29001 0.1464 0.0927 0.3489 0.19128 0.61069 0.2926 0.25891 0.10139 0.60501 0.2111 1.0327 0.33221 0.48422 0.13779 0.89231 0.28698 1.2215 0.44178 0.32928 0.15741 0.59379 0.33489 0.79629 0.53181 0.19981 0.19689 0.34339 0.425 0.4307 0.6755 0.09 0.25319 0.13208 0.54311 0.13208 0.86671zm4.1146-6.7033 5.5579 4.6743-5.5579 4.6827-1.2777-1.3028 4.0806-3.363-4.0806-3.3883z" fill="#5c5c5c" inkscape:connector-curvature="0"/>
-			</g>
-		</svg>
-	</div>
-	
-	<div class="clear"></div>
 
 	<?php do_action( 'woocommerce_credit_card_form_end', $this->id ); ?>
 </fieldset>
@@ -208,8 +441,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 	let paymentMethod = document.querySelector(".wc_payment_methods");
 	paymentMethod.addEventListener('click', event => {
-		let paylinks = document.getElementById('payment_method_paylinks_gateway');
-		paylinks.checked ? addFees() : removeFees();
+		//let paylinks = document.getElementById('payment_method_paylinks_gateway');
+		//paylinks.checked ? addFees() : removeFees();
 		return false;
 	});
 
@@ -345,11 +578,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             iNum.classList.add('active');
         } 
     });
-	let select_pmcc = document.querySelector('.pm-cc');
-	select_pmcc.addEventListener('click', event => {
-		event.preventDefault();
-		changeSelectbox(select_pmcc.value != 0 ? 1: 0, '.pm-cc-block');
-	}, true);
+	//let select_pmcc = document.querySelector('.pm-cc');
+	//select_pmcc.addEventListener('click', event => {
+		//event.preventDefault();
+		//changeSelectbox(select_pmcc.value != 0 ? 1: 0, '.pm-cc-block');
+	//}, true);
 
 	let select_pmdd = document.querySelector('.pm-dd');
 	select_pmdd.addEventListener('click', event => {
@@ -462,7 +695,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 </script>
 
 <style scoped="scoped">
-	.form-row.form-row-small {
+	/*.form-row.form-row-small {
 		width: 40%;
 	}
 	.save-pm-div{
@@ -545,5 +778,5 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	}
 	.activate_input {
 		background-color: #fff !important;
-	}
+	}*/
 </style>
