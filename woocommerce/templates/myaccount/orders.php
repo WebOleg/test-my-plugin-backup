@@ -23,18 +23,26 @@ do_action( 'woocommerce_before_account_orders', $has_orders ); ?>
 
 <?php if ( $has_orders ) : ?>
 
+	<?php $myaccount_orders_url = get_permalink( get_option('woocommerce_myaccount_page_id') ) . 'orders/'; ?>
 	<div class="woocommerce-orders-table__filters">
-		<div class="woocommerce-orders-table__filter"><?php _e( 'Last Week', 'wc-bna-gateway' ); ?></div>
-		<div class="woocommerce-orders-table__filter"><?php _e( 'Last Month', 'wc-bna-gateway' ); ?></div>
-		<div class="woocommerce-orders-table__filter filter-active"><?php _e( 'Last 3 Months', 'wc-bna-gateway' ); ?></div>
-		<div class="woocommerce-orders-table__filter"><?php _e( 'Last Year', 'wc-bna-gateway' ); ?></div>
+		<a href="<?php echo $myaccount_orders_url . '?bna-orders-filter=last-week'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-week' ); ?>">
+			<?php _e( 'Last Week', 'wc-bna-gateway' ); ?>
+		</a>
+		<a href="<?php echo $myaccount_orders_url . '?bna-orders-filter=last-month'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-month' ); ?>">
+			<?php _e( 'Last Month', 'wc-bna-gateway' ); ?>
+		</a>
+		<a href="<?php echo $myaccount_orders_url . '?bna-orders-filter=last-three-months'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-three-months' ); ?>">
+			<?php _e( 'Last 3 Months', 'wc-bna-gateway' ); ?>
+		</a>
+		<a href="<?php echo $myaccount_orders_url . '?bna-orders-filter=last-year'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-year' ); ?>">
+			<?php _e( 'Last Year', 'wc-bna-gateway' ); ?>
+		</a>
 	</div>
 
 	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
 		<thead>
 			<tr>
 				<?php foreach ( wc_get_account_orders_columns() as $column_id => $column_name ) : ?>
-					<?php //if ( $column_id === 'order-actions' ) { $column_name = ''; } ?>
 					<th class="woocommerce-orders-table__header woocommerce-orders-table__header-<?php echo esc_attr( $column_id ); ?>"><span class="nobr"><?php echo esc_html( $column_name ); ?></span></th>
 				<?php endforeach; ?>
 			</tr>

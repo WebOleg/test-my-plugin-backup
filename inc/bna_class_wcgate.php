@@ -77,7 +77,7 @@ function wc_bna_gateway_init() {
 			$this->init_form_fields();
 			$this->init_settings();
 
-			//self::get_fees_request();
+			self::get_fees_request();
 		  
 			// Define user set variables
 			$this->title        = $this->get_option( 'title' );
@@ -247,10 +247,6 @@ function wc_bna_gateway_init() {
 					'title'       => __( 'Login', 'wc-bna-gateway' ),
 					'type'        => 'text',
 				),
-				//'transactionPassword' => array(
-					//'title'       => __( 'Transaction password', 'wc-bna-gateway' ),
-					//'type'        => 'password'
-				//),
 				'secretKey' => array(
 					'title'       => __( 'Secret key', 'wc-bna-gateway' ),
 					'type'        => 'password'
@@ -327,7 +323,6 @@ function wc_bna_gateway_init() {
 			return array(
 				'serverUrl' 			=> 	WC_BNA_Gateway::get_next_arrval($params[1], 'serverUrl'), 
 				'protocol' 				=> 	WC_BNA_Gateway::get_next_arrval($params[1], 'protocol'), 
-				//'transactionPassword'	=>	WC_BNA_Gateway::get_next_arrval($params[1], 'transactionPassword'), 
 				'applyFee'				=>	WC_BNA_Gateway::get_next_arrval($params[1], 'applyFee'),
 				'secretKey'				=>	WC_BNA_Gateway::get_next_arrval($params[1], 'secretKey'),
 				'login'					=>	WC_BNA_Gateway::get_next_arrval($params[1], 'login')
@@ -370,66 +365,69 @@ function wc_bna_gateway_init() {
 			$order = wc_get_order( $order_id );
 
 			$args = WC_BNA_Gateway::get_merchant_params();
-			if ( empty($args) ) {
-				wc_add_notice(  'Error configuring payment parameters.', 'error' );
+			if ( empty( $args ) ) {
+				wc_add_notice( 'Error configuring payment parameters.', 'error' );
 				return false;
 			}
 
-			$fees = json_decode(get_option('wc_bna_gateway_fees'));
+			$fees = json_decode( get_option( 'wc_bna_gateway_fees' ) );
 
 			$items = [];
-			foreach( WC()->cart->get_cart() as $cart_item_key => $cart_item ){
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$item = array();
-				$_woo_product = wc_get_product( $cart_item['product_id']);
+				$_woo_product = wc_get_product( $cart_item['product_id'] );
 
-				$item['sku']= $_woo_product->get_sku(); 
+				$sku = $_woo_product->get_sku;
+				$item['sku']= ! empty( $sku ) ? $sku : strval( $cart_item['product_id'] ); // if 'sku' not exist add 'product_id'
 				$item['quantity'] = $cart_item['quantity']; 						
 				$item['price'] = wc_get_price_including_tax( $_woo_product ); 		
 				$item['amount'] = $item['price'] * $item['quantity'];				
 				$item['description'] = $_woo_product->get_title(); 					
 
-				$items[] = (object) $item; 
+				$items[] = $item; 
 			}
 
 			$api = new BNAExchanger($args);
 
-			if ( empty($_POST['paymentType']) ) {
-				throw new Exception("Can't find BNA payment type");
+			if ( empty( $_POST['payment-type'] ) ) {
+				throw new Exception( "Can't find BNA payment type" );
 			}
 
-			$data =  (object) [
-				"merchantTimestamp" 	=> date('Y-m-d\TH:i:sO'),
-				"cartItems"				=> $items,
-				"transactionInfo"		=> (object) [
-					"applyFee"			=> $args['applyFee'] == 'yes' ? true : false,
-					"subtotal"			=> 
-						($woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping()),
-					"currency"			=> get_woocommerce_currency(),
-					"emailAddress"		=> $_POST[ 'billing_email' ],
-					"firstName"			=> $_POST[ 'billing_first_name' ],
-					"lastName"			=> $_POST[ 'billing_last_name' ],
-					"phone"				=> $_POST[ 'billing_phone' ],
-					"streetNumber"		=> $_POST[ 'billing_street_number' ],
-					"streetName"		=> $_POST[ 'billing_street_name' ],
-					"apartment"			=> $_POST[ 'billing_apartment' ],
-					"city"				=> $_POST[ 'billing_city' ],
-					"province"			=> WC()->countries->get_states( $_POST[ 'billing_country' ] )[$_POST[ 'billing_state' ]],  //$_POST[ 'billing_country' ] .'-'. $_POST[ 'billing_state' ],
-					"country"			=> WC()->countries->countries[ $_POST[ 'billing_country' ] ], //$_POST[ 'billing_country' ], 
-					"postalZip"			=> $_POST[ 'billing_postcode' ],
-					"invoiceId"			=> $order_id,
-				]
-			];
+			$data = array(
+				'transactionTime' => date('Y-m-d\TH:i:sO'),
+				'items'				=> $items,
+				'applyFee'		=> $args['applyFee'] == 'yes' ? true : false,
+				'subtotal'			=> 
+					($woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping()),
+				'currency'			=> get_woocommerce_currency(),
+				'metadata'		=> array(
+					'invoiceId' => $order_id,
+					
+				),
+					//'email'				=> $_POST['billing_email'], // "emailAddress"
+					//'firstName'		=> $_POST['billing_first_name'],
+					//'lastName'		=> $_POST['billing_last_name'],
+					////'phoneCode'		=> $_POST['billing_phone_code'],
+					//'phoneNumber'	=> $_POST['billing_phone'], // "phone"
+					//'streetNumber'	=> $_POST['billing_street_number'],
+					//'streetName'		=> $_POST['billing_street_name'],
+					////'apartment'		=> $_POST['billing_apartment'],
+					//'city'					=> $_POST['billing_city'],
+					//'province'			=> WC()->countries->get_states( $_POST['billing_country'] )[$_POST[ 'billing_state' ]],  //$_POST[ 'billing_country' ] .'-'. $_POST[ 'billing_state' ],
+					//'country'			=> WC()->countries->countries[$_POST['billing_country']], //$_POST[ 'billing_country' ], 
+					//'postalCode'		=> $_POST['billing_postcode'], // "postalZip"
+			);
 
-			$payorID = get_user_meta (get_current_user_id(), 'payorID', true);
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 
-			if ( !empty($payorID) ) {
-				$data->{"payorId"} = $payorID;
+			if ( ! empty( $payorID ) ) {
+				$data['customerId'] = $payorID; // payorId
 			}
 
-			if ( isset($_POST['create_subscription']) ) {
-				$data->{"subscription"} = (object) [
+			if ( isset( $_POST['create_subscription'] ) ) {
+				$data['subscription'] = array(
 					"recurring" => $_POST['recurring']
-				];
+				);
 				if ( !empty($_POST['startDate']) && $_POST['startDate'] !== '0') {
 					$data->subscription->{"startDate"} = date('Y-m-d\TH:i:sO', strtotime($_POST['startDate']));
 				}
@@ -439,29 +437,34 @@ function wc_bna_gateway_init() {
 			}
 			
 
-			$paymentTypeMethod = '';
+			//$paymentTypeMethod = '';
 
-			switch ($_POST['paymentType']) {
-				case BNA_PAYMENT_TYPE_CREDITCARD: 
-					$paymentTypeMethod = 'credit-card';
-					if ( empty($_POST['paymentMethodCC']) ) {
-						$params = array (
-							"paymentType"		=> check_cc($_POST['cc_number']),
-							"cardNumber"		=> $_POST['cc_number'],
-							"securityCode"		=> $_POST['cc_code'],
-							"expiryMonth"		=> $_POST['cc_expire_month'],
-							"expiryYear"		=> $_POST['cc_expire_year'],
-							"cardHolder"		=> $_POST['cc_holder'] 
-						);
-						foreach ($params as $p_key => $p_val)
-							$data->transactionInfo->{$p_key} = $p_val;
+			switch ( $_POST['payment-type'] ) { // paymentType
+				case 'card': 
+					if ( ! empty( $_POST['paymentMethodCC'] ) ) {
+						if ( $_POST['paymentMethodCC'] === 'new-card' ) {
+							if ( ! empty( $_POST['cc_expire'] ) ) {
+								$cc_expire = explode( '/', $_POST['cc_expire'] );
+							}
+							
+							$params = array (
+								'cardNumber'	=> $_POST['cc_number'],
+								'cardHolder'		=> $_POST['cc_holder'],
+								'cardType'			=> 'credit',
+								'cardIdNumber'	=> $_POST['cc_code'],
+								'expiryMonth'	=> $cc_expire[0],
+								'expiryYear'		=> $cc_expire[1],
+							);
+							foreach ( $params as $p_key => $p_val )
+								$data['paymentDetails'][$p_key] = $p_val;
+						} else {
+							$data['paymentDetails'] = array( "id" => $_POST['paymentMethodCC'] );
+						}
 
-					} else {
-						$data->{"paymentMethodId"} = $_POST['paymentMethodCC']; 
-					}
+					} 
 					self::add_payment_fee ($order, $fees->creditCardPercentageFee, $fees->creditCardFlatFee);
 					break;
-				case BNA_PAYMENT_TYPE_DIRECTDEBIT:
+				case 'eft':
 					$paymentTypeMethod = 'direct-debit';
 					if ( empty($_POST['paymentMethodDD']) ) {
 						$params = array (
@@ -478,7 +481,7 @@ function wc_bna_gateway_init() {
 					}
 					self::add_payment_fee ($order, $fees->directDebitPercentageFee, $fees->directDebitFlatFee);
 					break;
-				case BNA_PAYMENT_TYPE_ETRANFER:
+				case 'e-transfer':
 					$paymentTypeMethod = 'e-transfer';
 					$params = array (
 						"paymentType" 		=> "ETRANSFER",
@@ -491,53 +494,56 @@ function wc_bna_gateway_init() {
 					break;
 			}
 
-			$paymentMethod = '';
-			$is_subscription = isset($_POST['create_subscription']);
+			//$paymentMethod = '';
+			//$is_subscription = isset($_POST['create_subscription']);
 
-			if ( is_user_logged_in() ) {
-				if ( empty($_POST['save_payment']) ) {
-					if ( empty($payorID) ) {
-						$paymentMethod = $is_subscription 
-							? 'recurring-save-payor-payment'	
-							: 'one-time-save-payor-payment';
-					} else {
-						if ( empty($data->paymentMethodId) ) {
-							$paymentMethod = $is_subscription 
-								? 'recurring-existing-payor'
-								: 'one-time-existing-payor';
-						} else {
-							$paymentMethod = $is_subscription 
-								? 'recurring-existing-payor-existing-payment'
-								: 'one-time-existing-payor-existing-payment';
-						}
-					}
-				} else {
-					if ( empty($payorID) ) {
-						$paymentMethod = $is_subscription 
-							? 'recurring-save-payor-save-payment'
-							: "one-time-save-payor-save-payment";
-					} else {
-						$paymentMethod = $is_subscription 
-							? 'recurring-existing-payor-save-payment'
-							: 'one-time-existing-payor-save-payment';
-					}
-				}
-			} else {
-				$paymentMethod =  $is_subscription  
-					? 'recurring-payment'
-					: 'one-time-payment';
+			//if ( is_user_logged_in() ) {
+				//if ( empty($_POST['save_payment']) ) {
+					//if ( empty($payorID) ) {
+						//$paymentMethod = $is_subscription 
+							//? 'recurring-save-payor-payment'	
+							//: 'one-time-save-payor-payment';
+					//} else {
+						//if ( empty($data->paymentMethodId) ) {
+							//$paymentMethod = $is_subscription 
+								//? 'recurring-existing-payor'
+								//: 'one-time-existing-payor';
+						//} else {
+							//$paymentMethod = $is_subscription 
+								//? 'recurring-existing-payor-existing-payment'
+								//: 'one-time-existing-payor-existing-payment';
+						//}
+					//}
+				//} else {
+					//if ( empty($payorID) ) {
+						//$paymentMethod = $is_subscription 
+							//? 'recurring-save-payor-save-payment'
+							//: "one-time-save-payor-save-payment";
+					//} else {
+						//$paymentMethod = $is_subscription 
+							//? 'recurring-existing-payor-save-payment'
+							//: 'one-time-existing-payor-save-payment';
+					//}
+				//}
+			//} else {
+				//$paymentMethod =  $is_subscription  
+					//? 'recurring-payment'
+					//: 'one-time-payment';
 
-			}
+			//}
 
+my_log( $data );
 			$response = $api->query(
-				$args['serverUrl'].'/'.$args['protocol'].'/'.$paymentTypeMethod.'/'.$paymentMethod,  
-				$data
+				$args['serverUrl'].'/'.$args['protocol'].'/transaction/card/sale', //.$paymentTypeMethod.'/'.$paymentMethod,
+				$data,
+				'POST'
 			);
-
-			if ( !empty($response['success']) ) {
+			$response = json_decode( $response, true );
+my_log( $response );	
+			if ( ! empty( $response['id'] ) ) {
 				$status = $order->get_status();
-				if ( !in_array($status, ['pending', 'completed', 'cancelled', 'processing'] )) {
-					$order->update_status('pending', __('Pending.', 'wc-bna-gateway'));
+				if ( ! in_array( $status, ['pending', 'completed', 'cancelled', 'processing'] ) ) {
+					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
 				}
 				sleep(10);
 				return array(
@@ -572,16 +578,16 @@ function wc_bna_gateway_init() {
 			global $wp, $woocommerce;
 
 			$order_id  = absint( $wp->query_vars['order-received'] );
-			$order = wc_get_order($order_id);
+			$order = wc_get_order( $order_id );
 
 			$status = $order->get_status();
 
-			if ( in_array($status, ['pending', 'completed', 'processing'] )) {
+			if ( in_array( $status, ['pending', 'completed', 'processing'] ) ) {
 				if ( $this->instructions ) {
 					echo wpautop( wptexturize( $this->instructions));
 				}
 			} elseif ( $status !== 'cancelled' ) {
-				$order->update_status('on-hold', __('Waiting for payment', 'wc-bna-gateway'));
+				$order->update_status( 'on-hold', __( 'Waiting for payment', 'wc-bna-gateway' ) );
 			}
 		}
 
@@ -610,7 +616,6 @@ function wc_bna_gateway_init() {
 						wp_die();
 					}
 
-					//$result = json_decode(decryptString($data, $args['secretKey']), true);
 					$result = json_decode( $data, true );
 
 					switch ( $endpoint ) {
@@ -638,39 +643,30 @@ function wc_bna_gateway_init() {
 		 */
 		public static function get_fees_request()
 		{
-			$paymentTypeMethod = "account";
-			$paymentMethod = "all-payors";
-
 			$updatetime = get_option( 'wc_bna_gateway_fees_updatetime' );
-			if ( !empty($updatetime) ) {
-				if ( date('Y-m-d', strtotime($updatetime)) === date('Y-m-d') ) {
+			if ( ! empty( $updatetime ) ) {
+				if ( date( 'Y-m-d', strtotime( $updatetime) ) === date( 'Y-m-d' ) ) {
 					return null;
 				}
 			} 
 
 			$args = WC_BNA_Gateway::get_merchant_params();
-			if ( empty($args) ) {
-				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
+			if ( empty( $args ) ) {
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
 				wp_die();
 			}
 
-			$api = new BNAExchanger($args);
+			$api = new BNAExchanger( $args );
 			
 			$response = $api->query(
-				$args['serverUrl'].'/'.$args['protocol'].'/'.$paymentTypeMethod.'/'.$paymentMethod, [], 'GET'
+				$args['serverUrl'] . '/' . $args['protocol'] . '/account', [], 'GET'
 			);
 
-			if ( !empty($response['success']) ) {
+			$response = json_decode( $response, true );
 
-				if ( get_option( 'wc_bna_gateway_fees_updatetime' ) === false ) {
-					add_option( 'wc_bna_gateway_fees', json_encode($response['data']['dataFees']) );
-					add_option( 'wc_bna_gateway_fees_updatetime', date('Y-m-d') ); 
-				}
-				else {
-					update_option( 'wc_bna_gateway_fees', json_encode($response['data']['dataFees']), true );
-					update_option( 'wc_bna_gateway_fees_updatetime', date('Y-m-d'), true); 
-				}
-
+			if ( ! empty( $response['fees'] ) ) {
+				update_option( 'wc_bna_gateway_fees', $response['fees'] );
+				update_option( 'wc_bna_gateway_fees_updatetime', date( 'Y-m-d' ) );
 			}
 		}
 
@@ -679,26 +675,26 @@ function wc_bna_gateway_init() {
 		 * @since		1.0.0
 		 * @param json string $result
 		 */
-		public static function endpoint_transactions ($result)
+		public static function endpoint_transactions( $result )
 		{
 			global $wpdb, $woocommerce, $BNASubscriptions;
 	
-			if ( !isset($result['data']['transactionInfo']['invoiceId']) ) exit();
-			$order = wc_get_order($result['data']['transactionInfo']['invoiceId']);
+			if ( ! isset( $result['metadata']['invoiceId'] ) ) exit(); // $result['data']['transactionInfo']['invoiceId']
+			$order = wc_get_order( $result['metadata']['invoiceId'] );
 			$new_order = null;
 
-			switch ($result['data']['transactionStatus']) {
+			switch ( $result['status'] ) { // ['data']['transactionStatus']
 				case 'APPROVED': 
-					if ( isset($result['data']['recurringPayment']) && $order->get_status() == 'completed' ) {
+					if ( isset( $result['subscriptionId'] ) && $result['subscriptionId'] !== null && $order->get_status() == 'completed' ) { // ['data']['recurringPayment']					
 						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );
 						$new_order = wc_get_order( $new_order_id );
 						$new_order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
 						$new_order->payment_complete();
 						wc_reduce_stock_levels ($new_order->get_id());
-					} else if ( !in_array($result['data']['transactionType'], ['REFUND', 'CHARGEDBACK', 'RETURN']) ) {
-						$order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
+					} else if ( ! in_array( $result['action'], ['REFUND', 'CHARGEDBACK', 'RETURN'] ) ) { // ['action''data']['transactionType'
+						$order->update_status( 'completed', __('Order completed.', 'wc-bna-gateway') );
 						$order->payment_complete();
-						wc_reduce_stock_levels ($order->get_id());
+						wc_reduce_stock_levels( $order->get_id() );
 						$woocommerce->cart->empty_cart();
 					} 
 					break;
@@ -737,22 +733,22 @@ function wc_bna_gateway_init() {
 					$order->update_status('pending', __('Pending.', 'wc-bna-gateway'));
 			}
 
-			$payorId 	= get_user_meta ($order->get_user_id(), 'payorID', true);
-			$newPayorId = isset($result['data']['transactionInfo']['payorId']) ? 
-				$result['data']['transactionInfo']['payorId'] : null;
+			$payorId = get_user_meta( $order->get_user_id(), 'payorID', true );
+			$newPayorId = isset( $result['customerId'] ) ? // $result['data']['transactionInfo']['payorId']
+				$result['customerId'] : null;
 			
-			if ( !empty($newPayorId) && empty($payorId) ) {
+			if ( ! empty( $newPayorId ) && empty( $payorId ) ) {
 				add_user_meta( $order->get_user_id(), 'payorID', $newPayorId );
 				$payorId = $newPayorId;
 			}
 			$wpdb->insert( 
-				$wpdb->prefix.BNA_TABLE_TRANSACTIONS,  
+				$wpdb->prefix . BNA_TABLE_TRANSACTIONS,  
 				array( 
 					'order_id'				=> empty( $new_order ) ? $order->get_id() : $new_order->get_id(),
-					'transactionToken'		=> $result['data']['transactionInfo']['transactionToken'],
-					'referenceNumber'		=> $result['data']['transactionInfo']['referenceNumber'],
-					'transactionStatus'		=> $result['data']['transactionStatus'],
-					'transactionDescription'=> json_encode($result['data'])
+					'transactionToken'		=> $result['id'], // $result['data']['transactionInfo']['transactionToken']
+					'referenceNumber'		=> $result['referenceUUID'], // $result['data']['transactionInfo']['referenceNumber']
+					'transactionStatus'		=> $result['status'], // $result['data']['transactionStatus']
+					'transactionDescription'=> json_encode( $result ) // $result['data'
 				),
 				array( 
 					'%d','%s','%s','%s','%s'

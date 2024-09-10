@@ -7,15 +7,12 @@
  * Version: 1.0.0
  * Text Domain: wc-bna-gateway
  * Domain Path: /i18n/languages/
+ * Requires PHP: 7.4
  *
- * @package   WC-BNA-Gateway
- * @author    BNA
- * @category  Admin
- * @copyright Copyright (c) 2021 
- *
+ * @package WC-BNA-Gateway
  */
  
-defined( 'ABSPATH' ) or exit;
+defined( 'ABSPATH' ) || exit;
 
 function my_log( $str ) {
 	//$str = unserialize($str);
@@ -40,12 +37,14 @@ if ( ! defined( 'BNA_PLUGIN_DIR_URL' ) ) {
 	define( 'BNA_PLUGIN_DIR_URL', plugin_dir_url( __FILE__ ) );
 }
 
-require_once dirname(__FILE__). "/inc/bna_class_exchanger.php";
-require_once dirname(__FILE__). "/inc/bna_class_cctools.php";
-require_once dirname(__FILE__). "/inc/bna_class_wcgate.php";
-require_once dirname(__FILE__). "/inc/bna_class_manageaccount.php";
-require_once dirname(__FILE__). "/inc/bna_class_subscriptions.php";
-require_once dirname(__FILE__). "/inc/bna_class_jsonmessage.php";
+require_once dirname( __FILE__ ) . "/inc/bna_class_exchanger.php";
+require_once dirname( __FILE__ ) . "/inc/bna_class_cctools.php";
+require_once dirname( __FILE__ ) . "/inc/bna_class_wcgate.php";
+require_once dirname( __FILE__ ) . "/inc/bna_class_manageaccount.php";
+require_once dirname( __FILE__ ) . "/inc/bna_class_subscriptions.php";
+require_once dirname( __FILE__ ) . "/inc/bna_class_jsonmessage.php";
+require_once dirname( __FILE__ ) . "/inc/bna_wc_hooks_filters.php";
+require_once dirname( __FILE__ ) . "/inc/bna_functions.php";
 
 // Make sure WooCommerce is active
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
@@ -53,44 +52,42 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 }
 
 // Basic params in constants
-define ('BNA_TABLE_TRANSACTIONS', 'bna_transactions');
-define ('BNA_TABLE_SETTINGS', 'bna_settings');
-define ('BNA_TABLE_RECURRING', 'bna_recurring');
+define( 'BNA_TABLE_TRANSACTIONS', 'bna_transactions' );
+define( 'BNA_TABLE_SETTINGS', 'bna_settings' );
+define( 'BNA_TABLE_RECURRING', 'bna_recurring' );
 
-define ('BNA_PAYMENT_TYPE_ETRANFER', -1);
-define ('BNA_PAYMENT_TYPE_CREDITCARD', 1);
-define ('BNA_PAYMENT_TYPE_DIRECTDEBIT', 2);
-define ('BNA_PAYMENT_TYPE_DIRECTCREDIT', 4);
+define( 'BNA_PAYMENT_TYPE_ETRANFER', -1 );
+define( 'BNA_PAYMENT_TYPE_CREDITCARD', 1 );
+define( 'BNA_PAYMENT_TYPE_DIRECTDEBIT', 2 );
+define( 'BNA_PAYMENT_TYPE_DIRECTCREDIT', 4 );
 
-define ('BNA_SUBSCRIPTION_SETTING_REPEAT', 'monthly');
-define ('BNA_SUBSCRIPTION_SETTING_STARTDATE', 0);//date('Y-m-d'));
-define ('BNA_SUBSCRIPTION_SETTING_NUMPAYMENT', 0);
+define( 'BNA_SUBSCRIPTION_SETTING_REPEAT', 'monthly' );
+define( 'BNA_SUBSCRIPTION_SETTING_STARTDATE', 0 ); //date('Y-m-d'));
+define( 'BNA_SUBSCRIPTION_SETTING_NUMPAYMENT', 0 );
 
 
-/*
+/**
 * BNA plugin management class
 */
-if (!class_exists('BNAPluginManager')) {
+if ( ! class_exists( 'BNAPluginManager' ) ) {
 
 	class BNAPluginManager {
 	 
-		public function __construct ()
+		public function __construct()
 		{		
-			$this->plugin_name = plugin_basename(__FILE__);
-			$this->plugin_url = trailingslashit(plugin_dir_url((__FILE__)));
-			register_activation_hook( $this->plugin_name, array('BNAPluginManager', 'activate') );
-			register_deactivation_hook( $this->plugin_name, array('BNAPluginManager', 'deactivate') );
-			register_uninstall_hook( $this->plugin_name, array('BNAPluginManager', 'uninstall') );
+			$this->plugin_name = plugin_basename( __FILE__ );
+			$this->plugin_url = trailingslashit( plugin_dir_url( ( __FILE__ ) ) );
+			register_activation_hook( $this->plugin_name, array( 'BNAPluginManager', 'activate' ) );
+			register_deactivation_hook( $this->plugin_name, array( 'BNAPluginManager', 'deactivate' ) );
+			register_uninstall_hook( $this->plugin_name, array( 'BNAPluginManager', 'uninstall' ) );
 
-			add_filter( 'woocommerce_checkout_fields' , array(&$this,'custom_override_checkout_fields') );
+			add_filter( 'woocommerce_checkout_fields' , array( &$this,'custom_override_checkout_fields') );
 
-			if (is_admin()) {
-				add_action( 'woocommerce_admin_order_data_after_order_details', array(&$this,'show_order_itemmeta'));
+			if ( is_admin() ) {
+				add_action( 'woocommerce_admin_order_data_after_order_details', array( &$this,'show_order_itemmeta' ) );
 			}
-			add_filter( 'woocommerce_states', array(&$this, 'custom_woocommerce_states') );
-			add_filter( 'woocommerce_countries', array(&$this, 'custom_woocommerce_countries') );
-
-			add_filter( 'woocommerce_locate_template', array( $this, 'bna_wc_template' ), 10, 3 );
+			add_filter( 'woocommerce_states', array( &$this, 'custom_woocommerce_states' ) );
+			add_filter( 'woocommerce_countries', array( &$this, 'custom_woocommerce_countries' ) );
 		}
 
 		/**
@@ -322,54 +319,6 @@ if (!class_exists('BNAPluginManager')) {
 				<?php
 			}
 		}
-		
-		/**
-		 * Filter templates path to use in this plugin instead of the one in WooCommerce.
-		 *
-		 * @param string $template      Default template file path.
-		 * @param string $template_name Template file slug.
-		 * @param string $template_path Template file name.
-		 *
-		 * @return string The new Template file path.
-		 */
-		function bna_wc_template( $template, $template_name, $template_path ) {
-			// my-account
-			if ( 'navigation.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/navigation.php';
-			} elseif ( 'dashboard.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/dashboard.php';
-			} elseif ( 'orders.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/orders.php';
-			} elseif ( 'my-address.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/my-address.php';
-			}
-			
-			// cart
-			if ( 'cart.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/cart/cart.php';
-			} elseif ( 'cart-totals.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/cart/cart-totals.php';
-			}
-			
-			// checkout
-			if ( 'form-billing.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-billing.php';
-			} elseif ( 'form-checkout.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-checkout.php';
-			} elseif ( 'form-shipping.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-shipping.php';
-			} elseif ( 'payment.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/payment.php';
-			} elseif ( 'payment-method.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/payment-method.php';
-			} elseif ( 'review-order.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/review-order.php';
-			} elseif ( 'thankyou.php' === basename( $template ) ) {
-				$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/thankyou.php';
-			}
-
-			return $template;
-		}
 
 	}
 }
@@ -378,17 +327,3 @@ global $BNAAccountManager, $BNAPluginManager, $BNAJsonMsgAnswer, $BNASubscriptio
 $BNAPluginManager  = new BNAPluginManager();
 $BNAAccountManager = new BNAAccountManager();
 $BNASubscriptions = new BNASubscriptions();
-
-// Changed column names on woocommerce/templates/myaccount/orders.php
-add_filter(
-	'woocommerce_account_orders_columns',
-	function( $columns ) {
-		$columns['order-number']  = __( 'Order Number', 'wc-bna-gateway' );
-		$columns['order-date']    = __( 'Order Placed', 'wc-bna-gateway' );
-		$columns['order-status']  = __( 'Order Status', 'wc-bna-gateway' );
-		$columns['order-total']   = __( 'Order Total', 'wc-bna-gateway' );
-		$columns['order-actions'] = '';
-		
-		return $columns;
-	}
-);
