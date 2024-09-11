@@ -42,6 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		}
 		
 	</style>
+	
 	<div>
 		<div class="bna-payment-methods">
 			<div class="bna-payment-method__item">
@@ -132,15 +133,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					
 					<div class="tpl-input-wrapper">					
 						<div class="tpl-input-label tpl-mb-10"><?php _e( 'Select Frequency (“Monthly” by default)', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-						<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="Please choose...">
+						<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">
 							<?php
 								$selected = BNA_SUBSCRIPTION_SETTING_REPEAT;
 								$duration = ['day', 'week', 'two weeks', 'month', 'three month', 'six month', 'year'];
-								$durOptions = ['daily', 'weekly', 'bi-weekly', 'monthly', 'every-3-months', 'every-6-months' , 'yearly'];
+								$durOptions = ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'biannual' , 'annual'];
 
 								foreach ($duration as $d_key => $d_val) {
 									$attr = $durOptions[$d_key] == $selected ? 'selected' : '';
-									echo "<option value='{$durOptions[$d_key]}' {$attr}>EVERY ".strtoupper($d_val)."</option>";
+									echo '<option value=' . $durOptions[$d_key] . ' ' . $attr . '>' . __( 'EVERY', 'wc-bna-gateway' ) . ' ' . strtoupper( $d_val ) .' </option>';
 								}
 							?>
 						</select>
@@ -211,53 +212,52 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			<input type="hidden" id="payment_type" name="payment-type" value="">
 		</div>
 	</div>
-	<script>
-	
-	jQuery('#paymentMethodCC').select2();
-	jQuery('#ssRepeat').select2();
-	
-	jQuery('#setting_first_payment_date').datepicker({
-		dateFormat: 'yyyy-mm-dd',
-		autoClose: true,
-	});
-	
+	<script type="module">
+	(function($) {	
+		$('#paymentMethodCC').select2();
+		$('#ssRepeat').select2();
 		
-	// select payment method (cc, i-transfer, eft, google pay, apple pay)
-	jQuery('.bna-payment-methods .bna-checkout-radio').click(function(){
-		jQuery(this).parent().parent().find('.bna-checkout-radio.selected').removeClass('selected');	
-		if ( jQuery('.bna-payment-method__content').is(':visible') ) { jQuery('.bna-payment-method__content').css('display', 'none'); }
-		jQuery(this).addClass('selected');
-		jQuery(this).parent().next().css('display', 'block');
-		jQuery(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
+		$('#setting_first_payment_date').datepicker({
+			dateFormat: 'yyyy-mm-dd',
+			autoClose: true,
+		});
 		
-		jQuery('#payment_type').val( jQuery(this).data('payment-type') );
-	});
-	// select card (if select2 work)
-	jQuery('#paymentMethodCC').on("select2:select", function(e) {
-	  let data = e.params.data;
-	  if (data.id === 'new-card') {
-			jQuery('.bna-payment-method__content .tpl-payment-method-cards').addClass('tpl-active');
-		} else {
-			jQuery('.bna-payment-method__content .tpl-payment-method-cards').removeClass('tpl-active');
-		}
-    console.log(data);
-	});
-	// select checkbox recurring
-	var bnaPaymentRecurring = document.querySelector('.bna-checkbox-container input[name="create_subscription"]');
-	if (bnaPaymentRecurring) bnaPaymentRecurring.addEventListener('change', function(event) {
-		if (event.currentTarget.checked) {
-			bnaPaymentRecurring.parentElement.nextElementSibling.classList.add('tpl-active');
-		} else {
-			bnaPaymentRecurring.parentElement.nextElementSibling.classList.remove('tpl-active');
-		}
-	});
+		// select payment method (cc, i-transfer, eft, google pay, apple pay)
+		$('.bna-payment-methods .bna-checkout-radio').click(function(){
+			$(this).parent().parent().find('.bna-checkout-radio.selected').removeClass('selected');	
+			if ( $('.bna-payment-method__content').is(':visible') ) { $('.bna-payment-method__content').css('display', 'none'); }
+			$(this).addClass('selected');
+			$(this).parent().next().css('display', 'block');
+			$(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
+			
+			$('#payment_type').val( $(this).data('payment-type') );
+		});
+		
+		// select card
+		$('#paymentMethodCC').on("select2:select", function(e) {
+		  let data = e.params.data;
+		  if (data.id === 'new-card') {
+				$('.bna-payment-method__content .tpl-payment-method-cards').addClass('tpl-active');
+			} else {
+				$('.bna-payment-method__content .tpl-payment-method-cards').removeClass('tpl-active');
+			}
+		});
+		
+		// select 'checkbox' recurring
+		$('.bna-checkbox-container input[name="create_subscription"]').on('change', function(event) {
+			if (event.currentTarget.checked) {
+				$(this).parent().next().addClass('tpl-active');
+			} else {
+				$(this).parent().next().removeClass('tpl-active');
+			}
+		});
+		
+		// select recurring period
+		$('#ssRepeat').on("select2:select", function(e) {
+			$('#recurring').val( $(this).val() );
+		});
+	})(jQuery);	
 	</script>
-	
-	<?php
-	
-	//var_dump($paymentMethods);
-	?>
-	
 	
 	<?php do_action( 'woocommerce_credit_card_form_start', $this->id ); ?>
 	<div>
@@ -379,11 +379,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 	<div class="save-pm-div form-row form-row-wide">
 		<label>
-			<input type="hidden" id="recurring" name="recurring" value="<?= BNA_SUBSCRIPTION_SETTING_REPEAT; ?>">
-			<input type="hidden" id="startDate" name="startDate" value="<?= BNA_SUBSCRIPTION_SETTING_STARTDATE;?>">
-			<input type="hidden" id="numberOfPayments" name="numberOfPayments" value="<?= BNA_SUBSCRIPTION_SETTING_NUMPAYMENT; ?>">
+			<!--<input type="hidden" id="recurring" name="recurring" value="<?php //echo BNA_SUBSCRIPTION_SETTING_REPEAT; ?>">
+			<input type="hidden" id="startDate" name="startDate" value="<?php //echo BNA_SUBSCRIPTION_SETTING_STARTDATE;?>">
+			<input type="hidden" id="numberOfPayments" name="numberOfPayments" value="<?php //echo BNA_SUBSCRIPTION_SETTING_NUMPAYMENT; ?>">
 			<input class="save-pm-checkbox" type="checkbox" name="create_subscription" checked>
-			Create subscription (<a href="#" id="showHideSettings">show settings</a>)
+			Create subscription (<a href="#" id="showHideSettings">show settings</a>)-->
 		</label>
 	</div>
 
@@ -393,18 +393,18 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<h3>Subscription settings</h3>
 				<div class="form-row form-row-wide">
 					<label>Repeat <span class="required">*</span></label>
-					<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="Please choose...">
+					<!--<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="Please choose...">
 						<?php
-							$selected = BNA_SUBSCRIPTION_SETTING_REPEAT;
-							$duration = ['day', 'week', 'two weeks', 'month', 'three month', 'six month', 'year'];
-							$durOptions = ['daily', 'weekly', 'bi-weekly', 'monthly', 'every-3-months', 'every-6-months' , 'yearly'];
+							//$selected = BNA_SUBSCRIPTION_SETTING_REPEAT;
+							//$duration = ['day', 'week', 'two weeks', 'month', 'three month', 'six month', 'year'];
+							//$durOptions = ['daily', 'weekly', 'bi-weekly', 'monthly', 'every-3-months', 'every-6-months' , 'yearly'];
 
-							foreach ($duration as $d_key => $d_val) {
-								$attr = $durOptions[$d_key] == $selected ? 'selected' : '';
-								echo "<option value='{$durOptions[$d_key]}' {$attr}>EVERY ".strtoupper($d_val)."</option>";
-							}
+							//foreach ($duration as $d_key => $d_val) {
+								//$attr = $durOptions[$d_key] == $selected ? 'selected' : '';
+								//echo "<option value='{$durOptions[$d_key]}' {$attr}>EVERY ".strtoupper($d_val)."</option>";
+							//}
 						?>
-					</select>
+					</select>-->
 				</div>
 				<div class="form-row form-row-wide">
 					<!--<label>FIRST PAYMENT</label>
@@ -606,20 +606,20 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			forEach((function(x){ x.removeAttribute('disabled');}))
 	}, true);
 
-	let a_settings = document.getElementById('showHideSettings');
-	a_settings.addEventListener('click', event => {
-		event.preventDefault();
-		event.stopPropagation();
-		let settingTab = document.querySelector('.stabs');
-		settingTab.style.display = settingTab.style.display === 'none' || settingTab.style.display === '' ? 'block' : 'none';
+	//let a_settings = document.getElementById('showHideSettings');
+	//a_settings.addEventListener('click', event => {
+		//event.preventDefault();
+		//event.stopPropagation();
+		//let settingTab = document.querySelector('.stabs');
+		//settingTab.style.display = settingTab.style.display === 'none' || settingTab.style.display === '' ? 'block' : 'none';
 
-		jQuery('.datepicker-here').datepicker({minDate: new Date()});
+		//$('.datepicker-here').datepicker({minDate: new Date()});
 		
-		var first_payment_date_1 = document.getElementById('datepickers-container');
-		first_payment_date_1.addEventListener('click', event => {
-			document.getElementById('startDate').value = first_payment_date.value;
-		});
-	});
+		//var first_payment_date_1 = document.getElementById('datepickers-container');
+		//first_payment_date_1.addEventListener('click', event => {
+			//document.getElementById('startDate').value = first_payment_date.value;
+		//});
+	//});
 
 	let btn_qplus = document.getElementById('qtyminus');
 	btn_qplus.addEventListener('click', event => {
@@ -651,7 +651,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	let btn_firstPayment = document.getElementById('btn_firstPayment');
 	btn_firstPayment.addEventListener('click', event => {
 		first_payment_date.disabled=false;
-		first_payment_date.classList.add('activate_input');
+		//first_payment_date.classList.add('activate_input');
 		first_payment_date.value = new Date().toISOString().slice(0, 10);	
 		document.getElementById('startDate').value = first_payment_date.value.toString();
 	});
@@ -679,10 +679,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		document.getElementById('qtyplus').disabled=false;		
 	});
 
-	let ssRepeat = document.getElementById('ssRepeat');
-	ssRepeat.addEventListener('change', event => {
-		document.getElementById('recurring').value = ssRepeat.value;
-	});
+	//let ssRepeat = document.getElementById('ssRepeat');
+	//ssRepeat.addEventListener('change', event => {
+		//document.getElementById('recurring').value = ssRepeat.value;
+		//console.log(document.getElementById('recurring').value);
+		//console.log(ssRepeat.value);
+	//});
 
 	let billing_duration = document.getElementById('btn_noLimit');
 	billing_duration.addEventListener('change', event => {

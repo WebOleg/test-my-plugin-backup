@@ -94,7 +94,15 @@ function wc_bna_gateway_init() {
 			add_action( 'woocommerce_email_before_order_table', array( &$this, 'email_instructions' ), 10, 3 );
 
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
-			add_action( 'wp_enqueue_scripts', array(&$this, 'site_load_styles'));
+			add_action( 'wp_enqueue_scripts', array(&$this, 'site_load_styles') );
+			//add_action( 'wp_enqueue_scripts', function() {
+				//if ( wp_script_is( 'select2.full.min', 'registered' )  ) {//wp_script_is( 'select2.full.js', 'registered' ) || || wp_script_is( 'select2.js', 'registered' ) || wp_script_is( 'select2.min.js', 'registered' )
+					//return;
+				//} else {
+					//wp_enqueue_style( 'bna-select2-css', $this->plugin_url . 'js/select2/css/select2.min.css' );
+					//wp_enqueue_script( 'bna-select2-js', $this->plugin_url.'js/select2/js/select2.min.js', array('jquery'), '4.1.0', true );
+				//}
+			//} );
 			add_action( 'woocommerce_email_actions', array(&$this, 'send_refund_email'));
 		}
 
@@ -104,18 +112,18 @@ function wc_bna_gateway_init() {
 		*/
 		public function site_load_styles()
 		{
-			$fees = json_decode(get_option('wc_bna_gateway_fees'));
+			$fees = get_option( 'wc_bna_gateway_fees' ); //json_decode( ) 
 			wp_register_style('wc_gwpay_check_css', $this->plugin_url . 'css/styles.css' );
 			wp_register_style('wc_gwpay_check_css1', $this->plugin_url . 'js/datepicker/css/datepicker.min.css' );
-			wp_enqueue_script( 'wc_gwpl', $this->plugin_url.'js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
+			wp_enqueue_script( 'wc_gwpl', $this->plugin_url.'js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );					
 			wp_localize_script( 'jquery', 'wc_gwpl_fee',
 				array(
-					"creditCardPercentageFee" => $fees->creditCardPercentageFee,
-					"creditCardFlatFee" => $fees->creditCardFlatFee,
-					"etransferPercentageFee" => $fees->etransferPercentageFee,
-					"etransferFlatFee" => $fees->etransferFlatFee,
-					"directDebitPercentageFee" => $fees->directDebitPercentageFee,
-					"directDebitFlatFee" => $fees->directDebitFlatFee, 
+					"creditCardPercentageFee" => $fees['creditCardPercentage'],
+					"creditCardFlatFee" => $fees['creditCardFlat'],
+					"etransferPercentageFee" => $fees['eTransferPercentage'],
+					"etransferFlatFee" => $fees['eTransferFlat'],
+					"directDebitPercentageFee" => $fees['eftPercentage'],
+					"directDebitFlatFee" => $fees['eftFlat'], 
 				)	
 			);
 		}
@@ -393,6 +401,7 @@ function wc_bna_gateway_init() {
 				throw new Exception( "Can't find BNA payment type" );
 			}
 
+			$data_subscription = array();
 			$data = array(
 				'transactionTime' => date('Y-m-d\TH:i:sO'),
 				'items'				=> $items,
@@ -401,8 +410,7 @@ function wc_bna_gateway_init() {
 					($woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping()),
 				'currency'			=> get_woocommerce_currency(),
 				'metadata'		=> array(
-					'invoiceId' => $order_id,
-					
+					'invoiceId' => $order_id,				
 				),
 					//'email'				=> $_POST['billing_email'], // "emailAddress"
 					//'firstName'		=> $_POST['billing_first_name'],
@@ -421,26 +429,14 @@ function wc_bna_gateway_init() {
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 
 			if ( ! empty( $payorID ) ) {
-				$data['customerId'] = $payorID; // payorId
+				$data['customerId'] = $payorID;
 			}
 
-			if ( isset( $_POST['create_subscription'] ) ) {
-				$data['subscription'] = array(
-					"recurring" => $_POST['recurring']
-				);
-				if ( !empty($_POST['startDate']) && $_POST['startDate'] !== '0') {
-					$data->subscription->{"startDate"} = date('Y-m-d\TH:i:sO', strtotime($_POST['startDate']));
-				}
-				if ( !empty($_POST['numberOfPayments']) && $_POST['numberOfPayments'] !== '0') {
-					$data->subscription->{"numberOfPayments"} = $_POST['numberOfPayments'];
-				}				
-			}
-			
-
-			//$paymentTypeMethod = '';
+			$paymentTypeMethod = '';
 
 			switch ( $_POST['payment-type'] ) { // paymentType
-				case 'card': 
+				case 'card':
+					$paymentTypeMethod = 'card';
 					if ( ! empty( $_POST['paymentMethodCC'] ) ) {
 						if ( $_POST['paymentMethodCC'] === 'new-card' ) {
 							if ( ! empty( $_POST['cc_expire'] ) ) {
@@ -494,53 +490,84 @@ function wc_bna_gateway_init() {
 					break;
 			}
 
-			//$paymentMethod = '';
-			//$is_subscription = isset($_POST['create_subscription']);
+			$paymentMethod = '';
+			$is_subscription = isset( $_POST['create_subscription'] );
+			
+			if ( isset( $_POST['create_subscription'] ) ) {
+				$data_subscription = array();
+				
+				$data_subscription['paymentDetails'] = $data['paymentDetails'];
+				
+				$data_subscription['recurrence'] = $_POST['recurring'];
+				if ( ! empty( $_POST['startDate'] ) && $_POST['startDate'] !== '0' ) {
+					$data_subscription['startPaymentDate'] = date( 'Y-m-d\TH:i:sO', strtotime( $_POST['startDate'] ) );
+				}
+				if ( ! empty( $_POST['numberOfPayments'] ) && $_POST['numberOfPayments'] !== '0' ) {
+					$data_subscription['remainingPayments'] = $_POST['numberOfPayments'];
+				}
+				$data_subscription['customerId'] = $payorID;
+				$data_subscription['items'] = $items;
+				$data_subscription['action'] = 'SALE';
+				$data_subscription['paymentMethod'] = 'CARD';
+				$data_subscription['applyFee'] = $args['applyFee'] == 'yes' ? true : false;
+				$data_subscription['subtotal'] = 
+					( $woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping() );
+				$data_subscription['currency'] = get_woocommerce_currency();
+				$data_subscription['invoiceInfo'] = array(
+					'invoiceId' => strval( $order_id ),				
+				);
+			}
 
-			//if ( is_user_logged_in() ) {
-				//if ( empty($_POST['save_payment']) ) {
-					//if ( empty($payorID) ) {
-						//$paymentMethod = $is_subscription 
-							//? 'recurring-save-payor-payment'	
-							//: 'one-time-save-payor-payment';
-					//} else {
-						//if ( empty($data->paymentMethodId) ) {
-							//$paymentMethod = $is_subscription 
-								//? 'recurring-existing-payor'
-								//: 'one-time-existing-payor';
-						//} else {
-							//$paymentMethod = $is_subscription 
-								//? 'recurring-existing-payor-existing-payment'
-								//: 'one-time-existing-payor-existing-payment';
-						//}
-					//}
-				//} else {
-					//if ( empty($payorID) ) {
-						//$paymentMethod = $is_subscription 
-							//? 'recurring-save-payor-save-payment'
-							//: "one-time-save-payor-save-payment";
-					//} else {
-						//$paymentMethod = $is_subscription 
-							//? 'recurring-existing-payor-save-payment'
-							//: 'one-time-existing-payor-save-payment';
-					//}
-				//}
-			//} else {
-				//$paymentMethod =  $is_subscription  
-					//? 'recurring-payment'
-					//: 'one-time-payment';
-
-			//}
+			if ( is_user_logged_in() ) {
+				if ( empty( $_POST['save_payment'] ) ) {
+					if ( empty($payorID) ) {
+						$paymentMethod = $is_subscription 
+							? 'recurring-save-payor-payment'	
+							: 'one-time-save-payor-payment';
+					} else {
+						if ( empty($data->paymentMethodId) ) {
+							$paymentMethod = $is_subscription 
+								? 'recurring-existing-payor'
+								: 'one-time-existing-payor';
+						} else {
+							$paymentMethod = $is_subscription 
+								? 'recurring-existing-payor-existing-payment'
+								: 'one-time-existing-payor-existing-payment';
+						}
+					}
+				} else {
+					if ( empty($payorID) ) {
+						$paymentMethod = $is_subscription 
+							? 'recurring-save-payor-save-payment'
+							: "one-time-save-payor-save-payment";
+					} else {
+						$paymentMethod = $is_subscription 
+							? 'recurring-existing-payor-save-payment'
+							: 'one-time-existing-payor-save-payment';
+					}
+				}
+			} else {
+				$paymentMethod =  $is_subscription  
+					? 'recurring-payment'
+					: 'one-time-payment';
+			}
 
 my_log( $data );
 			$response = $api->query(
-				$args['serverUrl'].'/'.$args['protocol'].'/transaction/card/sale', //.$paymentTypeMethod.'/'.$paymentMethod,
+				$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/card/sale', //.$paymentTypeMethod.'/'.$paymentMethod,
 				$data,
 				'POST'
 			);
 			$response = json_decode( $response, true );
 my_log( $response );	
 			if ( ! empty( $response['id'] ) ) {
+my_log( $data_subscription );				
+				$response_subscription = $api->query(
+				$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
+					$data_subscription,
+					'POST'
+				);
+my_log( $response_subscription );					
 				$status = $order->get_status();
 				if ( ! in_array( $status, ['pending', 'completed', 'cancelled', 'processing'] ) ) {
 					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
@@ -551,11 +578,11 @@ my_log( $response );
 					'redirect'  => $this->get_return_url( $order )
 				);
 			} else {
-				$order->update_status('on-hold', __('Pending.', 'wc-bna-gateway'));
+				$order->update_status( 'on-hold', __( 'Pending.', 'wc-bna-gateway' ) );
 			}
 			
 			throw new Exception(
-				__("Communication error with the payment system. Try again later.", 'wc-bna-gateway')
+				__( "Communication error with the payment system. Try again later.", 'wc-bna-gateway' )
 			);
 		}
 
