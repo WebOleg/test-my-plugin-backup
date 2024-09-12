@@ -574,10 +574,10 @@ body.woocommerce-checkout .woocommerce form.checkout {
 	gap: 30px;
 }
 body.woocommerce-checkout .woocommerce form.checkout .bna-customer-details {
-	flex: 0 1 42%;
+	flex: 0 1 40%;
 }
 body.woocommerce-checkout .woocommerce form.checkout .bna-order-review {
-	flex: 0 1 55%;
+	flex: 0 1 57%;
 }
 body.woocommerce-checkout .woocommerce form.checkout .bna-order-review .bna-payment-method__item {
 	line-height: 90px;

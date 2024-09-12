@@ -77,10 +77,8 @@ if (!class_exists('BNAAccountManager')) {
 		public function site_load_styles()
 		{			
 			wp_register_style('wc_gwpl_css_1', $this->plugin_url . 'js/datepicker/css/datepicker.min.css' );
-			wp_register_style('wc_gwpl_css_2', $this->plugin_url . 'js/select2/css/select2.min.css' );
 			wp_enqueue_script ( 'wc_gwpl_1', $this->plugin_url.'js/bankNames.js', array(), '1.0.0', true );
 			wp_register_script( 'wc_gwpl_2', $this->plugin_url.'js/ajax_io.js', array('jquery'), time(), true );
-			wp_register_script( 'wc_gwpl_4', $this->plugin_url.'js/select2/js/select2.min.js', array('jquery'), '', true );
 			wp_register_script( 'wc_gwpl_3', $this->plugin_url.'js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
 			wp_register_script( 'wc-country-select', site_url().'/wp-content/plugins/woocommerce/assets/js/frontend/country-select.min.js', array('jquery'), null, true );
 
@@ -204,13 +202,12 @@ if (!class_exists('BNAAccountManager')) {
 		 */
 		public static function loading_scripts() 
 		{
-			//wp_deregister_script('jquery');
-			//wp_enqueue_script( 'jquery', "https://code.jquery.com/jquery-3.6.0.min.js", array(), null, true);
-			wp_enqueue_script( 'wc_gwpl_1');			
+			wp_enqueue_script( 'wc_gwpl_1');
+			wp_enqueue_script( 'wc_gwpl_2');		
 			wp_enqueue_script( 'wc_gwpl_3');
 			wp_enqueue_script( 'wc_gwpl_4');
-			wp_enqueue_script( 'wc-country-select');
-			wp_enqueue_style('wc_gwpl_css_1');
+			wp_enqueue_script( 'wc-country-select' );
+			wp_enqueue_style( 'wc_gwpl_css_1' );
 		}
 		
 		/**
@@ -567,22 +564,6 @@ if (!class_exists('BNAAccountManager')) {
 
 				// add fields to the database
 				$response = json_decode( $response, true );
-			
-				if ( ! empty( $response['id'] ) ) {
-					if ( ! empty( $filtered_data['companyName'] ) ) update_user_meta( $user_id, 'billing_company', $filtered_data['companyName'] );					
-					update_user_meta( $user_id, 'billing_first_name', $filtered_data['firstName'] );
-					update_user_meta( $user_id, 'billing_last_name', $filtered_data['lastName'] );
-					update_user_meta( $user_id, 'billing_phone_code', $filtered_data['phoneCode'] );					
-					update_user_meta( $user_id, 'billing_phone', $filtered_data['phoneNumber'] );
-					if ( ! empty( $filtered_data['birthDate'] ) ) update_user_meta( $user_id, 'billing_birthday', $filtered_data['birthDate'] );
-					update_user_meta( $user_id, 'billing_street_number', $filtered_data['address']['streetNumber'] );
-					update_user_meta( $user_id, 'billing_street_name', $filtered_data['address']['streetName'] );
-					if ( ! empty( $filtered_data['address']['apartment'] ) ) update_user_meta( $user_id, 'billing_apartment', $filtered_data['address']['apartment'] );
-					update_user_meta( $user_id, 'billing_postcode', $filtered_data['address']['postalCode'] );
-					update_user_meta( $user_id, 'billing_city', $filtered_data['address']['city'] );
-					update_user_meta( $user_id, 'billing_state', $filtered_data['address']['province'] );
-					update_user_meta( $user_id, 'billing_country', $filtered_data['address']['country'] );
-				}
 				
 				empty( $response['id'] ) ? 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
@@ -813,123 +794,120 @@ if (!class_exists('BNAAccountManager')) {
 		{
 			global $wpdb, $BNAPluginManager;
 
-			if ( empty( $result['data']['payorId'] ) ) {
-				//BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
-				//wp_die();
+			if ( empty( $result['id'] ) ) {
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPAYOR );
+				wp_die();
 			}
 
-			$user = get_user_by( 'email', $result['data']['emailAddress'] );
+			$user = get_user_by( 'email', $result['email'] );
 
-			//if ( empty( $user) ) {
-				//$config = $wpdb->get_row("SELECT user_id FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS. 
-					//" WHERE payorId='".$result['data']['payorId']."'");
-				//if ( empty( $config) ) {
-					//BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ENDPOINT_ACCOUNT_ERRUSER);
-					//wp_die();
-				//}
-				//$user = get_user_by( 'ID', $config->user_id );
-			//}
+			if ( empty( $user) ) {
+				$config = $wpdb->get_row( "SELECT user_id FROM ".$wpdb->prefix . BNA_TABLE_SETTINGS. 
+					" WHERE payorId='".$result['id']."'" );
+				if ( empty( $config) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ENDPOINT_ACCOUNT_ERRUSER );
+					wp_die();
+				}
+				$user = get_user_by( 'ID', $config->user_id );
+			}
 			
-			//foreach ( $result['data'] as $rkey => $rval) {
-				//$field = '';
-				//switch ( $rkey) {
-					//case 'payorId':				$field = 'payorID'; break;
-					//case 'companyName':	$field = 'billing_company'; break;
-					//case 'firstName':			$field = 'billing_first_name'; break;
-					//case 'lastName':			$field = 'billing_last_name'; break;
-					//case 'phone':				$field = 'billing_phone'; break;
-					//case 'birthday':				$field = 'billing_birthday'; break;
-					//case 'emailAddress':
-						//$wpdb->query("UPDATE {$wpdb->users} SET user_email='{$rval}' WHERE ID={$user->ID}");
-						//break;
-				//}
+			foreach ( $result as $rkey => $rval ) {
+				$field = '';
+				switch ( $rkey) {
+					case 'id':						$field = 'payorID'; break;
+					case 'companyName':	$field = 'billing_company'; break;
+					case 'firstName':			$field = 'billing_first_name'; break;
+					case 'lastName':			$field = 'billing_last_name'; break;
+					case 'phoneCode':	$field = 'billing_phone_code'; break;
+					case 'phoneNumber':	$field = 'billing_phone'; break;
+					case 'birthDate':			$field = 'billing_birthday'; break;
+					//case 'emailAddress':		$wpdb->query("UPDATE {$wpdb->users} SET user_email='{$rval}' WHERE ID={$user->ID}");
+						break;
+				}
 
-				//if ( ! empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
-			//}
+				if ( ! empty( $field ) ) update_user_meta ( $user->ID, $field, $rval );
+			}
 
-			//$country = $result['data']['address']['country'];
-			//foreach (WC()->countries->countries as $c_key => $c_val) {
-				//if ( strripos( $c_val, $country) !== false ) { 
-					//$country = $c_key;
-					//update_user_meta ( $user->ID, 'billing_country', $country );
-					//break;
-				//}
-			//}
+			$country = $result['address']['country'];
+			foreach ( WC()->countries->countries as $c_key => $c_val ) {
+				if ( strripos( $c_val, $country) !== false ) { 
+					$country = $c_key;
+					update_user_meta ( $user->ID, 'billing_country', $country );
+					break;
+				}
+			}
 
-			//$province = $result['data']['address']['province'];
-			//foreach (WC()->countries->get_states( $country ) as $p_key => $p_val) {
-				//if ( strripos( $p_val, $province) !== false ) {
-					//$province = $p_key;
-					//update_user_meta ( $user->ID, 'billing_state', $province );
-					//break;
-				//}
-			//}
+			$province = $result['address']['province'];
+			foreach ( WC()->countries->get_states( $country ) as $p_key => $p_val ) {
+				if ( strripos( $p_val, $province ) !== false ) {
+					$province = $p_key;
+					update_user_meta ( $user->ID, 'billing_state', $province );
+					break;
+				}
+			}
 
-			//foreach ( $result['data']['address'] as $rkey => $rval) {
-				//$field = '';
-				//switch ( $rkey) {
-					//case 'streetNumber':	$field = 'billing_street_number'; break;
-					//case 'apartment':		$field = 'billing_apartment'; break;
-					//case 'streetName':	$field = 'billing_street_name'; break;
-					//case 'postalZip':		$field = 'billing_postcode'; break;
-					//case 'city':				$field = 'billing_city'; break;
-				//}
+			foreach ( $result['address'] as $rkey => $rval ) {
+				$field = '';
+				switch ( $rkey) {
+					case 'streetNumber':	$field = 'billing_street_number'; break;
+					case 'apartment':		$field = 'billing_apartment'; break;
+					case 'streetName':	$field = 'billing_street_name'; break;
+					case 'postalCode':		$field = 'billing_postcode'; break;
+					case 'city':				$field = 'billing_city'; break;
+				}
 
-				//if ( !empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
-			//}
+				if ( !empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
+			}
 
-			//update_user_meta ( $user->ID, 'billing_address_1', $result['data']['address']['streetName'] );
-			//update_user_meta ( $user->ID, 'billing_address_2', 
-				//'street #'.$result['data']['address']['streetNumber'] .
-					//( 
-						//empty( $result['data']['address']['apartment'] ) ? 
-						//'' : 
-						//', apt. '.$result['data']['address']['apartment'] 
-					//)
-			//);
+			update_user_meta ( $user->ID, 'billing_address_1', $result['address']['streetName'] );
+			update_user_meta ( $user->ID, 'billing_address_2', 
+				'street #'.$result['address']['streetNumber'] .
+					( 
+						empty( $result['address']['apartment'] ) ? 
+						'' : 
+						', apt. '.$result['address']['apartment'] 
+					)
+			);
 			
 			$payorID = get_user_meta( $user->ID, 'payorID', true );
 
 			if ( ! empty( $payorID ) ) {
-				if ( ! empty( $result['type'] ) && $result['type'] === 'add_card' ) {
+				if ( ! empty( $result['paymentMethods'] ) ) {
 			
 					$wpdb->query( "DELETE FROM ".$wpdb->prefix . BNA_TABLE_SETTINGS." WHERE payorId='$payorID'" );
 
-					//foreach ( $result['data']['paymentTypes'] as $rkey => $rval ) {
-						//$paymentInfo = '';
-						//switch ( $rval['paymentType'] ) {
-							//case 'MASTERCARD':
-							//case 'VISA':
-							//case 'AMEX':
-								//$paymentInfo = $rval['cardNumber'];
-								//break;
-							//case 'DIRECT-DEBIT':
-							//case 'DIRECT-CREDIT':
-								//$paymentInfo = $rval['accountNumber'] . '/' . $rval['transitNumber'];
-								//break;
-							//case 'ETRANSFER':
-								//$paymentInfo = $rval['emailAddress'];
-								//break;		
-						//}
+					foreach ( $result['paymentMethods'] as $rkey => $rval ) {
+						$paymentInfo = '';
+						$paymentType = '';
+						if ( ! empty( $rval['interacEmail'] ) ) {
+							$paymentInfo = $rval['interacEmail'];
+							$paymentType = 'e-transfer';
+						} elseif ( ! empty( $rval['bankName'] ) ) {
+							$paymentInfo = $rval['accountNumber'] . '/' . $rval['transitNumber'];
+							$paymentType = 'eft';
+						} elseif ( ! empty( $rval['cardType'] ) ) {
+							$paymentInfo = $rval['cardNumber'];
+							$paymentType = 'card';
+						}
 
-						if ( ! empty( $paymentInfo) ) {
+						if ( ! empty( $paymentInfo ) ) {
 							$stmt = $wpdb->insert( 
 								$wpdb->prefix . BNA_TABLE_SETTINGS,  
 								array( 
 									'user_id' 			=> 	$user->ID, 
 									'payorId' 			=> 	$payorID,
-									'paymentMethodId' => esc_html( $result['paymentMethodId'] ),
-									'paymentType' 		=>  'card',
-									'paymentInfo' 		=> 	'test@test.com',
+									'paymentMethodId' => ! empty( $rval['id'] ) ? esc_html( $rval['id'] ) : '',
+									'paymentType' 		=>  $paymentType,
+									'paymentInfo' 		=>	esc_html( $paymentInfo ),
 									'paymentsRecurrings'=>  0,
-									'paymentDescription'=> 'Payment description', //json_encode( $rval )
+									'paymentDescription'=> json_encode( $rval )
 								),
 								array( 
 									'%d','%s','%s','%s','%s','%s','%s'
 								)
 							);							
 						}
-					//}
+					}
 				}
 			}	
 
