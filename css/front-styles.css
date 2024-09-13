@@ -161,13 +161,41 @@ body.woocommerce-checkout .woocommerce form.checkout .bna-order-review select.bn
 	border: 1px solid #CCC;
 	background: #FFF;
 }
+/* checkout-radio */
+.bna-checkout-radio {
+	display:inline-block;
+	width: 22px;
+	height: 22px;
+	border-radius: 100%;
+	background-color: #fff;
+	border: 2px solid #646464;
+	cursor:pointer;
+	margin: 2px 0; 
+	position: relative;
+	vertical-align: middle;
+	margin: auto 20px auto 20px;
+}
+.bna-checkout-radio.selected {
+	border-color: #646464;
+}
+.bna-checkout-radio.selected:after {
+	content: "";
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	border-radius: 100%;
+	left: 2px;
+	top: 2px;
+	display: block;
+	background: #646464;
+}
 
 /* Customize the label (the container) */
 body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container {
 	display: block;
 	position: relative;
 	padding-left: 55px;
-	margin: 30px 0px;
+	margin: 50px 0px 30px;
 	cursor: pointer;
 	font-size: var(--bna-font-size);
 	font-weight: var(--bna-font-weight);
@@ -499,6 +527,11 @@ body.woocommerce-account .woocommerce .tpl-payment-method a.method-delete {
 	text-decoration: underline;
 	font-weight: 700;
 }
+body.woocommerce-checkout .woocommerce .tpl-payment-method-eft,
+body.woocommerce-checkout .woocommerce .tpl-payment-method-cards  {
+	padding-top: 30px;
+}
+body.woocommerce-checkout .woocommerce .tpl-payment-method-eft .tpl-input-wrapper,
 body.woocommerce-checkout .woocommerce .tpl-payment-method-cards .tpl-input-wrapper,
 body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-input-wrapper {
 	margin-top: 30px;
@@ -507,6 +540,7 @@ body.woocommerce-checkout .woocommerce .tpl-recurring-cards .tpl-inputs-wrapper 
 body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-input-label {
 	margin-bottom: 10px;
 }
+body.woocommerce-checkout .woocommerce .tpl-payment-method-eft .tpl-two-inputs-wrapper,
 body.woocommerce-checkout .woocommerce .tpl-payment-method-cards .tpl-two-inputs-wrapper,
 body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-two-inputs-wrapper {
 	display: flex;
@@ -515,6 +549,7 @@ body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-two-inputs-
 	column-gap: 30px;
 	position: relative;
 }
+body.woocommerce-checkout .woocommerce .tpl-payment-method-eft .tpl-two-inputs-wrapper .tpl-input-wrapper,
 body.woocommerce-checkout .woocommerce .tpl-payment-method-cards .tpl-two-inputs-wrapper .tpl-input-wrapper,
 body.woocommerce-account .woocommerce .tpl-payment-method-cards .tpl-two-inputs-wrapper .tpl-input-wrapper {
 	flex: 0 1 calc(50% - 15px);
@@ -595,7 +630,7 @@ body.woocommerce-checkout .woocommerce form.checkout .bna-order-review .bna-chec
 body.woocommerce-checkout .woocommerce form.checkout .bna-order-review .bna-payment-method__content {
 	display: none;
 	border-bottom: 2px solid var(--bna-border-color);
-	padding: 30px 0px 30px 50px;
+	padding: 30px 0px 40px 50px;
 }
 body.woocommerce-checkout .woocommerce form.checkout .bna-order-review .bna-payment-method__content-title {
 	padding-bottom: 10px;
@@ -608,12 +643,14 @@ body.woocommerce-checkout .woocommerce form.checkout .bna-order-review #payment 
 	margin: 0px;
 	width: 100%;
 }
+body.woocommerce-checkout .woocommerce .tpl-payment-method-eft,
 body.woocommerce-checkout .woocommerce .tpl-recurring-cards,
 body.woocommerce-checkout .woocommerce .tpl-payment-method-cards {
 	display: none;
     opacity: 0;
     transition: opacity 1s linear;
 }
+body.woocommerce-checkout .woocommerce .tpl-payment-method-eft.tpl-active,
 body.woocommerce-checkout .woocommerce .tpl-recurring-cards.tpl-active,
 body.woocommerce-checkout .woocommerce .tpl-payment-method-cards.tpl-active {
 	display: block;
@@ -698,6 +735,21 @@ body.woocommerce-checkout .woocommerce .tpl-recurring-cards .tpl-input-wrapper #
 	visibility: visible;
 	width: 100%;
 }
+#checkmark_is_recurring {
+	left: 20px;
+}
+body.woocommerce-checkout .woocommerce #bank_name {
+	opacity: 1;
+	visibility: visible;
+}
+
+
+/*
+select{
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+*/
 
 
 /* General classes */

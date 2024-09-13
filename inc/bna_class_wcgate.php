@@ -461,30 +461,30 @@ function wc_bna_gateway_init() {
 					self::add_payment_fee ($order, $fees->creditCardPercentageFee, $fees->creditCardFlatFee);
 					break;
 				case 'eft':
-					$paymentTypeMethod = 'direct-debit';
-					if ( empty($_POST['paymentMethodDD']) ) {
-						$params = array (
-							"paymentType" 		=> "DIRECT-DEBIT",
-							"institutionNumber"	=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['institutionNumber'],
-							"accountNumber"		=> $_POST['accountNumber'],
-							"transitNumber"		=> $_POST['transitNumber']
-						);
-						foreach ($params as $p_key => $p_val)
-							$data->transactionInfo->{$p_key} = $p_val;
-
-					} else {
-						$data->{"paymentMethodId"} = $_POST['paymentMethodDD'];
+					$paymentTypeMethod = 'eft';
+					if ( ! empty( $_POST[ 'paymentMethodDD' ] ) ) {
+						if ( $_POST[ 'paymentMethodDD' ] === 'new-method' ) {
+							$params = array (
+								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['institutionNumber'],
+								"accountNumber"	=> $_POST['accountNumber'],
+								"transitNumber"	=> $_POST['transitNumber']
+							);
+							foreach ( $params as $p_key => $p_val )
+									$data['paymentDetails'][$p_key] = $p_val;
+						} else {
+							$data['paymentDetails'] = array( "id" => $_POST['paymentMethodDD'] );
+						}
 					}
 					self::add_payment_fee ($order, $fees->directDebitPercentageFee, $fees->directDebitFlatFee);
 					break;
 				case 'e-transfer':
 					$paymentTypeMethod = 'e-transfer';
 					$params = array (
-						"paymentType" 		=> "ETRANSFER",
-						"emailAddress"		=> $_POST['email_transfer'],
+						//"paymentType" 		=> "ETRANSFER",
+						"interacEmail"		=> $_POST['email_transfer'],
 					);
-					foreach ($params as $p_key => $p_val)
-						$data->transactionInfo->{$p_key} = $p_val;
+					foreach ( $params as $p_key => $p_val )
+						$data['paymentDetails'][$p_key] = $p_val;
 
 					self::add_payment_fee ($order, $fees->etransferPercentageFee, $fees->etransferFlatFee);
 					break;
@@ -508,7 +508,7 @@ function wc_bna_gateway_init() {
 				$data_subscription['customerId'] = $payorID;
 				$data_subscription['items'] = $items;
 				$data_subscription['action'] = 'SALE';
-				$data_subscription['paymentMethod'] = 'CARD';
+				$data_subscription['paymentMethod'] = $paymentTypeMethod;
 				$data_subscription['applyFee'] = $args['applyFee'] == 'yes' ? true : false;
 				$data_subscription['subtotal'] = 
 					( $woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping() );
@@ -518,56 +518,61 @@ function wc_bna_gateway_init() {
 				);
 			}
 
-			if ( is_user_logged_in() ) {
-				if ( empty( $_POST['save_payment'] ) ) {
-					if ( empty($payorID) ) {
-						$paymentMethod = $is_subscription 
-							? 'recurring-save-payor-payment'	
-							: 'one-time-save-payor-payment';
-					} else {
-						if ( empty($data->paymentMethodId) ) {
-							$paymentMethod = $is_subscription 
-								? 'recurring-existing-payor'
-								: 'one-time-existing-payor';
-						} else {
-							$paymentMethod = $is_subscription 
-								? 'recurring-existing-payor-existing-payment'
-								: 'one-time-existing-payor-existing-payment';
-						}
-					}
-				} else {
-					if ( empty($payorID) ) {
-						$paymentMethod = $is_subscription 
-							? 'recurring-save-payor-save-payment'
-							: "one-time-save-payor-save-payment";
-					} else {
-						$paymentMethod = $is_subscription 
-							? 'recurring-existing-payor-save-payment'
-							: 'one-time-existing-payor-save-payment';
-					}
-				}
-			} else {
-				$paymentMethod =  $is_subscription  
-					? 'recurring-payment'
-					: 'one-time-payment';
-			}
+			//if ( is_user_logged_in() ) {
+				//if ( empty( $_POST['save_payment'] ) ) {
+					//if ( empty($payorID) ) {
+						//$paymentMethod = $is_subscription 
+							//? 'recurring-save-payor-payment'	
+							//: 'one-time-save-payor-payment';
+					//} else {
+						//if ( empty($data->paymentMethodId) ) {
+							//$paymentMethod = $is_subscription 
+								//? 'recurring-existing-payor'
+								//: 'one-time-existing-payor';
+						//} else {
+							//$paymentMethod = $is_subscription 
+								//? 'recurring-existing-payor-existing-payment'
+								//: 'one-time-existing-payor-existing-payment';
+						//}
+					//}
+				//} else {
+					//if ( empty($payorID) ) {
+						//$paymentMethod = $is_subscription 
+							//? 'recurring-save-payor-save-payment'
+							//: "one-time-save-payor-save-payment";
+					//} else {
+						//$paymentMethod = $is_subscription 
+							//? 'recurring-existing-payor-save-payment'
+							//: 'one-time-existing-payor-save-payment';
+					//}
+				//}
+			//} else {
+				//$paymentMethod =  $is_subscription  
+					//? 'recurring-payment'
+					//: 'one-time-payment';
+			//}
 
-my_log( $data );
-			$response = $api->query(
-				$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/card/sale', //.$paymentTypeMethod.'/'.$paymentMethod,
-				$data,
-				'POST'
-			);
-			$response = json_decode( $response, true );
-my_log( $response );	
-			if ( ! empty( $response['id'] ) ) {
-my_log( $data_subscription );				
-				$response_subscription = $api->query(
-				$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
+			if ( isset( $_POST['create_subscription'] ) ) {
+				my_log( $data_subscription );				
+				$response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
 					$data_subscription,
 					'POST'
 				);
-my_log( $response_subscription );					
+				my_log( $response );
+			} else {
+				my_log( $data );
+				$response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale', //.$paymentTypeMethod.'/'.$paymentMethod,
+					$data,
+					'POST'
+				);			
+				my_log( $response );
+			}
+			
+			$response = json_decode( $response, true );
+
+			if ( ! empty( $response['id'] ) ) {			
 				$status = $order->get_status();
 				if ( ! in_array( $status, ['pending', 'completed', 'cancelled', 'processing'] ) ) {
 					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
@@ -578,7 +583,7 @@ my_log( $response_subscription );
 					'redirect'  => $this->get_return_url( $order )
 				);
 			} else {
-				$order->update_status( 'on-hold', __( 'Pending.', 'wc-bna-gateway' ) );
+				//$order->update_status( 'on-hold', __( 'Pending.', 'wc-bna-gateway' ) );
 			}
 			
 			throw new Exception(

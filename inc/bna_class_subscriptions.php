@@ -36,13 +36,13 @@ if (!class_exists('BNASubscriptions')) {
 		 * @since		1.0.0
 		 * @param json string $result
 		 */
-        public static function endpoint_subscriptions ($result)
+        public static function endpoint_subscriptions( $result )
 		{
 			global $wpdb, $woocommerce;
 	
-			if ( !isset($result['data']['recurringId']) ) exit();
+			if ( ! isset( $result['id'] ) ) exit();
 
-			$base_order = wc_get_order($result['data']['transactionInfo']['invoiceId']);
+			$base_order = wc_get_order( $result['invoiceInfo']['invoiceId'] );
 
             $subscription =  $wpdb->get_results(
                 "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['data']['recurringId']}'"
@@ -50,19 +50,19 @@ if (!class_exists('BNASubscriptions')) {
 
             if ( empty( $subscription ) || count( $subscription ) < 1) {
                 $wpdb->insert( 
-                    $wpdb->prefix.BNA_TABLE_RECURRING,  
+                    $wpdb->prefix . BNA_TABLE_RECURRING,  
                     array( 
                         'user_id'				=> $base_order->get_user_id(),
-                        'order_id'		        => $result['data']['transactionInfo']['invoiceId'],
-                        'recurringId'		    => $result['data']['recurringId'],
-                        'recurring'		        => $result['data']['recurring'],
-                        'status'		        => $result['data']['status'],
-                        'startDate'		        => $result['data']['startDate'],
-                        'nextChargeDate'		=> $result['data']['nextChargeDate'],
-                        'expire'		        => empty( $result['data']['expire'] ) ? "" : $result['data']['expire'],
-                        'numberOfPayments'      => isset( $result['data']['numberOfPayments'] ) ? $result['data']['numberOfPayments'] : -1,
-                        'recurringDescription'  => json_encode((object)[ 'transactionInfo' => $result['data']['transactionInfo'], 
-                            'cartItems' => $result['data']['cartItems']])
+                        'order_id'		        => $result['invoiceInfo']['invoiceId'],
+                        'recurringId'		    => $result['id'],
+                        'recurring'		        => $result['recurrence'],
+                        'status'		        	=> $result['status'],
+                        'startDate'		        => $result['startPaymentDate'],
+                        'nextChargeDate'	=> $result['remainingPayments'],
+                        'expire'		        	=> empty( $result['expire'] ) ? "" : $result['expire'],
+                        'numberOfPayments'   => isset( $result['remainingPayments'] ) ? $result['remainingPayments'] : -1,
+                        'recurringDescription'  => json_encode([ 'invoiceInfo' => $result['invoiceInfo'], 
+							'cartItems' => $result['items'], 'paymentDetails' => $result['paymentDetails']])
                     ),
                     array( 
                         '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
