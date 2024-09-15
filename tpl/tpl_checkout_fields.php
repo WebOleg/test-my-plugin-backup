@@ -10,41 +10,11 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
 
-<fieldset id="wc-<?= esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
-	<style>
-		.bna-checkout-radio{
-			display:inline-block;
-			width: 22px;
-			height: 22px;
-			border-radius: 100%;
-			background-color: #fff;
-			border: 2px solid #646464;
-			cursor:pointer;
-			margin: 2px 0; 
-			position: relative;
-			vertical-align: middle;
-			margin: auto 20px auto 20px;
-		}
-
-		.bna-checkout-radio.selected{
-			border-color: #646464;
-		}
-		.bna-checkout-radio.selected:after {
-			content: "";
-			position: absolute;
-			width: 14px;
-			height: 14px;
-			border-radius: 100%;
-			left: 2px;
-			top: 2px;
-			display: block;
-			background: #646464;
-		}
-		
-	</style>
-	
+<fieldset id="wc-<?= esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" >
 	<div>
 		<div class="bna-payment-methods">
+			
+			<!-- Card -->
 			<div class="bna-payment-method__item">
 				<div class="bna-checkout-radio" data-payment-type="card"></div>
 				<?php _e( 'Credit Card', 'wc-bna-gateway' ); ?>
@@ -62,13 +32,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 							foreach ($paymentMethods as $pm_val) {
 								if ( $pm_val->paymentType === 'card' ) {
 									echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
-												$pm_val->paymentInfo . ':' . $pm_val->paymentType .
+												$pm_val->paymentType . ' : ' . $pm_val->paymentInfo .
 											"</option>";
 								}
 							}
 						}
 					?>
-					<option value="new-card"><?php _e( 'New Card', 'wc-bna-gateway' ); ?></option>
+					<option value="new-card"><?php _e( 'Add New Card', 'wc-bna-gateway' ); ?></option>
 				</select>
 				
 				<div class="tpl-payment-method-cards">
@@ -115,92 +85,10 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 						<span class="checkmark"></span>
 						<?php _e( 'Save Credit Card', 'wc-bna-gateway' ); ?>
 					</label>
-				</div>
-								
-				<label class="bna-checkbox-container">
-					<input type="checkbox" name="create_subscription">
-					<span class="checkmark"></span>
-					<?php _e( 'Is this payment Recurring Payment?', 'wc-bna-gateway' ); ?>
-				</label>
-				
-				<!-- Recurring -->
-				<div class="tpl-recurring-cards">
-					<input type="hidden" id="recurring" name="recurring" value="<?php echo BNA_SUBSCRIPTION_SETTING_REPEAT; ?>">
-					<input type="hidden" id="startDate" name="startDate" value="<?php echo BNA_SUBSCRIPTION_SETTING_STARTDATE;?>">
-					<input type="hidden" id="numberOfPayments" name="numberOfPayments" value="<?php echo BNA_SUBSCRIPTION_SETTING_NUMPAYMENT; ?>">
-					
-					<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
-					
-					<div class="tpl-input-wrapper">					
-						<div class="tpl-input-label tpl-mb-10"><?php _e( 'Select Frequency (“Monthly” by default)', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-						<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">
-							<?php
-								$selected = BNA_SUBSCRIPTION_SETTING_REPEAT;
-								$duration = ['day', 'week', 'two weeks', 'month', 'three month', 'six month', 'year'];
-								$durOptions = ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'biannual' , 'annual'];
-
-								foreach ($duration as $d_key => $d_val) {
-									$attr = $durOptions[$d_key] == $selected ? 'selected' : '';
-									echo '<option value=' . $durOptions[$d_key] . ' ' . $attr . '>' . __( 'EVERY', 'wc-bna-gateway' ) . ' ' . strtoupper( $d_val ) .' </option>';
-								}
-							?>
-						</select>
-					</div>
-					
-					<div class="tpl-three-inputs-wrapper">
-						<div class="tpl-input-label"><?php _e( 'My First Payment Starts', 'wc-bna-gateway' ); ?></div>
-						<div class="tpl-input-wrapper">						
-							<input class="tpl-input tpl-radio-button" type="radio" id="btn_immediately" name="setting_first_payment" value="immediately" checked>
-							<span><?php _e( 'Immediately', 'wc-bna-gateway' ); ?></span>
-						</div>
-						
-						<div class="tpl-input-wrapper">						
-							<input class="tpl-input tpl-radio-button" type="radio" id="btn_firstPayment" name="setting_first_payment"  value="set-date">
-							<span><?php _e( 'Custom Date', 'wc-bna-gateway' ); ?></span>
-						</div>
-						
-						<div class="tpl-input-wrapper">						
-							<input class="tpl-input" type="text" id="setting_first_payment_date" name="setting_first_payment_date"  
-								placeholder="<?php _e( 'Select date', 'wc-bna-gateway' ); ?>" disabled readonly>
-						</div>
-					</div>
-					
-					<div class="tpl-three-inputs-wrapper">
-						<div class="tpl-input-label"><?php _e( 'Number of Payments', 'wc-bna-gateway' ); ?></div>
-						<div class="tpl-input-wrapper">						
-							<input class="tpl-input tpl-radio-button" type="radio" id="btn_noLimit" name="setting_billing_duration" value="immediately" checked>
-							<span><?php _e( 'NO LIMIT', 'wc-bna-gateway' ); ?></span>
-						</div>
-						
-						<div class="tpl-input-wrapper">						
-							<input class="tpl-input tpl-radio-button" type="radio" id="btn_numPayment" name="setting_billing_duration"  value="set-date">
-							<span><?php _e( 'CUSTOM NUMBER', 'wc-bna-gateway' ); ?></span>
-						</div>
-						
-						<div class="tpl-input-wrapper">						
-							<input value="1" class="tpl-input" type="text" name="setting_number_of_payment" id="setting_number_of_payment" disabled>
-							<input type="button" value="-" class="qtyminus" id="qtyminus" disabled>
-							<input type="button" value="+" class="qtyplus" id="qtyplus" disabled> 
-						</div>
-					</div>
-				
-					<label class="bna-checkbox-container">
-						<input type="checkbox" name="i-agree">
-						<span class="checkmark"></span>
-						<?php _e( 'I have read and agree to the terms presented in the ', 'wc-bna-gateway' ); ?>
-						<a href="#"><?php _e( 'Recurring Payment Agreement.', 'wc-bna-gateway' ); ?></a>
-					</label>
-				</div>
-			
+				</div>			
 			</div>
-			
-			<div class="bna-payment-method__item">
-				<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
-				<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>
-				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>" />
-				</div>
-			</div>
+					
+			<!-- EFT -->
 			<div class="bna-payment-method__item">
 				<div class="bna-checkout-radio"  data-payment-type="eft"></div>
 				<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>
@@ -208,229 +96,145 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/pm_dc 3.png'; ?>" alt="<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>" />
 				</div>
 			</div>
+			<div class="bna-payment-method__content">
+				<div class="bna-payment-method__content-title"><?php _e( 'Saved payment methods', 'wc-bna-gateway' ); ?></div>
+				<select class="bna-checkout-select-card" id="paymentMethodDD" name="paymentMethodDD" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">					
+					<?php
+						if ( is_array($paymentMethods) ) {
+							foreach ($paymentMethods as $pm_val) {
+								if ( $pm_val->paymentType === 'eft' ) {
+									echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
+												$pm_val->paymentInfo . ' : ' . $data->institutionNumber .
+											"</option>";
+								}
+							}
+						}
+					?>
+					<option value="new-method"><?php _e( 'Add New Method', 'wc-bna-gateway' ); ?></option>
+				</select>
+				
+				<div class="tpl-payment-method-eft">
+					<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+					
+					<div class="tpl-input-wrapper">
+						<div class="tpl-input-label"><?php _e( 'Bank Name', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+						<select id="bank_name" name="bank_name" class="input-text"></select>					
+					</div>
+					
+					<div class="tpl-input-wrapper">
+						<div class="tpl-input-label"><?php _e( 'Institution Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+						<input class="tpl-input" placeholder="000" type="text" id="institutionNumber" name="institutionNumber" value="" maxlength="3" 
+									onkeyup="return digitValid(this);" autocomplete="off" >
+					</div>
+					
+					<div class="tpl-two-inputs-wrapper">
+						<div class="tpl-input-wrapper">
+							<div class="tpl-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="tpl-input" placeholder="000000000000" type="text" id="accountNumber" name="accountNumber" value="" maxlength="12" 
+								onkeyup="return digitValid(this);" autocomplete="off" >
+						</div>
+						
+						<div class="tpl-input-wrapper">
+							<div class="tpl-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="tpl-input" placeholder="00000" type="text" id="transitNumber" name="transitNumber" value="" maxlength="5" 
+								onkeyup="return digitValid(this);" autocomplete="off" >
+						</div>
+					</div>
+					
+					<label class="bna-checkbox-container">
+						<input type="checkbox" name="save-credit-card">
+						<span class="checkmark"></span>
+						<?php _e( 'Save EFT Method', 'wc-bna-gateway' ); ?>
+					</label>
+				</div>
+				
+			</div>
+			
+			<!-- e-Transfer -->
+			<div class="bna-payment-method__item">
+				<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
+				<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>
+				<div class="bna-checkout-images">
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>" />
+				</div>
+			</div>			
+			<div class="bna-payment-method__content">		
+				<div class="tpl-input-wrapper">
+					<div class="tpl-input-label"><?php _e( 'Interac Email', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+					<input class="tpl-input" type="text" placeholder="login@domain" name="email_transfer" value="<?php echo wp_get_current_user()->user_email; ?>" maxlength="100" readonly>
+				</div>
+				<div class="pm-et-block"></div>		
+			</div>	
 			
 			<input type="hidden" id="payment_type" name="payment-type" value="">
+			
+			<?php include "tpl_checkout_subscription_fields.php"; ?>	
 		</div>
 	</div>
 	<script type="module">
-	(function($) {	
-		$('#paymentMethodCC').select2();
-		$('#ssRepeat').select2();
-		
-		$('#setting_first_payment_date').datepicker({
-			dateFormat: 'yyyy-mm-dd',
-			autoClose: true,
-		});
-		
-		// select payment method (cc, i-transfer, eft, google pay, apple pay)
-		$('.bna-payment-methods .bna-checkout-radio').click(function(){
-			$(this).parent().parent().find('.bna-checkout-radio.selected').removeClass('selected');	
-			if ( $('.bna-payment-method__content').is(':visible') ) { $('.bna-payment-method__content').css('display', 'none'); }
-			$(this).addClass('selected');
-			$(this).parent().next().css('display', 'block');
-			$(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
+		(function($) {	
+			$('#paymentMethodCC').select2();
+			$('#ssRepeat').select2();
+			$('#paymentMethodDD').select2();
+			$('#bank_name').select2();
 			
-			$('#payment_type').val( $(this).data('payment-type') );
-		});
-		
-		// select card
-		$('#paymentMethodCC').on("select2:select", function(e) {
-		  let data = e.params.data;
-		  if (data.id === 'new-card') {
-				$('.bna-payment-method__content .tpl-payment-method-cards').addClass('tpl-active');
-			} else {
-				$('.bna-payment-method__content .tpl-payment-method-cards').removeClass('tpl-active');
-			}
-		});
-		
-		// select 'checkbox' recurring
-		$('.bna-checkbox-container input[name="create_subscription"]').on('change', function(event) {
-			if (event.currentTarget.checked) {
-				$(this).parent().next().addClass('tpl-active');
-			} else {
-				$(this).parent().next().removeClass('tpl-active');
-			}
-		});
-		
-		// select recurring period
-		$('#ssRepeat').on("select2:select", function(e) {
-			$('#recurring').val( $(this).val() );
-		});
-	})(jQuery);	
-	</script>
-	
-	<?php do_action( 'woocommerce_credit_card_form_start', $this->id ); ?>
-	<div>
-		<label for="option-tabs"><h3>Choose payment type:</h3>
-			<div class="tabs">
+			$('#setting_first_payment_date').datepicker({
+				dateFormat: 'yyyy-mm-dd',
+				autoClose: true,
+			});
+			
+			// select payment method (cc, i-transfer, eft, google pay, apple pay)
+			$('.bna-payment-methods .bna-checkout-radio').click(function(){
+				$(this).parent().parent().find('.bna-checkout-radio.selected').removeClass('selected');	
+				if ( $('.bna-payment-method__content').is(':visible') ) { $('.bna-payment-method__content').css('display', 'none'); }
+				$(this).addClass('selected');
+				$(this).parent().next().css('display', 'block');
+				$(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
 				
-				<select class="checkout-tab input-text" name="paymentType" aria-placeholder="Please choose...">
-					<option id="tab-btn-1" value="1" selected>Credit card</option>
-					<option id="tab-btn-2" value="2">Direct Debit</option>
-					<option id="tab-btn-3" value="-1">ETransfer</option>
-				</select>
+				$('#payment_type').val( $(this).data('payment-type') );
+			});
+			
+			// select card or add new
+			$('#paymentMethodCC').on("select2:select", function(e) {
+			  let data = e.params.data;
+			  if (data.id === 'new-card') {
+					$('.bna-payment-method__content .tpl-payment-method-cards').addClass('tpl-active');
+				} else {
+					$('.bna-payment-method__content .tpl-payment-method-cards').removeClass('tpl-active');
+				}
+			});
+			
+			// select eft method or add new
+			$('#paymentMethodDD').on("select2:select", function(e) {
+			  let data = e.params.data;
+			  if (data.id === 'new-method') {
+					$('.bna-payment-method__content .tpl-payment-method-eft').addClass('tpl-active');
+				} else {
+					$('.bna-payment-method__content .tpl-payment-method-eft').removeClass('tpl-active');
+				}
+			});
+			
+			// select bank
+			$('#bank_name').on("select2:select", function(e) {
+				$('#institutionNumber').val( $(this).val() );
+			});
+			
+			// select 'checkbox' recurring
+			$('.bna-checkbox-container input[name="create_subscription"]').on('change', function(event) {
+				if (event.currentTarget.checked) {
+					$(this).parent().next().addClass('tpl-active');
+				} else {
+					$(this).parent().next().removeClass('tpl-active');
+				}
+			});
+			
+			// select recurring period
+			$('#ssRepeat').on("select2:select", function(e) {
+				$('#recurring').val( $(this).val() );
+			});
+		})(jQuery);	
+	</script>
 
-				<div class="tab active" id="content-1">
-					<div class="form-row form-row-wide"><label>Saved payment methods</label>
-						<!--<select class="pm-cc input-text" name="paymentMethodCC" aria-placeholder="Please choose...">
-							<option id="tab-btn-1" value="0" selected>New Card</option>
-							<?php
-								//if ( is_array($paymentMethods) ) {
-									//foreach ($paymentMethods as $pm_val) {
-										////if ( in_array($pm_val->paymentType, ['MASTERCARD', 'VISA', 'AMEX']) ) {
-										//if ( $pm_val->paymentType == 'card' ) {
-											//echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
-														//$pm_val->paymentInfo . ':' . $pm_val->paymentType .
-													//"</option>";
-										//}
-									//}
-								//}
-							?>
-						</select>-->
-					</div>
-					<div class="pm-cc-block">
-<!--
-						<div class="form-row form-row-wide">
-							<label>Card Holder <span class="required">*</span></label>
-							<input type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" value="">
-						</div>
-						<div class="form-row form-row-wide">
-							<label>Card Number <span class="required">*</span></label>
-							<input type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
-								onkeyup="return digitValid(this);">
-						</div>
-						<div class="form-row form-row-first">
-							<label>Expiry Date <span class="required">*</span></label>
-							<input class="form-row form-row-small" type="text" name="cc_expire_month" autocomplete="off" placeholder="MM" 
-								onkeyup="return digitValid(this);" maxlength="2">
-							<span class="">/</span>
-							<input class="form-row form-row-small" type="text" name="cc_expire_year" autocomplete="off" placeholder="YY" 
-								onkeyup="return digitValid(this);" maxlength="2">
-						</div>
-						<div class="form-row form-row-last">
-							<label>Card Code (CVC) <span class="required">*</span></label>
-							<input type="password" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="4" 
-								value="" onkeyup="return digitValid(this);">
-						</div>
--->
-					</div>
-					<div class="clear"></div>
-				</div>
-				<div class="tab" id="content-2">
-					<div class="form-row form-row-wide">
-						<label>Saved payment methods</label>
-						<select class="pm-dd input-text" name="paymentMethodDD" aria-placeholder="Please choose...">
-							<option id="tab-btn-1" value="0" selected>New Debit</option>
-							<?php
-								if ( is_array($paymentMethods) ) {
-									foreach ($paymentMethods as $pm_val) {
-										$data = json_decode($pm_val->paymentDescription);
-										if ( in_array($pm_val->paymentType, ['DIRECT-DEBIT']) ) {
-											echo 	"<option id=\"tab-btn-1\" value=\"".$pm_val->paymentMethodId."\">" .
-														$pm_val->paymentInfo . ':' . $data->institutionNumber .
-													"</option>";
-										}
-									}
-								}
-							?>
-						</select>
-					</div>
-					<div class="pm-dd-block">
-						<div class="form-row form-row-wide">
-							<label>Bank Name<span>*</span></label>
-							<select id="bank_name" name="bank_name" class="input-text"></select>
-							<div class="institutionNumber">
-								<label>Institution Number <span>*</span></label>
-								<input placeholder="000" type="text" id="institutionNumber" name="institutionNumber" value="" maxlength="3" 
-									onkeyup="return digitValid(this);" autocomplete="off" >
-							</div>
-						</div>
-						<div class="form-row form-row-wide">
-							<label>Account Number <span>*</span></label>
-							<input placeholder="000000000000" type="text" id="accountNumber" name="accountNumber" value="" maxlength="12" 
-								onkeyup="return digitValid(this);" autocomplete="off" >
-						</div>
-						<div class="form-row form-row-wide">
-							<label>Transit Number <span>*</span></label>
-							<input placeholder="00000" type="text" id="transitNumber" name="transitNumber" value="" maxlength="5" 
-								onkeyup="return digitValid(this);" autocomplete="off" >
-						</div>
-					</div>
-					<div class="clear"></div>
-				</div>
-				<div class="tab" id="content-3">
-					<div class="form-row form-row-wide">
-						<label>E-mail<span>*</span></label>
-						<input class="input-text" placeholder="login@domain" name="email_transfer" value="<?=wp_get_current_user()->user_email;?>" maxlength="100" readonly>
-					</div>
-					<div class="pm-et-block"></div>
-				</div>
-			</div>
-		</label>
-	</div>
-	<div class="clear"></div>
-	
-	<div class="save-pm-div form-row form-row-wide">
-		<label>
-			<input class="save-pm-checkbox" type="checkbox" name="save_payment" id="save_payment" checked>
-			Save this type of payment
-		</label>
-	</div>
-
-	<div class="save-pm-div form-row form-row-wide">
-		<label>
-			<!--<input type="hidden" id="recurring" name="recurring" value="<?php //echo BNA_SUBSCRIPTION_SETTING_REPEAT; ?>">
-			<input type="hidden" id="startDate" name="startDate" value="<?php //echo BNA_SUBSCRIPTION_SETTING_STARTDATE;?>">
-			<input type="hidden" id="numberOfPayments" name="numberOfPayments" value="<?php //echo BNA_SUBSCRIPTION_SETTING_NUMPAYMENT; ?>">
-			<input class="save-pm-checkbox" type="checkbox" name="create_subscription" checked>
-			Create subscription (<a href="#" id="showHideSettings">show settings</a>)-->
-		</label>
-	</div>
-
-	<div class="form-row form-row-wide">
-		<div class="stabs">							
-			<div class="tab">
-				<h3>Subscription settings</h3>
-				<div class="form-row form-row-wide">
-					<label>Repeat <span class="required">*</span></label>
-					<!--<select class="ssRepeat" id="ssRepeat" name="ssRepeat" aria-placeholder="Please choose...">
-						<?php
-							//$selected = BNA_SUBSCRIPTION_SETTING_REPEAT;
-							//$duration = ['day', 'week', 'two weeks', 'month', 'three month', 'six month', 'year'];
-							//$durOptions = ['daily', 'weekly', 'bi-weekly', 'monthly', 'every-3-months', 'every-6-months' , 'yearly'];
-
-							//foreach ($duration as $d_key => $d_val) {
-								//$attr = $durOptions[$d_key] == $selected ? 'selected' : '';
-								//echo "<option value='{$durOptions[$d_key]}' {$attr}>EVERY ".strtoupper($d_val)."</option>";
-							//}
-						?>
-					</select>-->
-				</div>
-				<div class="form-row form-row-wide">
-					<!--<label>FIRST PAYMENT</label>
-					<div id="ck-button"><label><input type="radio" id="btn_immediately" name="setting_first_payment" class="radio-button" value="immediately" checked><span>IMMEDIATELY</span></label></div>
-					<div id="ck-button"><label><input type="radio" id="btn_firstPayment" name="setting_first_payment" class="radio-button" value="set-date"><span>FIRST PAYMENT</span></label></div>
-					<input type="text" class="datepicker-here" data-position="right top" id="setting_first_payment_date" name="setting_first_payment_date" 
-						autocomplete="off" maxlength="15" placeholder="Select date" data-date-format="yyyy-mm-dd "  disabled>-->
-				</div>
-				<div class="form-row form-row-wide">
-					<!--<label>BILLING DURATION</label>
-					<div id="ck-button"><label><input type="radio" id="btn_noLimit" name="setting_billing_duration" class="radio-button" value="immediately" checked><span>NO LIMIT</span></label></div>
-					<div id="ck-button"><label><input type="radio" id="btn_numPayment" name="setting_billing_duration" class="radio-button" value="set-date"><span># OF PAYMENTS</span></label></div>
-					<div class="quantity_inner">   
-						<input type='text' value='1' name='setting_number_of_payment' id="setting_number_of_payment" disabled/>
-						<input type='button' value='-' class='qtyminus' id='qtyminus' disabled/>
-						<input type='button' value='+' class='qtyplus' id='qtyplus' disabled/> 
-					</div>-->
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="clear"></div>
-
-	
-
-	<?php do_action( 'woocommerce_credit_card_form_end', $this->id ); ?>
 </fieldset>
 
 <script>
@@ -491,20 +295,20 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			feeTab.className = 'fee-total';
 		}
 
-		switch (select_ctab.value) {
-			case '-1':
+		//switch (select_ctab.value) {
+			//case '-1':
 				feeSum = parseFloat(allFees.etransferFlatFee);
 				feeMult = parseFloat(allFees.etransferPercentageFee);
-				break;			
-			case '1':
-				feeSum = parseFloat(allFees.creditCardFlatFee);
-				feeMult = parseFloat(allFees.creditCardPercentageFee);
-				break;
-			case '2':
-				feeSum = parseFloat(allFees.directDebitFlatFee);
-				feeMult = parseFloat(allFees.directDebitPercentageFee);
-				break;	
-		}
+				//break;			
+			//case '1':
+				//feeSum = parseFloat(allFees.creditCardFlatFee);
+				//feeMult = parseFloat(allFees.creditCardPercentageFee);
+				//break;
+			//case '2':
+				//feeSum = parseFloat(allFees.directDebitFlatFee);
+				//feeMult = parseFloat(allFees.directDebitPercentageFee);
+				//break;	
+		//}
 		let allFeeSum = parseFloat(globalTotal*feeMult/100) + feeSum;
 		allFeeSum = roundAccurately(allFeeSum + parseFloat(allFeeSum*13/100), 2);
 
@@ -541,15 +345,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			+ '</span></bdi></span></strong></td>';
 	} 
 
-	let select_ctab = document.querySelector('.checkout-tab');
-	select_ctab.addEventListener('change', event => {
-		event.preventDefault();
-		let tabs = document.querySelector('.tabs');
-		tabs.querySelector('.active').classList.remove('active');
-		tabs.querySelectorAll('.tab')[select_ctab.options.selectedIndex].classList.add('active');
+	//let select_ctab = document.querySelector('.checkout-tab');
+	//select_ctab.addEventListener('change', event => {
+		//event.preventDefault();
+		//let tabs = document.querySelector('.tabs');
+		//tabs.querySelector('.active').classList.remove('active');
+		//tabs.querySelectorAll('.tab')[select_ctab.options.selectedIndex].classList.add('active');
 
-		changeSelectbox (select_ctab.value > 0 ? 0 : select_ctab.value, '.pm-et-block');
-	}, true);
+		//changeSelectbox (select_ctab.value > 0 ? 0 : select_ctab.value, '.pm-et-block');
+	//}, true);
 
 	let select_bankName = document.querySelector('#bank_name');
 	let interval = setInterval(() => {
@@ -584,11 +388,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		//changeSelectbox(select_pmcc.value != 0 ? 1: 0, '.pm-cc-block');
 	//}, true);
 
-	let select_pmdd = document.querySelector('.pm-dd');
-	select_pmdd.addEventListener('click', event => {
-		event.preventDefault();
-		changeSelectbox(select_pmdd.value != 0 ? 1: 0, '.pm-dd-block');
-	}, true);
+	//let select_pmdd = document.querySelector('.pm-dd');
+	//select_pmdd.addEventListener('click', event => {
+		//event.preventDefault();
+		//changeSelectbox(select_pmdd.value != 0 ? 1: 0, '.pm-dd-block');
+	//}, true);
 
 	let input_phone = document.querySelector('#billing_phone');
 	input_phone.addEventListener('keyup', event => {
