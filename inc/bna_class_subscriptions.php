@@ -45,7 +45,7 @@ if (!class_exists('BNASubscriptions')) {
 			$base_order = wc_get_order( $result['invoiceInfo']['invoiceId'] );
 
             $subscription =  $wpdb->get_results(
-                "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['data']['recurringId']}'"
+                "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['subscriptionId']}'"
             );
 
             if ( empty( $subscription ) || count( $subscription ) < 1) {
@@ -71,14 +71,14 @@ if (!class_exists('BNASubscriptions')) {
             } else {
                 $wpdb->query("UPDATE ".$wpdb->prefix.BNA_TABLE_RECURRING
                     ." SET "
-                        ."status='{$result['data']['status']}', "
-                        .( isset($result['data']['nextChargeDate']) 
-                            ? "nextChargeDate='{$result['data']['nextChargeDate']}', "
+                        ."status='{$result['status']}', "
+                        .( isset($result['nextChargeDate']) 
+                            ? "nextChargeDate='{$result['nextChargeDate']}', "
                             : ""
                         )
-                        ."expire='{$result['data']['expire']}', "
-                        ."numberOfPayments='{$result['data']['numberOfPayments']}' "
-                    ." WHERE recurringId='{$result['data']['recurringId']}'"
+                        ."expire='{$result['expire']}', "
+                        ."numberOfPayments='{$result['numberOfPayments']}' "
+                    ." WHERE recurringId='{$result['recurringId']}'"
                 );
             }
 		}	

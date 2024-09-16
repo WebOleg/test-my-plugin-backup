@@ -2,18 +2,18 @@
 /**
  * Woocommerce BNA Gateway
  *
- * @author 		BNA
+ * @author		BNA
  * @category 	'BNA Manage Accaount' Class
- * @version     1.0
+ * @version		1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
+require_once dirname( __FILE__ ). "/bna_class_jsonmessage.php";
 
-define ('BNA_CONST_NONCE_NAME', 'gwpl_nonce');
+define ( 'BNA_CONST_NONCE_NAME', 'bna_nonce' );
 
-if (!class_exists('BNAAccountManager')) {
+if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 	class BNAAccountManager {
 
@@ -22,10 +22,10 @@ if (!class_exists('BNAAccountManager')) {
 		 *
 		 * @var string
 		 */
-		public static $endpoint_account_management = 'pl-account-management';
-		public static $endpoint_payment_methods = 'pl-payment-methods';
-		public static $endpoint_transaction_info = 'pl-transaction-info';
-		public static $endpoint_recurring_payments = 'pl-recurring-payments';
+		public static $endpoint_account_management = 'bna-account-management';
+		public static $endpoint_payment_methods = 'bna-payment-methods';
+		public static $endpoint_transaction_info = 'bna-transaction-info';
+		public static $endpoint_recurring_payments = 'bna-recurring-payments';
 		public static $endpoint_add_credit_card = 'bna-add-credit-card';
 		public static $endpoint_bank_account_info = 'bna-bank-account-info';
 		public static $endpoint_e_transfer_info = 'bna-e-transfer-info';
@@ -35,10 +35,10 @@ if (!class_exists('BNAAccountManager')) {
 		 */
 		public function __construct() {
 			
-			$this->plugin_name = plugin_basename(dirname(dirname(__FILE__)));
-			$this->plugin_url = trailingslashit(plugin_dir_url(dirname(__FILE__)));
+			$this->plugin_name = plugin_basename( dirname( dirname( __FILE__ ) ) );
+			$this->plugin_url = trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) );
 
-			register_activation_hook( $this->plugin_name, array('BNAAccountManager', 'activate') );
+			register_activation_hook( $this->plugin_name, array( 'BNAAccountManager', 'activate' ) );
 
 			// Actions used to insert a new endpoint in the WordPress.
 			add_filter( 'woocommerce_get_query_vars', array( $this, 'get_query_vars' ), 0 );
@@ -56,18 +56,37 @@ if (!class_exists('BNAAccountManager')) {
 			add_action( 'woocommerce_account_' . self::$endpoint_bank_account_info .  '_endpoint', array( $this, 'endpoint_content_bank_account_info' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_e_transfer_info .  '_endpoint', array( $this, 'endpoint_content_e_transfer_info' ) );
 
-			add_action( 'wp_enqueue_scripts', array(&$this, 'site_load_styles'));
+			add_action( 'wp_enqueue_scripts', array( &$this, 'site_load_styles') );
+			
 			add_action( 'wp_enqueue_scripts', function() {
-				wp_enqueue_style( 'wc-bna-front-styles', $this->plugin_url.'css/front-styles.css', '', time() );
+				if ( is_cart() || is_checkout() || is_page( array( 'my-account' ) ) ) { // is_woocommerce() ||				
+					if ( ! wp_script_is( 'select2-js' ) ) {
+						wp_enqueue_script( 'bna-select2-js', $this->plugin_url.'assets/lib/select2/js/select2.full.min.js', array('jquery'), '4.0.13', true );
+					}
+					
+					if ( ! wp_style_is( 'select2-css' ) ) {
+						wp_enqueue_style( 'bna-select2-css', $this->plugin_url . 'assets/lib/select2/css/select2.min.css', '4.0.13' );
+					}
+									
+					if ( ! wp_style_is( 'woocommerce-layout-css' ) ) {				
+						wp_enqueue_style( 'bna-woocommerce-smallscreen-css', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-layout.css', '', WC_VERSION );
+					}
+					
+					if ( ! wp_style_is( 'woocommerce-smallscreen-css' ) ) {				
+						wp_enqueue_style( 'bna-woocommerce-smallscreen-css', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-smallscreen.css', '', WC_VERSION, "only screen and (max-width: 768px)" );
+					}
+					
+					wp_enqueue_style( 'bna-woocommerce-style', $this->plugin_url.'assets/css/bna-style.css', '', time() );				
+				}
 			}, 99 );
 
-			add_action('wp_ajax_create_payor', array(&$this, 'ajax_create_payor'));
-			add_action('wp_ajax_update_payor', array(&$this, 'ajax_update_payor'));
-			add_action('wp_ajax_delete_payor', array(&$this, 'ajax_delete_payor'));
-			add_action('wp_ajax_delete_payment', array(&$this, 'ajax_delete_payment'));
-			add_action('wp_ajax_add_payment', array(&$this, 'ajax_add_payment'));
+			add_action( 'wp_ajax_create_payor', array( &$this, 'ajax_create_payor' ) );
+			add_action( 'wp_ajax_update_payor', array( &$this, 'ajax_update_payor' ) );
+			//add_action( 'wp_ajax_delete_payor', array(&$this, 'ajax_delete_payor' ) );
+			add_action( 'wp_ajax_delete_payment', array( &$this, 'ajax_delete_payment' ) );
+			add_action( 'wp_ajax_add_payment', array( &$this, 'ajax_add_payment' ) );
 
-			add_action( 'profile_update', array(&$this, 'check_user_profile_updated'), 10, 2 );
+			add_action( 'profile_update', array( &$this, 'check_user_profile_updated' ), 10, 2 );
 		}
 
 		/**
@@ -76,13 +95,13 @@ if (!class_exists('BNAAccountManager')) {
 		*/
 		public function site_load_styles()
 		{			
-			wp_register_style('wc_gwpl_css_1', $this->plugin_url . 'js/datepicker/css/datepicker.min.css' );
-			wp_enqueue_script ( 'wc_gwpl_1', $this->plugin_url.'js/bankNames.js', array(), '1.0.0', true );
-			wp_register_script( 'wc_gwpl_2', $this->plugin_url.'js/ajax_io.js', array('jquery'), time(), true );
-			wp_register_script( 'wc_gwpl_3', $this->plugin_url.'js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
+			wp_register_style( 'bna-datepicker-css', $this->plugin_url . 'assets/js/datepicker/css/datepicker.min.css' );
+			wp_register_script( 'bna-datepicker-js', $this->plugin_url.'assets/js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
+			wp_register_script( 'bna-bank-names-js', $this->plugin_url.'assets/js/bankNames.js', array(), '1.0.0', true );
 			wp_register_script( 'wc-country-select', site_url().'/wp-content/plugins/woocommerce/assets/js/frontend/country-select.min.js', array('jquery'), null, true );
+			wp_register_script( 'bna-script-js', $this->plugin_url.'assets/js/bna-script.js', array('jquery'), time(), true );			
 
-			wp_localize_script( 'wc_gwpl_3', 'wc_gwpl',
+			wp_localize_script( 'bna-datepicker-js', 'bna_data',
 				array(
 					'url' 	=> admin_url('admin-ajax.php'),
 					'nonce' => wp_create_nonce(BNA_CONST_NONCE_NAME)
@@ -202,12 +221,11 @@ if (!class_exists('BNAAccountManager')) {
 		 */
 		public static function loading_scripts() 
 		{
-			wp_enqueue_script( 'wc_gwpl_1');
-			wp_enqueue_script( 'wc_gwpl_2');		
-			wp_enqueue_script( 'wc_gwpl_3');
-			wp_enqueue_script( 'wc_gwpl_4');
+			wp_enqueue_style( 'bna-datepicker-css' );
+			wp_enqueue_script( 'bna-datepicker-js');
+			wp_enqueue_script( 'bna-bank-names-js');			
 			wp_enqueue_script( 'wc-country-select' );
-			wp_enqueue_style( 'wc_gwpl_css_1' );
+			wp_enqueue_script( 'bna-script-js');			
 		}
 		
 		/**
@@ -287,9 +305,9 @@ if (!class_exists('BNAAccountManager')) {
 
 			self::loading_scripts();
 
-			$payorID = get_user_meta (get_current_user_id(), 'payorID', true);
+			$payorID = get_user_meta ( get_current_user_id(), 'payorID', true );
 			$paymentMethods =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS);
-			require_once dirname(__FILE__). "/../tpl/tpl_account_management.php";
+			require_once dirname( __FILE__ ) . "/../tpl/tpl_account_management.php";
 		}
 
 		/**
@@ -810,7 +828,7 @@ if (!class_exists('BNAAccountManager')) {
 				}
 				$user = get_user_by( 'ID', $config->user_id );
 			}
-			
+		
 			foreach ( $result as $rkey => $rval ) {
 				$field = '';
 				switch ( $rkey) {

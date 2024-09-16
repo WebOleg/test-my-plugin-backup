@@ -27,12 +27,12 @@
         startLoadingAnimation();
 
         $.ajax({
-            url         : wc_gwpl.url,
+            url         : bna_data.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action    : 'create_payor',
-                nonce     : wc_gwpl.nonce,
+                nonce     : bna_data.nonce,
                 fieldtext : $('.form_create_payor').serializeArray() 
             },
             success: function( data ) {
@@ -63,12 +63,12 @@
         startLoadingAnimation();
 
         $.ajax({
-            url         : wc_gwpl.url,
+            url         : bna_data.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action    : 'update_payor',
-                nonce     : wc_gwpl.nonce,
+                nonce     : bna_data.nonce,
                 fieldtext : $('.form_update_payor').serializeArray() 
             },
             success: function( data ) {
@@ -85,37 +85,37 @@
     });
 
     // update address
-    $('#update_address').on('click', function(event){
-        event.stopPropagation();
-        event.preventDefault(); 
+    //$('#update_address').on('click', function(event){
+        //event.stopPropagation();
+        //event.preventDefault(); 
 
-        let self = $(this);
-        self.prop('disabled', true);
+        //let self = $(this);
+        //self.prop('disabled', true);
 
-        startLoadingAnimation();
+        //startLoadingAnimation();
 
-        $.ajax({
-            url         : wc_gwpl.url,
-            type        : 'POST', 
-            dataType    : "json",
-            data        : {
-                action    : 'update_payor',
-                nonce     : wc_gwpl.nonce,
-                fieldtext : $('.form_update_address').serializeArray() 
-            },
-            success: function( data ) {
-                stopLoadingAnimation();
-                let message = $('.woocommerce-notices-wrapper');
-                message.get(0).scrollIntoView();
-                message.html(data.message);
-                self.prop('disabled', false);
+        //$.ajax({
+            //url         : bna_data.url,
+            //type        : 'POST', 
+            //dataType    : "json",
+            //data        : {
+                //action    : 'update_payor',
+                //nonce     : bna_data.nonce,
+                //fieldtext : $('.form_update_address').serializeArray() 
+            //},
+            //success: function( data ) {
+                //stopLoadingAnimation();
+                //let message = $('.woocommerce-notices-wrapper');
+                //message.get(0).scrollIntoView();
+                //message.html(data.message);
+                //self.prop('disabled', false);
                 
-            },
-            error: function( data ){
-                console.log(data);
-            }
-        });    
-    });
+            //},
+            //error: function( data ){
+                //console.log(data);
+            //}
+        //});    
+    //});
     
     // delete payor
     $('#delete_payor').on('click', function(event){
@@ -128,12 +128,12 @@
         startLoadingAnimation();
 
         $.ajax({
-            url         : wc_gwpl.url,
+            url         : bna_data.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action    : 'delete_payor',
-                nonce     : wc_gwpl.nonce,
+                nonce     : bna_data.nonce,
             },
             success: function( data ) {
                 stopLoadingAnimation();
@@ -164,12 +164,12 @@
         startLoadingAnimation();
 
         $.ajax({
-            url         : wc_gwpl.url,
+            url         : bna_data.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action  : 'delete_payment',
-                nonce   : wc_gwpl.nonce,
+                nonce   : bna_data.nonce,
                 id      : self.data('id') 
             },
             success: function( data ) {
@@ -201,12 +201,12 @@
         startLoadingAnimation();
 
         $.ajax({
-            url         : wc_gwpl.url,
+            url         : bna_data.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action    : 'add_payment',
-                nonce     : wc_gwpl.nonce,
+                nonce     : bna_data.nonce,
                 fieldtext : $('.form_save_payment').serializeArray() 
             },
             success: function( data ) {
@@ -237,12 +237,12 @@
         startLoadingAnimation();
 
         $.ajax({
-            url         : wc_gwpl.url,
+            url         : bna_data.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action  : 'delete_subscription',
-                nonce   : wc_gwpl.nonce,
+                nonce   : bna_data.nonce,
                 id      : self.data('id') 
             },
             success: function( data ) {

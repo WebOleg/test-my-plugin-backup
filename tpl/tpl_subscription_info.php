@@ -69,7 +69,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                                     <td class="ant-table-cell">
                                         <button type="button" class="btn-del-subscription" data-id="<?=$s_val->id;?>">
                                             <div>
-                                                <img src="<?=$this->plugin_url.'/img/trash-solid.svg';?>" >
+                                                <img src="<?=$this->plugin_url.'/assets/img/trash-solid.svg';?>" >
                                             </div>
                                         </button>
                                     </td>
