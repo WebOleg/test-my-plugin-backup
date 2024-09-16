@@ -25,11 +25,24 @@ do_action( 'woocommerce_before_account_navigation' );
 <nav class="woocommerce-MyAccount-navigation" aria-label="<?php esc_html_e( 'Account pages', 'woocommerce' ); ?>">
 	<div class="woo-myaccount-customer">
 		<div class="woo-myaccount-customer-photo-wrapper">
-			<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_photo_2.png'; ?>" class="woo-myaccount-customer-photo">
+			<?php
+			$user = wp_get_current_user();
+			if ( get_avatar( $user->ID ) === false ) {
+			   ?>
+			   <img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_photo_2.png'; ?>" class="woo-myaccount-customer-photo">
+			   <?php
+			} else {			
+				?>
+					<img src="<?php echo esc_url( get_avatar_url( $user->ID ) ); ?>" class="woo-myaccount-customer-photo">
+				<?php
+				
+			}
+			?>
+			
 		</div>
 		<div class="woo-myaccount-customer-data">
-			<div class="woo-myaccount-customer-data-name woo-myaccount-title"><?php echo get_user_meta( get_current_user_id(), 'billing_first_name', true ); ?></div>
-			<div class="woo-myaccount-customer-data-email woo-myaccount-text-small"><?php echo wp_get_current_user()->user_email; ?></div>
+			<div class="woo-myaccount-customer-data-name woo-myaccount-title"><?php echo get_user_meta( $user->ID, 'billing_first_name', true ); ?></div>
+			<div class="woo-myaccount-customer-data-email woo-myaccount-text-small"><?php echo $user->user_email; ?></div>
 			<div class="woo-myaccount-customer-data-logout woo-myaccount-text-small">
 				<a href="<?php echo esc_url( wc_get_account_endpoint_url( 'customer-logout' ) ); ?>"><?php esc_html_e( 'Logout', 'wc-bna-gateway' ); ?></a>
 			</div>
@@ -42,35 +55,35 @@ do_action( 'woocommerce_before_account_navigation' );
 				<?php
 					switch ( $endpoint ) {
 						case "dashboard":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_dashboard_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_dashboard_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "orders":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_account_info_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_account_info_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "edit-address":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_addresses_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_addresses_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "edit-account":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_profile_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_profile_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "pl-account-management":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_account_info_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_account_info_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "pl-payment-methods":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_payment_methods_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_payment_methods_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "pl-transaction-info":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_transactions_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_transactions_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "pl-recurring-payments":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_recurring_payments_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_recurring_payments_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						case "customer-logout":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_system-log-out_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_system-log-out_1.png" class="woo-myaccount-nav-li-img">';
 							break;
 						
 						default:
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_dashboard_1.png" class="woo-myaccount-nav-li-img">';
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_dashboard_1.png" class="woo-myaccount-nav-li-img">';
 					}
 				?>
 				</div>

@@ -16,8 +16,8 @@ defined( 'ABSPATH' ) || exit;
  * @param $string Parameter from the GET request
  * @return $string
  */
-function bna_add_class_active( $param ) {
+function bna_add_class_active( $parameter ) {
 	if ( isset( $_GET['bna-orders-filter'] ) && ! empty( $_GET['bna-orders-filter'] ) ) {
-		if ( $_GET['bna-orders-filter'] === $param ) return ' filter-active';
+		if ( $_GET['bna-orders-filter'] === $parameter ) return ' filter-active';
 	}
 }

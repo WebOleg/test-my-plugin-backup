@@ -95,14 +95,7 @@ function wc_bna_gateway_init() {
 
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
 			add_action( 'wp_enqueue_scripts', array(&$this, 'site_load_styles') );
-			//add_action( 'wp_enqueue_scripts', function() {
-				//if ( wp_script_is( 'select2.full.min', 'registered' )  ) {//wp_script_is( 'select2.full.js', 'registered' ) || || wp_script_is( 'select2.js', 'registered' ) || wp_script_is( 'select2.min.js', 'registered' )
-					//return;
-				//} else {
-					//wp_enqueue_style( 'bna-select2-css', $this->plugin_url . 'js/select2/css/select2.min.css' );
-					//wp_enqueue_script( 'bna-select2-js', $this->plugin_url.'js/select2/js/select2.min.js', array('jquery'), '4.1.0', true );
-				//}
-			//} );
+			
 			add_action( 'woocommerce_email_actions', array(&$this, 'send_refund_email'));
 		}
 
@@ -112,11 +105,10 @@ function wc_bna_gateway_init() {
 		*/
 		public function site_load_styles()
 		{
-			$fees = get_option( 'wc_bna_gateway_fees' ); //json_decode( ) 
-			wp_register_style('wc_gwpay_check_css', $this->plugin_url . 'css/styles.css' );
-			wp_register_style('wc_gwpay_check_css1', $this->plugin_url . 'js/datepicker/css/datepicker.min.css' );
-			wp_enqueue_script( 'wc_gwpl', $this->plugin_url.'js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );					
-			wp_localize_script( 'jquery', 'wc_gwpl_fee',
+			$fees = get_option( 'wc_bna_gateway_fees' );
+			wp_register_style( 'bna-datepicker-css', $this->plugin_url . 'assets/lib/datepicker/css/datepicker.min.css' );
+			wp_register_script( 'bna-datepicker-js', $this->plugin_url.'assets/lib/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );					
+			wp_localize_script( 'jquery', 'bna_fee',
 				array(
 					"creditCardPercentageFee" => $fees['creditCardPercentage'],
 					"creditCardFlatFee" => $fees['creditCardFlat'],
@@ -288,8 +280,9 @@ function wc_bna_gateway_init() {
 
 			global $wpdb;
 
-			wp_enqueue_style( 'wc_gwpay_check_css' );
-			wp_enqueue_style('wc_gwpay_check_css1');
+			//wp_enqueue_style( 'wc_gwpay_check_css' );
+			wp_enqueue_style( 'bna-datepicker-css' );
+			wp_enqueue_script( 'bna-datepicker-js' );
 
 			if ( $this->description ) {
 				echo wpautop( wp_kses_post( $this->description ) );
@@ -400,6 +393,21 @@ function wc_bna_gateway_init() {
 			if ( empty( $_POST['payment-type'] ) ) {
 				throw new Exception( "Can't find BNA payment type" );
 			}
+			
+			$customerInfo = array(
+				'email'				=> $_POST['billing_email'],
+				'firstName'		=> $_POST['billing_first_name'],
+				'lastName'		=> $_POST['billing_last_name'],
+				//'phoneCode'		=> $_POST['billing_phone_code'],
+				'phoneNumber'	=> $_POST['billing_phone'], // "phone"
+				'streetNumber'	=> $_POST['billing_street_number'],
+				'streetName'		=> $_POST['billing_street_name'],
+				//'apartment'		=> $_POST['billing_apartment'],
+				'city'					=> $_POST['billing_city'],
+				'province'			=> WC()->countries->get_states( $_POST['billing_country'] )[$_POST[ 'billing_state' ]],  //$_POST[ 'billing_country' ] .'-'. $_POST[ 'billing_state' ],
+				'country'			=> WC()->countries->countries[$_POST['billing_country']], //$_POST[ 'billing_country' ], 
+				'postalCode'		=> $_POST['billing_postcode'],
+			);
 
 			$data_subscription = array();
 			$data = array(
@@ -411,25 +419,50 @@ function wc_bna_gateway_init() {
 				'currency'			=> get_woocommerce_currency(),
 				'metadata'		=> array(
 					'invoiceId' => $order_id,				
-				),
-					//'email'				=> $_POST['billing_email'], // "emailAddress"
-					//'firstName'		=> $_POST['billing_first_name'],
-					//'lastName'		=> $_POST['billing_last_name'],
-					////'phoneCode'		=> $_POST['billing_phone_code'],
-					//'phoneNumber'	=> $_POST['billing_phone'], // "phone"
-					//'streetNumber'	=> $_POST['billing_street_number'],
-					//'streetName'		=> $_POST['billing_street_name'],
-					////'apartment'		=> $_POST['billing_apartment'],
-					//'city'					=> $_POST['billing_city'],
-					//'province'			=> WC()->countries->get_states( $_POST['billing_country'] )[$_POST[ 'billing_state' ]],  //$_POST[ 'billing_country' ] .'-'. $_POST[ 'billing_state' ],
-					//'country'			=> WC()->countries->countries[$_POST['billing_country']], //$_POST[ 'billing_country' ], 
-					//'postalCode'		=> $_POST['billing_postcode'], // "postalZip"
+				),					
 			);
 
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 
 			if ( ! empty( $payorID ) ) {
 				$data['customerId'] = $payorID;
+			} else {
+				$data['customerInfo'] = $customerInfo;
+			}
+			
+			// verify credit card
+			if ( ! empty( $_POST['payment-type'] ) && $_POST['payment-type'] === 'card' ) {
+				if ( $_POST['paymentMethodCC'] === 'new-card' ) {
+					if ( ! empty( $_POST['cc_expire'] ) ) {
+						$cc_expire = explode( '/', $_POST['cc_expire'] );
+					}
+					$data_verify = array(
+						'transactionTime'	=> date('Y-m-d\TH:i:sO'),
+						'customerId'			=> $payorID,
+						'currency'				=> get_woocommerce_currency(),
+						'paymentDetails'	=> array(
+							'cardNumber'	=> $_POST['cc_number'],
+							'cardHolder'		=> $_POST['cc_holder'],
+							'cardType'			=> 'credit',
+							'cardIdNumber'	=> $_POST['cc_code'],
+							'expiryMonth'	=> $cc_expire[0],
+							'expiryYear'		=> $cc_expire[1],
+						)
+					);
+				
+					$response_verify = $api->query(
+						$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/card/verify',
+						$data_verify,
+						'POST'
+					);
+				
+					$response_verify = json_decode( $response_verify, true );
+					
+					if ( empty( $response_verify['id'] ) ) {
+						wc_add_notice( 'Error in the credit card parameters.', 'error' );
+						return false;
+					}
+				}
 			}
 
 			$paymentTypeMethod = '';
@@ -480,8 +513,7 @@ function wc_bna_gateway_init() {
 				case 'e-transfer':
 					$paymentTypeMethod = 'e-transfer';
 					$params = array (
-						//"paymentType" 		=> "ETRANSFER",
-						"interacEmail"		=> $_POST['email_transfer'],
+						"interacEmail" => $_POST['email_transfer'],
 					);
 					foreach ( $params as $p_key => $p_val )
 						$data['paymentDetails'][$p_key] = $p_val;
@@ -712,6 +744,13 @@ function wc_bna_gateway_init() {
 			global $wpdb, $woocommerce, $BNASubscriptions;
 	
 			if ( ! isset( $result['metadata']['invoiceId'] ) ) exit(); // $result['data']['transactionInfo']['invoiceId']
+			
+			$check_transaction_id =  $wpdb->get_results(
+                "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS ." WHERE referenceNumber='{$result['referenceUUID']}'"
+            );
+
+            if ( ! empty( $check_transaction_id ) || count( $check_transaction_id ) >= 1)  exit();
+			
 			$order = wc_get_order( $result['metadata']['invoiceId'] );
 			$new_order = null;
 
@@ -723,7 +762,7 @@ function wc_bna_gateway_init() {
 						$new_order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
 						$new_order->payment_complete();
 						wc_reduce_stock_levels ($new_order->get_id());
-					} else if ( ! in_array( $result['action'], ['REFUND', 'CHARGEDBACK', 'RETURN'] ) ) { // ['action''data']['transactionType'
+					} else if ( $result['action'] === 'SALE' ) { // ['action''data']['transactionType'
 						$order->update_status( 'completed', __('Order completed.', 'wc-bna-gateway') );
 						$order->payment_complete();
 						wc_reduce_stock_levels( $order->get_id() );

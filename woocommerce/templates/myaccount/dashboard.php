@@ -44,29 +44,29 @@ $allowed_html = array(
 				<?php
 					switch ( $endpoint ) {
 						case "orders":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_my_orders_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_my_orders_2.png">';	
 							break;
 						case "edit-address":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_addresses_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_addresses_2.png">';	
 							break;
 						case "edit-account":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_profile_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_profile_2.png">';	
 							break;
 						case "pl-account-management":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_account_info_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_account_info_2.png">';	
 							break;
 						case "pl-payment-methods":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_payment_methods_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_payment_methods_2.png">';	
 							break;
 						case "pl-transaction-info":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_transactions_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_transactions_2.png">';	
 							break;
 						case "pl-recurring-payments":
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_recurring_payments_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_recurring_payments_2.png">';	
 							break;
 						
 						default:
-							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'img/woo-myaccount/pa_account_info_2.png">';	
+							echo '<img src="' . BNA_PLUGIN_DIR_URL . 'assets/img/woo-myaccount/pa_account_info_2.png">';	
 					}
 				?>
 			</div>

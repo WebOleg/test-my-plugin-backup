@@ -9,7 +9,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
-<h3 class="woo-myaccount-text-bigger tpl-subtitle"><?php _e( 'Manage your Bank Accounts Information', 'wc-bna-gateway' ); ?></h3>
+<h3 class="woo-myaccount-text-bigger bna-subtitle"><?php _e( 'Manage your Bank Accounts Information', 'wc-bna-gateway' ); ?></h3>
 
 <div style="<?php echo empty( $payorID ) ? 'display:block;' : 'display:none;'; ?>" >
 	<p>
@@ -20,41 +20,41 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 </div>
 
 <form class="form_save_payment"  style="<?php echo empty( $payorID ) ? 'display:none;' : 'display:block;'; ?>" >
-	<div class="tpl-payment-method-cards">
-		<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+	<div class="bna-payment-method-cards">
+		<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
 		
-		<div class="tpl-input-wrapper">
-			<div class="tpl-input-label">
+		<div class="bna-input-wrapper">
+			<div class="bna-input-label">
 				<?php _e( 'Name on Bank Account', 'wc-bna-gateway' ); ?><br>
-				<span class="tpl-font-italic"><?php _e( '(the full name of the person or business associated with the bank account.)', 'wc-bna-gateway' ); ?></span></div>
-			<input class="tpl-input" type="text" name="eft_holder" autocomplete="off" maxlength="100" placeholder=""
+				<span class="bna-font-italic"><?php _e( '(the full name of the person or business associated with the bank account.)', 'wc-bna-gateway' ); ?></span></div>
+			<input class="bna-input" type="text" name="eft_holder" autocomplete="off" maxlength="100" placeholder=""
 		</div>
 		
-		<div class="tpl-two-inputs-wrapper">
-			<div class="tpl-input-wrapper">
-				<div class="tpl-input-label"><?php _e( 'Bank Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="tpl-input" type="text" name="bank_number" autocomplete="off" maxlength="18" placeholder=""
+		<div class="bna-two-inputs-wrapper">
+			<div class="bna-input-wrapper">
+				<div class="bna-input-label"><?php _e( 'Bank Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input class="bna-input" type="text" name="bank_number" autocomplete="off" maxlength="18" placeholder=""
 					onkeyup="return input_test(this);" >
 			</div>
 			
-			<div class="tpl-input-wrapper">
-				<div class="tpl-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="tpl-input" type="text" name="account_number" 
+			<div class="bna-input-wrapper">
+				<div class="bna-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input class="bna-input" type="text" name="account_number" 
 					autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="18" >
 			</div>
 		</div>
 			
-		<div class="tpl-two-inputs-wrapper">
-			<div class="tpl-input-wrapper">
-				<div class="tpl-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input  class="tpl-input" type="text" name="transit_number" autocomplete="off" placeholder="" maxlength="18" 
+		<div class="bna-two-inputs-wrapper">
+			<div class="bna-input-wrapper">
+				<div class="bna-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+				<input  class="bna-input" type="text" name="transit_number" autocomplete="off" placeholder="" maxlength="18" 
 					onkeyup="return input_test(this);" >
 			</div>
-			<div class="tpl-number-img-wrapper">
-				<img class="tpl-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Cheque_1.png'; ?>" />
+			<div class="bna-number-img-wrapper">
+				<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Cheque_1.png'; ?>" />
 			</div>
-			<div  class="tpl-button-wrapper tpl-button-save-changes">
-				<button id="save_payment" class="tpl-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
+			<div  class="bna-button-wrapper bna-button-save-changes">
+				<button id="save_payment" class="bna-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
 			</div>
 			<input type="hidden" name="payment_type" value="eft">
 		</div>

@@ -9,7 +9,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
-<h3 class="woo-myaccount-text-bigger tpl-subtitle"><?php _e( 'Manage your eTransfer Information', 'wc-bna-gateway' ); ?></h3>
+<h3 class="woo-myaccount-text-bigger bna-subtitle"><?php _e( 'Manage your eTransfer Information', 'wc-bna-gateway' ); ?></h3>
 
 <div style="<?php echo empty( $payorID ) ? 'display:block;' : 'display:none;'; ?>" >
 	<p>
@@ -20,16 +20,16 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 </div>
 
 <form class="form_save_payment"  style="<?php echo empty( $payorID ) ? 'display:none;' : 'display:block;'; ?>" >
-	<div class="tpl-payment-method-cards">
-		<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+	<div class="bna-payment-method-cards">
+		<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
 		
-		<div class="tpl-input-wrapper">
-			<div class="tpl-input-label"><?php _e( 'New E-Mail', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-			<input class="tpl-input" type="email" name="email" autocomplete="off" maxlength="100" placeholder="Email">
+		<div class="bna-input-wrapper">
+			<div class="bna-input-label"><?php _e( 'New E-Mail', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+			<input class="bna-input" type="email" name="email" autocomplete="off" maxlength="100" placeholder="Email">
 		</div>
 		
-		<div  class="tpl-button-wrapper tpl-mt-60">
-			<button id="save_payment" class="tpl-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
+		<div  class="bna-button-wrapper bna-mt-60">
+			<button id="save_payment" class="bna-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
 		</div>
 		<input type="hidden" name="payment_type" value="e-transfer">
 	</div>

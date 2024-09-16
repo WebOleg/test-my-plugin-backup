@@ -19,9 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<div class="bna-checkout-radio" data-payment-type="card"></div>
 				<?php _e( 'Credit Card', 'wc-bna-gateway' ); ?>
 				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/VISA_Logo.png'; ?>" alt="<?php _e( 'VISA_Logo', 'wc-bna-gateway' ); ?>" />
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Mastercard_Logo.png'; ?>" alt="<?php _e( 'Mastercard_Logo', 'wc-bna-gateway' ); ?>" />
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/AMEX_Logo.png'; ?>" alt="<?php _e( 'AMEX_Logo', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/VISA_Logo.png'; ?>" alt="<?php _e( 'VISA_Logo', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Mastercard_Logo.png'; ?>" alt="<?php _e( 'Mastercard_Logo', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/AMEX_Logo.png'; ?>" alt="<?php _e( 'AMEX_Logo', 'wc-bna-gateway' ); ?>" />
 				</div>
 			</div>
 			<div class="bna-payment-method__content">
@@ -41,42 +41,42 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<option value="new-card"><?php _e( 'Add New Card', 'wc-bna-gateway' ); ?></option>
 				</select>
 				
-				<div class="tpl-payment-method-cards">
-					<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+				<div class="bna-payment-method-cards">
+					<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
 					
-					<div class="tpl-input-wrapper">
-						<div class="tpl-input-label"><?php _e( 'Cardholder Name', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
-						<span class="tpl-font-italic"><?php _e( '(the exact name as it appears on the front of your credit card)', 'wc-bna-gateway' ); ?></span></div>
-						<input class="tpl-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" >
+					<div class="bna-input-wrapper">
+						<div class="bna-input-label"><?php _e( 'Cardholder Name', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
+						<span class="bna-font-italic"><?php _e( '(the exact name as it appears on the front of your credit card)', 'wc-bna-gateway' ); ?></span></div>
+						<input class="bna-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" >
 					</div>
 					
-					<div class="tpl-two-inputs-wrapper">
-						<div class="tpl-input-wrapper">
-							<div class="tpl-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="tpl-input" type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
+					<div class="bna-two-inputs-wrapper">
+						<div class="bna-input-wrapper">
+							<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="bna-input" type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
 								onkeyup="return input_test(this);">
 						</div>
 						
-						<div class="tpl-input-wrapper">
-							<div class="tpl-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="tpl-input" type="text" name="cc_expire" 
+						<div class="bna-input-wrapper">
+							<div class="bna-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="bna-input" type="text" name="cc_expire" 
 								autocomplete="off" placeholder="MM/YY" onkeyup="return input_test(this);" maxlength="5">
 						</div>
 					</div>
 						
-					<div class="tpl-three-inputs-wrapper">
-						<div class="tpl-input-wrapper">
-							<div class="tpl-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input  class="tpl-input" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
+					<div class="bna-three-inputs-wrapper">
+						<div class="bna-input-wrapper">
+							<div class="bna-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input  class="bna-input" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
 								onkeyup="return input_test(this);">
 						</div>
-						<div class="tpl-CVC-text-wrapper">
-							<div class="tpl-CVC-text">
+						<div class="bna-CVC-text-wrapper">
+							<div class="bna-CVC-text">
 								<?php _e( 'CVC (CVV, CCV, SVC or CSC) is a card security verification code. Three or four digits printed, not embossed, on the back of the card. ', 'wc-bna-gateway' ); ?>
 							</div>
 						</div>
-						<div class="tpl-CVC-img-wrapper">
-							<img class="tpl-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Credit_Card_SVC.png'; ?>" />
+						<div class="bna-CVC-img-wrapper">
+							<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Credit_Card_SVC.png'; ?>" />
 						</div>
 					</div>
 					
@@ -93,7 +93,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<div class="bna-checkout-radio"  data-payment-type="eft"></div>
 				<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>
 				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/pm_dc 3.png'; ?>" alt="<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_dc 3.png'; ?>" alt="<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>" />
 				</div>
 			</div>
 			<div class="bna-payment-method__content">
@@ -113,30 +113,30 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<option value="new-method"><?php _e( 'Add New Method', 'wc-bna-gateway' ); ?></option>
 				</select>
 				
-				<div class="tpl-payment-method-eft">
-					<div class="tpl-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+				<div class="bna-payment-method-eft">
+					<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
 					
-					<div class="tpl-input-wrapper">
-						<div class="tpl-input-label"><?php _e( 'Bank Name', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+					<div class="bna-input-wrapper">
+						<div class="bna-input-label"><?php _e( 'Bank Name', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
 						<select id="bank_name" name="bank_name" class="input-text"></select>					
 					</div>
 					
-					<div class="tpl-input-wrapper">
-						<div class="tpl-input-label"><?php _e( 'Institution Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-						<input class="tpl-input" placeholder="000" type="text" id="institutionNumber" name="institutionNumber" value="" maxlength="3" 
+					<div class="bna-input-wrapper">
+						<div class="bna-input-label"><?php _e( 'Institution Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+						<input class="bna-input" placeholder="000" type="text" id="institutionNumber" name="institutionNumber" value="" maxlength="3" 
 									onkeyup="return digitValid(this);" autocomplete="off" >
 					</div>
 					
-					<div class="tpl-two-inputs-wrapper">
-						<div class="tpl-input-wrapper">
-							<div class="tpl-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="tpl-input" placeholder="000000000000" type="text" id="accountNumber" name="accountNumber" value="" maxlength="12" 
+					<div class="bna-two-inputs-wrapper">
+						<div class="bna-input-wrapper">
+							<div class="bna-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="bna-input" placeholder="000000000000" type="text" id="accountNumber" name="accountNumber" value="" maxlength="12" 
 								onkeyup="return digitValid(this);" autocomplete="off" >
 						</div>
 						
-						<div class="tpl-input-wrapper">
-							<div class="tpl-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="tpl-input" placeholder="00000" type="text" id="transitNumber" name="transitNumber" value="" maxlength="5" 
+						<div class="bna-input-wrapper">
+							<div class="bna-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="bna-input" placeholder="00000" type="text" id="transitNumber" name="transitNumber" value="" maxlength="5" 
 								onkeyup="return digitValid(this);" autocomplete="off" >
 						</div>
 					</div>
@@ -155,13 +155,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
 				<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>
 				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>" />
 				</div>
 			</div>			
 			<div class="bna-payment-method__content">		
-				<div class="tpl-input-wrapper">
-					<div class="tpl-input-label"><?php _e( 'Interac Email', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-					<input class="tpl-input" type="text" placeholder="login@domain" name="email_transfer" value="<?php echo wp_get_current_user()->user_email; ?>" maxlength="100" readonly>
+				<div class="bna-input-wrapper">
+					<div class="bna-input-label"><?php _e( 'Interac Email', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+					<input class="bna-input" type="text" placeholder="login@domain" name="email_transfer" value="<?php echo wp_get_current_user()->user_email; ?>" maxlength="100" readonly>
 				</div>
 				<div class="pm-et-block"></div>		
 			</div>	
@@ -198,9 +198,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			$('#paymentMethodCC').on("select2:select", function(e) {
 			  let data = e.params.data;
 			  if (data.id === 'new-card') {
-					$('.bna-payment-method__content .tpl-payment-method-cards').addClass('tpl-active');
+					$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
 				} else {
-					$('.bna-payment-method__content .tpl-payment-method-cards').removeClass('tpl-active');
+					$('.bna-payment-method__content .bna-payment-method-cards').removeClass('bna-active');
 				}
 			});
 			
@@ -208,9 +208,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			$('#paymentMethodDD').on("select2:select", function(e) {
 			  let data = e.params.data;
 			  if (data.id === 'new-method') {
-					$('.bna-payment-method__content .tpl-payment-method-eft').addClass('tpl-active');
+					$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
 				} else {
-					$('.bna-payment-method__content .tpl-payment-method-eft').removeClass('tpl-active');
+					$('.bna-payment-method__content .bna-payment-method-eft').removeClass('bna-active');
 				}
 			});
 			
@@ -222,9 +222,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			// select 'checkbox' recurring
 			$('.bna-checkbox-container input[name="create_subscription"]').on('change', function(event) {
 				if (event.currentTarget.checked) {
-					$(this).parent().next().addClass('tpl-active');
+					$(this).parent().next().addClass('bna-active');
 				} else {
-					$(this).parent().next().removeClass('tpl-active');
+					$(this).parent().next().removeClass('bna-active');
 				}
 			});
 			
@@ -287,7 +287,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	{
 		let feeTab = document.querySelector('.fee-total');
 		let feeSum, feeMult;
-		let allFees = window.wc_gwpl_fee;
+		let allFees = window.bna_fee;
 
 		if (!feeTab) {
 			let tRef = document.querySelector('.shop_table').getElementsByTagName('tfoot')[0];

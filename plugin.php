@@ -196,7 +196,7 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 		*/
 		public function custom_woocommerce_states( $states ) 
 		{
-			$iso_codes = file_get_contents($this->plugin_url.'js/iso-3166-2.json');
+			$iso_codes = file_get_contents($this->plugin_url.'assets/js/iso-3166-2.json');
 
 			if ( !empty( $iso_codes ) ) {
 				$iso = json_decode($iso_codes, true);
@@ -222,7 +222,7 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 		*/
 		public function custom_woocommerce_countries( $countries ) 
 		{
-			$iso_codes = file_get_contents($this->plugin_url.'js/iso-3166-2.json');
+			$iso_codes = file_get_contents($this->plugin_url.'assets/js/iso-3166-2.json');
 
 			if ( !empty( $iso_codes ) ) {
 				$iso = json_decode($iso_codes, true);

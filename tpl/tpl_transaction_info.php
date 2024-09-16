@@ -36,34 +36,34 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                     </thead>
                     <tbody class="ant-table-tbody">
                         <?php
+                        
                             foreach ($transactions as $t_val) {
                                 $desc = json_decode($t_val->transactionDescription);
 
                                 $imageName = '';
-                                switch ($desc->transactionType) {
-                                    case 'VISA':
-                                        $imageName = 'visa.svg';
-                                        break;
-                                    case 'MASTERCARD':
-                                        $imageName = 'masterCard.svg';
-                                        break;
-                                    case 'AMEX':
-                                        $imageName = 'americanExpress.svg';
-                                        break;
-                                    case 'DIRECT-DEBIT':
-                                        $imageName = 'directDebit.svg';
-                                        break;
-                                    case 'ETRANSFER':
-                                        $imageName = 'eTransfer.svg';
-                                        break;
-                                } 
-
-                                if ( empty($imageName) ) continue;
+								switch ( $desc->paymentMethod ) {
+									case 'card':
+										if ( $desc->paymentMethod->cardBrand === 'VISA' ) {
+											$imageName = 'visa.svg';
+										} elseif ( $data->cardBrand === 'MASTERCARD' ) {
+											$imageName = 'masterCard.svg';
+										} elseif ( $data->cardBrand === 'AMEX' ) {
+											$imageName = 'americanExpress.svg';
+										}
+										break;
+									case 'eft':
+										$imageName = 'directCredit.svg';
+										break;
+									case 'e-transfer':
+										$imageName = 'eTransfer.svg';
+										break;
+								}
+								if ( empty( $imageName ) ) continue;
                         ?>
                                 <tr class="ant-table-row ant-table-row-level-0">
                                     <td class="ant-table-cell">
                                         <a href="/my-account/view-order/<?=/*$desc->transactionInfo->invoiceId;*/$t_val->order_id;?>/">
-                                            <?=/*$desc->transactionInfo->invoiceId;*/$t_val->order_id;?>
+                                            <?php /*$desc->transactionInfo->invoiceId;*/ echo $t_val->order_id;?>
                                         </a>
                                     </td>
                                     <td class="ant-table-cell"><?=$desc->transactionInfo->transactionToken;?></td>
@@ -71,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                                     <td class="ant-table-cell">
                                         <div style="display: flex;">
                                             <div style="margin: 0px 4px;">
-                                                <img src="<?=$this->plugin_url.'img/'.$imageName; ?>" alt="<?=$desc->transactionType;?>" style="height: 25px;">
+                                                <img src="<?=$this->plugin_url.'assets/img/'.$imageName; ?>" alt="<?=$desc->transactionType;?>" style="height: 25px;">
                                             </div>
                                         </div>
                                     </td>
