@@ -45,7 +45,7 @@ if (!class_exists('BNASubscriptions')) {
 			$base_order = wc_get_order( $result['invoiceInfo']['invoiceId'] );
 
             $subscription =  $wpdb->get_results(
-                "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['subscriptionId']}'"
+                "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['id']}'" // subscriptionId
             );
 
             if ( empty( $subscription ) || count( $subscription ) < 1) {
@@ -61,24 +61,25 @@ if (!class_exists('BNASubscriptions')) {
                         'nextChargeDate'	=> $result['remainingPayments'],
                         'expire'		        	=> empty( $result['expire'] ) ? "" : $result['expire'],
                         'numberOfPayments'   => isset( $result['remainingPayments'] ) ? $result['remainingPayments'] : -1,
-                        'recurringDescription'  => json_encode([ 'invoiceInfo' => $result['invoiceInfo'], 
-							'cartItems' => $result['items'], 'paymentDetails' => $result['paymentDetails']])
+                        'recurringDescription'  => json_encode( $result )
                     ),
                     array( 
                         '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
                     )
                 );
             } else {
+				$json = json_encode( $result );
                 $wpdb->query("UPDATE ".$wpdb->prefix.BNA_TABLE_RECURRING
                     ." SET "
                         ."status='{$result['status']}', "
-                        .( isset($result['nextChargeDate']) 
-                            ? "nextChargeDate='{$result['nextChargeDate']}', "
+                        .( isset($result['startPaymentDate']) 
+                            ? "startDate='{$result['startPaymentDate']}', "
                             : ""
                         )
-                        ."expire='{$result['expire']}', "
-                        ."numberOfPayments='{$result['numberOfPayments']}' "
-                    ." WHERE recurringId='{$result['recurringId']}'"
+                        ."recurring='{$result['recurrence']}', "
+                        ."numberOfPayments='{$result['remainingPayments']}', "
+                        ."recurringDescription='{$json}' "
+                    ." WHERE recurringId='{$result['id']}'"
                 );
             }
 		}	

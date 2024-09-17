@@ -145,9 +145,11 @@ body.woocommerce-account .woocommerce .woocommerce-button.button.cancel {
 	}
 	.woocommerce-account .woocommerce .woocommerce-MyAccount-navigation {
 		flex: 0 1 100%;
+		width: 100%;
 	}
 	.woocommerce-account .woocommerce .woocommerce-MyAccount-content {
 		flex: 0 1 100%;
+		width: 100%;
 	}
 	
 }
@@ -155,7 +157,7 @@ body.woocommerce-account .woocommerce .woocommerce-button.button.cancel {
 	.woocommerce-cart .woocommerce,
 	.woocommerce-account .woocommerce ,
 	.woocommerce-checkout .woocommerce {
-		flex-direction: column;
+		/*flex-direction: column;*/
 	}
 }
 .loading {
@@ -822,6 +824,23 @@ body.woocommerce-checkout .woocommerce #bank_name {
 	visibility: visible;
 }
 
+/* Transaction */
+.img-transaction-type {
+	margin: 0px 4px
+}
+@media (max-width: 767.98px) {
+	.img-transaction-type {
+		margin-left: auto;
+	}
+}
+
+/* Subsciption */
+@media (max-width: 767.98px) {
+	.btn-del-subscription {
+		margin-right: 0px;
+		margin-left: auto;
+	}
+}
 
 /*
 select{
@@ -918,3 +937,19 @@ select{
     background-size: contain;
 }
 
+details summary::-webkit-details-marker {
+	display: none
+}
+details > summary {
+	list-style: none;
+	font-weight:bold;
+	cursor: pointer;
+}
+details summary:before {
+	content: '\f0fe';
+	font-family: "Font Awesome 5 free";
+	margin-right: 7px;
+}
+details[open] summary:before {
+	content: '\f146';
+}

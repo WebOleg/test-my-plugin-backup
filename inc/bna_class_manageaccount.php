@@ -69,7 +69,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					}
 									
 					if ( ! wp_style_is( 'woocommerce-layout-css' ) ) {				
-						wp_enqueue_style( 'bna-woocommerce-smallscreen-css', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-layout.css', '', WC_VERSION );
+						wp_enqueue_style( 'bna-woocommerce-layout-css', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-layout.css', '', WC_VERSION );
 					}
 					
 					if ( ! wp_style_is( 'woocommerce-smallscreen-css' ) ) {				
@@ -336,14 +336,18 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			self::loading_scripts();
 
 			$orderIDs = [];
-			$orders = wc_get_orders(['customer_id' => get_current_user_id(), 'nopaging' => true] );
+			
+			$args = array( 'customer_id' => get_current_user_id(), 'nopaging' => true );
+			$args = bna_my_account_orders( $args );
+			
+			$orders = wc_get_orders( $args );
 			foreach( $orders as $order) array_push( $orderIDs, $order->get_id());
 
  			$transactions =  $wpdb->get_results(
-				"SELECT * FROM ".$wpdb->prefix.BNA_TABLE_TRANSACTIONS
-					." WHERE order_id IN (". implode(',', $orderIDs).") ORDER BY created_time DESC"
+				"SELECT * FROM " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS
+					." WHERE order_id IN (". implode( ',', $orderIDs ).") ORDER BY created_time DESC"
 			);
-			require_once dirname(__FILE__). "/../tpl/tpl_transaction_info.php";
+			require_once dirname( __FILE__ ) . "/../tpl/tpl_transaction_info.php";
 		}
 
 		/**
@@ -357,10 +361,29 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			self::loading_scripts();
 
 			$userID = get_current_user_id();
-			$subscriptions =  $wpdb->get_results(
-				"SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE user_id='{$userID}' ORDER BY created_time DESC"
-			);
-			require_once dirname(__FILE__). "/../tpl/tpl_subscription_info.php";
+			
+			 if ( isset( $_GET['bna-orders-filter'] ) && ! empty( $_GET['bna-orders-filter'] ) ) {
+				$start_date = esc_attr( $_GET['bna-orders-filter'] );
+        
+				if ( $start_date === 'last-week' ) {
+					$start_date = date( "Y-m-d", strtotime( "- 7 days" ) );
+				} elseif ( $start_date === 'last-month' ) {
+					$start_date = date( "Y-m-d", strtotime( "- 30 days" ) );
+				} elseif ( $start_date === 'last-three-months' ) {
+					$start_date = date( "Y-m-d", strtotime( "- 91 days" ) );
+				} elseif ( $start_date === 'last-year' ) {
+					$start_date = date( "Y-m-d", strtotime( "- 365 days" ) );
+				}
+				 
+				$subscriptions =  $wpdb->get_results(
+					"SELECT * FROM " . $wpdb->prefix . BNA_TABLE_RECURRING." WHERE user_id='{$userID}' AND DATE(created_time) > '{$start_date}' ORDER BY created_time DESC"
+				);
+			} else {
+				$subscriptions =  $wpdb->get_results(
+					"SELECT * FROM " . $wpdb->prefix . BNA_TABLE_RECURRING." WHERE user_id='{$userID}' ORDER BY created_time DESC"
+				);
+			}
+			require_once dirname( __FILE__ ) . "/../tpl/tpl_subscription_info.php";
 		}
 		
 		/**
