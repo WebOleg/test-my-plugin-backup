@@ -12,243 +12,116 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 <section class="section my-account-orders">
 	<div>
+		<?php $bna_transaction_info_url = esc_url( wc_get_account_endpoint_url( 'bna-transaction-info' ) ); ?>
 		<div class="woocommerce-orders-table__filters">
-			<div class="woocommerce-orders-table__filter"><?php _e( 'Last Week', 'wc-bna-gateway' ); ?></div>
-			<div class="woocommerce-orders-table__filter"><?php _e( 'Last Month', 'wc-bna-gateway' ); ?></div>
-			<div class="woocommerce-orders-table__filter filter-active"><?php _e( 'Last 3 Months', 'wc-bna-gateway' ); ?></div>
-			<div class="woocommerce-orders-table__filter"><?php _e( 'Last Year', 'wc-bna-gateway' ); ?></div>
+				<a href="<?php echo $bna_transaction_info_url . '?bna-orders-filter=last-week'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-week' ); ?>">
+				<?php _e( 'Last Week', 'wc-bna-gateway' ); ?>
+			</a>
+			<a href="<?php echo $bna_transaction_info_url . '?bna-orders-filter=last-month'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-month' ); ?>">
+				<?php _e( 'Last Month', 'wc-bna-gateway' ); ?>
+			</a>
+			<a href="<?php echo $bna_transaction_info_url . '?bna-orders-filter=last-three-months'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-three-months' ); ?>">
+				<?php _e( 'Last 3 Months', 'wc-bna-gateway' ); ?>
+			</a>
+			<a href="<?php echo $bna_transaction_info_url . '?bna-orders-filter=last-year'; ?>" class="woocommerce-orders-table__filter <?php echo bna_add_class_active( 'last-year' ); ?>">
+				<?php _e( 'Last Year', 'wc-bna-gateway' ); ?>
+			</a>
 		</div>
 	</div>
-    <div>
-        <div class="payor-tab">
-            <div class="payorTab">
-                <table style="table-layout: auto;">
-                    <thead class="ant-table-thead">
-                        <tr>
-                            <th class="ant-table-cell">Order</th>
-                            <th class="ant-table-cell">Transaction #</th>
-                            <th class="ant-table-cell">Reference #</th>
-                            <th class="ant-table-cell">Type</th>
-                            <th class="ant-table-cell">Status</th>
-                            <th class="ant-table-cell">Description</th>
-                            <th class="ant-table-cell">Created</th>
-                        </tr>
-                    </thead>
-                    <tbody class="ant-table-tbody">
-                        <?php
-                        
-                            foreach ($transactions as $t_val) {
-                                $desc = json_decode($t_val->transactionDescription);
+	
+	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
+		<thead>
+			<tr>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Order #', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Transaction #', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Type', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Status', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Description', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Created', 'wc-bna-gateway' ); ?></span></th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php  
+			foreach ( $transactions as $t_val ) {
+				$desc = json_decode( $t_val->transactionDescription );
 
-                                $imageName = '';
-								switch ( $desc->paymentMethod ) {
+				$imageName = '';
+				switch ( strtolower( $desc->paymentMethod ) ) {
+					case 'card':
+						if ( strtolower( $desc->paymentDetails->cardBrand ) === 'visa' ) {
+							$imageName = 'visa.svg';
+						} elseif ( strtolower( $desc->paymentDetails->cardBrand ) === 'mastercard' ) {
+							$imageName = 'masterCard.svg';
+						} elseif ( strtolower( $desc->paymentDetails->cardBrand ) === 'amex' ) {
+							$imageName = 'americanExpress.svg';
+						}
+						break;
+					case 'eft':
+						$imageName = 'directCredit.svg';
+						break;
+					case 'e-transfer':
+						$imageName = 'eTransfer.svg';
+						break;
+				}
+				if ( empty( $imageName ) ) continue;
+                ?>
+				<tr class="woocommerce-orders-table__row order">
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Order #', 'wc-bna-gateway' ); ?>">
+						<a href="/my-account/view-order/<?php echo $t_val->order_id; ?>/">
+							<?php echo $t_val->order_id; ?>
+						</a>
+					</td>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Transaction #', 'wc-bna-gateway' ); ?>">
+						<?php echo $t_val->transactionToken;?>					
+					</td>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Type', 'wc-bna-gateway' ); ?>">
+						<div style="display: flex;">
+							<div class="img-transaction-type">
+								<img src="<?php echo $this->plugin_url.'assets/img/' . $imageName; ?>" alt="<?php echo $desc->paymentMethod;?>" style="height: 25px;">
+							</div>
+						</div>					
+					</td>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
+						<?php echo $t_val->transactionStatus; ?>				
+					</td>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Description', 'wc-bna-gateway' ); ?>">
+						<details><summary><?php _e( 'more...', 'wc-bna-gateway' ); ?></summary>
+							<p><?php _e( 'Currency:', 'wc-bna-gateway' ); ?> <?php echo $desc->currency;?></p>
+							<?php
+								if ( isset( $desc->total ) )
+									echo "<p>" . __( 'Total amount:', 'wc-bna-gateway' ) . " {$desc->total}</p>";
+
+								if ( isset( $desc->subtotal ) )
+									echo "<p>" . __( 'Subtotal:', 'wc-bna-gateway' ) . " {$desc->subtotal}</p>";
+									
+								if ( isset( $desc->amount ) )
+									echo "<p>" . __( 'Amount:', 'wc-bna-gateway' ) . " {$desc->amount}</p>";
+							?>
+							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo $desc->fee === 0 ? 'no' : 'yes';?></p> 
+							<?php
+								switch ( strtolower( $desc->paymentMethod ) ) {
 									case 'card':
-										if ( $desc->paymentMethod->cardBrand === 'VISA' ) {
-											$imageName = 'visa.svg';
-										} elseif ( $data->cardBrand === 'MASTERCARD' ) {
-											$imageName = 'masterCard.svg';
-										} elseif ( $data->cardBrand === 'AMEX' ) {
-											$imageName = 'americanExpress.svg';
-										}
+										echo "<p>" . __( 'Card #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->cardNumber}</p>";
 										break;
 									case 'eft':
-										$imageName = 'directCredit.svg';
+										echo "<p>" . __( 'Account #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->accountNumber}</p>";
+										echo "<p>" . __( 'Transit #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->transitNumber}</p>";
+										echo "<p>" . __( 'Institution #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->bankNumber}</p>";
 										break;
 									case 'e-transfer':
-										$imageName = 'eTransfer.svg';
+										echo "<p>" . __( 'Email:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->emailAddress}</p>";
 										break;
-								}
-								if ( empty( $imageName ) ) continue;
-                        ?>
-                                <tr class="ant-table-row ant-table-row-level-0">
-                                    <td class="ant-table-cell">
-                                        <a href="/my-account/view-order/<?=/*$desc->transactionInfo->invoiceId;*/$t_val->order_id;?>/">
-                                            <?php /*$desc->transactionInfo->invoiceId;*/ echo $t_val->order_id;?>
-                                        </a>
-                                    </td>
-                                    <td class="ant-table-cell"><?=$desc->transactionInfo->transactionToken;?></td>
-                                    <td class="ant-table-cell"><?=$desc->transactionInfo->referenceNumber;?></td>
-                                    <td class="ant-table-cell">
-                                        <div style="display: flex;">
-                                            <div style="margin: 0px 4px;">
-                                                <img src="<?=$this->plugin_url.'assets/img/'.$imageName; ?>" alt="<?=$desc->transactionType;?>" style="height: 25px;">
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="ant-table-cell"><?=$desc->transactionStatus;?></td>
-                                    <td class="ant-table-cell">
-                                        <details><summary>more...</summary>
-                                            <p>Currency: <?=$desc->transactionInfo->currency;?></p>
-                                            <?php
-
-                                                if (isset($desc->transactionInfo->totalAmount))
-                                                    echo "<p>Total amount: {$desc->transactionInfo->totalAmount}</p>";
-
-                                                if (isset($desc->transactionInfo->subtotal))
-                                                    echo "<p>Subtotal: {$desc->transactionInfo->subtotal}</p>";
-                                                    
-                                                if (isset($desc->transactionInfo->refundedAmount))
-                                                    echo "<p>Refunded: {$desc->transactionInfo->refundedAmount}</p>";
-
-                                            ?>
-                                            <p>BNA fee: <?=$desc->transactionInfo->paylinksFee;?></p>
-                                            <p>BNA Hst fee: <?=$desc->transactionInfo->paylinksHstFee;?></p>
-                                            <?php
-                                                switch ($desc->transactionType) {
-                                                    case 'VISA':
-                                                    case 'MASTERCARD':
-                                                    case 'AMEX':
-                                                        echo "<p>Card #: {$desc->transactionInfo->cardNumber}</p>";
-                                                        break;
-                                                    case 'DIRECT-DEBIT':
-                                                    case 'DIRECT-CREDIT':
-                                                        echo "<p>Account #: {$desc->transactionInfo->accountNumber}</p>";
-                                                        echo "<p>Transit #: {$desc->transactionInfo->transitNumber}</p>";
-                                                        echo "<p>Institution #: {$desc->transactionInfo->institutionNumber}</p>";
-                                                        break;
-                                                    case 'ETRANSFER':
-                                                        echo "<p>Email: {$desc->transactionInfo->emailAddress}</p>";
-                                                        break;
-                                                } 
-                                            ?>
-                                        </details>
-                                    </td>
-                                    <td class="ant-table-cell">
-                                        <?=date('Y-m-d H:i:s', strtotime($desc->transactionInfo->merchantTimestamp));?>
-                                    </td>
-                                </tr>
-                        <?php
-                            }
-                            
-                        ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+								} 
+							?>
+						</details>
+					</td>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Created', 'wc-bna-gateway' ); ?>">
+						<?php echo date( 'Y-m-d H:i:s', strtotime( $desc->transactionTime ) ); ?>
+					</td>
+				</tr>            
+        <?php
+		}
+        ?>
+		</tbody>
+	</table>
 </section>
-
-<script>
-</script>
-
-
-<style scoped="scoped">
-	table {
-		width: 100%;
-	}
-    details summary::-webkit-details-marker {
-        display: none
-    }
-    details > summary {
-        list-style: none;
-        font-weight:bold;
-        cursor: pointer;
-    }
-    details summary:before {
-        content: '\f0fe';
-        font-family: "Font Awesome 5 free";
-        margin-right: 7px;
-    }
-    details[open] summary:before {
-        content: '\f146';
-    }
-
-
-    tr td:last-child{
-        width:1%;
-        white-space:nowrap;
-    }
-    .tabs-main {
-        font-size: 0;
-        display: block;
-    }
-    .tabs-main>input[type="radio"] {
-        display: none;
-    }
-    .tabs-main>div, 
-    .content-tab,
-    .payor-tab,
-    .ddInstitutionNumber,
-    .dcInstitutionNumber {
-        display: none;
-        border: 1px solid #e0e0e0;
-        padding: 10px 15px;
-        font-size: 16px;
-    }
-    .payor-tab,
-    #tab-btn-1:checked~#content-1,
-    #tab-btn-2:checked~#content-2,
-    #tab-btn-3:checked~#content-3,
-    #tab-opt-1:checked~#content-child-1,
-    #tab-opt-2:checked~#content-child-2,
-    #tab-opt-3:checked~#content-child-3,
-    .active {  
-        display: block !important;
-    }
-    .tabs-main>label {
-        display: inline-block;
-        text-align: center;
-        vertical-align: middle;
-        user-select: none;
-        background-color: #f5f5f5;
-        border: 1px solid #e0e0e0;
-        padding: 2px 8px;
-        font-size: 16px;
-        line-height: 1.5;
-        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
-        cursor: pointer;
-        position: relative;
-        top: 1px;
-    }
-    .tabs-main>label:not(:first-of-type) {
-        border-left: none;
-    }
-    .tabs-main>input[type="radio"]:checked+label {
-        background-color: #fff;
-        border-bottom: 1px solid #fff;
-    }
-    .payorTab {
-        overflow-x: auto;
-    }
-    #content-1 label,
-    #content-2 label,
-    #content-3 label {
-        font-size: 13px;
-    }
-    .form-row-small {
-        width: 50% !important;
-    }
-    .btn-add-payment {
-        margin: 20px auto;
-    }
-    .btn-del-payment {
-        border-radius: 5px;
-    }
-    .btn-del-payment div {
-        width:20px;
-        height:20px;
-    }
-    .deactive {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;  
-        pointer-events: none;
-    }
-    .deactive input{
-        cursor: not-allowed !important;
-    }
-    .loading {
-        display:none;
-        position:absolute; 
-        z-index:3000; 
-        background:url(<?=$this->plugin_url;?>img/loading.gif) center, no-repeat;
-        background-size: cover;
-        top: 45%;
-        left: 40%;
-        width: 150px;
-        height: 150px;
-        font-size: 24px;
-        text-align: center;
-    }
-</style>

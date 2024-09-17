@@ -78,7 +78,7 @@ add_filter(
 );
 
 /**
- * Filter of orders on the 'my_account' page.
+ * Filter of orders on the 'my_account' page, '	Transaction info '.
  * 
  * @param  $array 
  * @return $array
