@@ -10,7 +10,7 @@
  * @version		1.0
  */
 
-require_once dirname( __FILE__ ). "/bna_class_encryption.php";
+//require_once dirname( __FILE__ ). "/bna_class_encryption.php";
 
 /**
  * Error constants

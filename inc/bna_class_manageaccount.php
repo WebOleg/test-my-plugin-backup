@@ -59,7 +59,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			add_action( 'wp_enqueue_scripts', array( &$this, 'site_load_styles') );
 			
 			add_action( 'wp_enqueue_scripts', function() {
-				if ( is_cart() || is_checkout() || is_page( array( 'my-account' ) ) ) { // is_woocommerce() ||				
+				if ( is_cart() || is_checkout() || is_page( array( 'my-account' ) ) ) {			
 					if ( ! wp_script_is( 'select2-js' ) ) {
 						wp_enqueue_script( 'bna-select2-js', $this->plugin_url.'assets/lib/select2/js/select2.full.min.js', array('jquery'), '4.0.13', true );
 					}
@@ -76,7 +76,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 						wp_enqueue_style( 'bna-woocommerce-smallscreen-css', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-smallscreen.css', '', WC_VERSION, "only screen and (max-width: 768px)" );
 					}
 					
-					wp_enqueue_style( 'bna-woocommerce-style', $this->plugin_url.'assets/css/bna-style.css', '', time() );				
+					wp_enqueue_style( 'bna-woocommerce-style', $this->plugin_url . 'assets/css/bna-style.css', '', time() );
 				}
 			}, 99 );
 
@@ -95,10 +95,11 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		*/
 		public function site_load_styles()
 		{			
-			wp_register_style( 'bna-datepicker-css', $this->plugin_url . 'assets/js/datepicker/css/datepicker.min.css' );
-			wp_register_script( 'bna-datepicker-js', $this->plugin_url.'assets/js/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
-			wp_register_script( 'bna-bank-names-js', $this->plugin_url.'assets/js/bankNames.js', array(), '1.0.0', true );
-			wp_register_script( 'wc-country-select', site_url().'/wp-content/plugins/woocommerce/assets/js/frontend/country-select.min.js', array('jquery'), null, true );
+			wp_register_style( 'bna-datepicker-css', $this->plugin_url . 'assets/lib/datepicker/css/datepicker.min.css' );
+			wp_register_script( 'bna-datepicker-js', $this->plugin_url . 'assets/lib/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
+			wp_enqueue_script( 'bna-bank-names-js', $this->plugin_url . 'assets/js/bankNames.js', array(), '1.0.0', true );
+			wp_register_script( 'wc-country-select', site_url() . '/wp-content/plugins/woocommerce/assets/js/frontend/country-select.min.js', array('jquery'), null, true );
+			wp_register_script( 'bna-payment-js', $this->plugin_url . 'assets/lib/payment/payment.js', array('jquery'), '', true );
 			wp_register_script( 'bna-script-js', $this->plugin_url.'assets/js/bna-script.js', array('jquery'), time(), true );			
 
 			wp_localize_script( 'bna-datepicker-js', 'bna_data',
@@ -223,8 +224,9 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		{
 			wp_enqueue_style( 'bna-datepicker-css' );
 			wp_enqueue_script( 'bna-datepicker-js');
-			wp_enqueue_script( 'bna-bank-names-js');			
+			//wp_enqueue_script( 'bna-bank-names-js');			
 			wp_enqueue_script( 'wc-country-select' );
+			wp_enqueue_script( 'bna-payment-js' );
 			wp_enqueue_script( 'bna-script-js');			
 		}
 		
@@ -672,33 +674,33 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		 *
 		 * @return json
 		 */
-		public function ajax_add_payment () 
+		public function ajax_add_payment() 
 		{
 			global $wpdb;
 
-			if( isset( $_POST['nonce'] )) {
-				if ( !wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORNONCE);
+			if( isset( $_POST['nonce'] ) ) {
+				if ( ! wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORNONCE );
 					wp_die();
 				}
 
 				$form = array();
 				$request = $_POST['fieldtext'];
 
-				foreach( $request as $rq)
+				foreach( $request as $rq )
 					$form[$rq['name']] = $rq['value'];
 									
 				$args = WC_BNA_Gateway::get_merchant_params();
-				if ( empty( $args) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
+				if ( empty( $args ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
 					wp_die();
 				}
 
 				$api = new BNAExchanger( $args);
 
-				$payorID = get_user_meta (get_current_user_id(), 'payorID', true);
+				$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 				if ( empty( $payorID) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPAYOR );
 					wp_die();
 				}
 				
@@ -711,18 +713,19 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 						$form['cc_expire_month'] = $cc_expire[0];
 						$form['cc_expire_year'] = $cc_expire[1];
 					}
+					$cardNumber = str_replace( ' ', '', $form['cc_number'] );
 
 					$data = array (
-						'cardNumber'	=> $form['cc_number'],
+						'cardNumber'	=> $cardNumber,
 						'cardHolder'		=> $form['cc_holder'],
 						'cardType'			=> 'credit',
 						'cardIdNumber'	=> $form['cc_code'],
-						'expiryMonth'	=> $form['cc_expire_month'],
-						'expiryYear'		=> $form['cc_expire_year'],
+						'expiryMonth'	=> trim( $form['cc_expire_month'] ),
+						'expiryYear'		=> trim( $form['cc_expire_year'] ),
 					);
 
 					$response = $api->query(
-						$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/card',  
+						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/card',  
 						$data,
 						'POST'
 					);
@@ -735,7 +738,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					);
 
 					$response = $api->query(
-						$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/e-transfer',  
+						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/e-transfer',  
 						$data,
 						'POST'
 					);
@@ -750,7 +753,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					);
 					
 					$response = $api->query(
-						$args['serverUrl'].'/'.$args['protocol'].'/customers/' . $payorID . '/eft',  
+						$args['serverUrl'] . '/' . $args['protocol'].'/customers/' . $payorID . '/eft',  
 						$data,
 						'POST'
 					);
@@ -759,8 +762,8 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				$response = json_decode( $response, true );
 
 				empty( $response['id'] ) ? 
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ADDPAYMENT_ERROR) :
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ADDPAYMENT_SUCCESS) ;
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ADDPAYMENT_ERROR ) :
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ADDPAYMENT_SUCCESS ) ;
 			}
 		
 			wp_die();
@@ -808,20 +811,20 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					wp_die();
 				}
 
-				$data = (object) [
-					"payorId" => $payorID,
-					"paymentMethodId" => $paymentInfo->paymentMethodId
-				];
-
+				$end = '';
+				if ( ! empty( $paymentInfo->paymentMethodId ) ) {
+					$end = '/' . $paymentInfo->paymentMethodId;
+				}
+				  
 				$response = $api->query(
-					$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/' . $paymentInfo->paymentType,
-					$data,
+					$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/' . $paymentInfo->paymentType . $end,
+					'',
 					'DELETE'
 				);
-	
+
 				empty( $response['success'] ) ? 
-						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERROR) : 
-						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_SUCCESS);
+						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_SUCCESS) :
+						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERROR);
 			}
 		
 			wp_die();
@@ -949,6 +952,8 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 							);							
 						}
 					}
+				} else {
+					$wpdb->query( "DELETE FROM ".$wpdb->prefix . BNA_TABLE_SETTINGS." WHERE payorId='$payorID'" );
 				}
 			}	
 

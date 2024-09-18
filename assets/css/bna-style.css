@@ -631,6 +631,11 @@ body.woocommerce-account .woocommerce .bna-payment-method-cards .bna-button-wrap
 body.woocommerce-account .woocommerce .bna-payment-method-cards .bna-two-inputs-wrapper .bna-number-img-wrapper {
 	margin-top: 60px;
 }
+@media (max-width: 767.98px) {
+	body.woocommerce-account .woocommerce .bna-payment-method-cards .bna-button-wrapper.bna-button-save-changes {
+		bottom: -40px;
+	}
+}
 
 /* Cart */
 body.woocommerce-cart .woocommerce form.woocommerce-cart-form {

@@ -108,11 +108,6 @@ $current_user_id = get_current_user_id();
         })(jQuery);
     }
 
-    function input_test(input) 
-	{ 
-		input.value = input.value.replace(/[^\d,]/g, "");
-	};
-
     let input_birth = document.querySelector('#birthday');
     if (typeof input_birth !== 'undefined') input_birth.removeAttribute('autocomplete');
 </script>

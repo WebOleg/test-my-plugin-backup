@@ -92,12 +92,3 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</tbody>
 	</table>
 </div>
-
-<script>
-(function() {	
-	function input_test(input) { 
-		input.value = input.value.replace(/[^\d,]/g, "");
-	};
-})();	
-</script>
-
