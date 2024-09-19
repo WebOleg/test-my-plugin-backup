@@ -1,3 +1,7 @@
+function input_test(input) { 
+	input.value = input.value.replace(/[^\d,]/g, "");
+};
+
 (function($){
 
     function startLoadingAnimation() {
@@ -47,7 +51,7 @@
 				}, 3000);
             },
             error: function( data ){
-                console.log(data);
+                //console.log(data);
             }
         });    
     });
@@ -79,7 +83,7 @@
                 self.prop('disabled', false);
             },
             error: function( data ){
-                console.log(data);
+                //console.log(data);
             }
         });    
     });
@@ -147,7 +151,7 @@
 				}, 3000);
             },
             error: function( data ){
-                console.log(data);
+                //console.log(data);
             }
         });    
     });
@@ -186,7 +190,7 @@
                 self.prop('disabled', false);
             },
             error: function( data ){
-                console.log(data);
+                //console.log(data);
             }
         });    
     });
@@ -216,10 +220,10 @@
                 message.get(0).scrollIntoView();
                 message.html(data.message);
                 self.prop('disabled', false);
-
+				
             },
             error: function( data ){
-                console.log(data);
+                //console.log(data);
             }
         });    
     });
@@ -259,10 +263,19 @@
                 self.prop('disabled', false);
             },
             error: function( data ){
-                console.log(data);
+                //console.log(data);
             }
         });    
     });
     
+    if ( $('.bna-check-cc-number').length > 0 ) {
+		Payment.formatCardNumber( $('.bna-check-cc-number') );
+	}
+    if ( $('.bna-check-cc-expire').length > 0 ) {
+		Payment.formatCardExpiry( $('.bna-check-cc-expire') );
+	}
+    if ( $('.bna-check-cc-cvc').length > 0 ) {
+		Payment.formatCardCVC( $('.bna-check-cc-cvc') );
+	}
 
 })(jQuery);

@@ -94,9 +94,9 @@ function wc_bna_gateway_init() {
 			add_action( 'woocommerce_email_before_order_table', array( &$this, 'email_instructions' ), 10, 3 );
 
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
-			add_action( 'wp_enqueue_scripts', array(&$this, 'site_load_styles') );
+			add_action( 'wp_enqueue_scripts', array( &$this, 'site_load_styles' ) );
 			
-			add_action( 'woocommerce_email_actions', array(&$this, 'send_refund_email'));
+			add_action( 'woocommerce_email_actions', array( &$this, 'send_refund_email' ) );
 		}
 
 		/**
@@ -106,8 +106,7 @@ function wc_bna_gateway_init() {
 		public function site_load_styles()
 		{
 			$fees = get_option( 'wc_bna_gateway_fees' );
-			wp_register_style( 'bna-datepicker-css', $this->plugin_url . 'assets/lib/datepicker/css/datepicker.min.css' );
-			wp_register_script( 'bna-datepicker-js', $this->plugin_url.'assets/lib/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );					
+			wp_register_script( 'bna-payment-js', $this->plugin_url .'assets/lib/payment/payment.js', '', '', true );
 			wp_localize_script( 'jquery', 'bna_fee',
 				array(
 					"creditCardPercentageFee" => $fees['creditCardPercentage'],
@@ -118,6 +117,8 @@ function wc_bna_gateway_init() {
 					"directDebitFlatFee" => $fees['eftFlat'], 
 				)	
 			);
+			wp_register_style( 'bna-datepicker-css', $this->plugin_url . 'assets/lib/datepicker/css/datepicker.min.css' );
+			wp_register_script( 'bna-datepicker-js', $this->plugin_url.'assets/lib/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );													
 		}
 
 		/**
@@ -149,7 +150,7 @@ function wc_bna_gateway_init() {
 			$surcharge = round( round($surcharge, 2) + round($hst, 2), 2 );
 
 			$args = WC_BNA_Gateway::get_merchant_params();
-			if ( empty($args) ) {
+			if ( empty( $args ) ) {
 				wc_add_notice(  'Error configuring payment parameters.', 'error' );
 				return false;
 			}
@@ -222,26 +223,17 @@ function wc_bna_gateway_init() {
 					'desc_tip'    => true,
 				),
 				'applyFee' => array(
-					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
+					'title'   => __( 'Enable/Disable', 'wc-gateway-paylinks' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Allow recurring payments', 'wc-bna-gateway' ),
+					'label'   => __( 'Apply Paylinks Payment Fee', 'wc-gateway-paylinks' ),
 					'default' => 'false'
 				),
-				'applyFee' => array(
-					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
-					'type'    => 'checkbox',
-					'label'   => __( 'Apply BNA Payment Fee', 'wc-bna-gateway' ),
-					'default' => 'false'
-				),
-				'serverUrl'	=> array(
-					'title'       => __( 'Server BNA', 'wc-bna-gateway' ),
-					'type'        => 'text',
-					'default'     => 'https://stage-api-service.bnasmartpayment.com',
-				),
-				'protocol'	=> array(
-					'title'       => __( 'Protocol version', 'wc-bna-gateway' ),
-					'type'        => 'text',
-					'default'     => 'v1',
+				'environment' => array(
+					'title'   => __( 'Environment', 'wc-bna-gateway' ),
+					'type'    => 'select',
+					'description'  => __( 'Check stage or production', 'wc-bna-gateway' ),
+					'options' => array( 'https://dev-api-service.bnasmartpayment.com' => 'Stage', 'https://production-api-service.bnasmartpayment.com' => 'Production' ),
+					'default' => 'stage'
 				),
 				'login' => array(
 					'title'       => __( 'Login', 'wc-bna-gateway' ),
@@ -253,7 +245,6 @@ function wc_bna_gateway_init() {
 				),
 			);
 		}
-
 	
 		/**
 		 * Add instructions to email.
@@ -280,7 +271,7 @@ function wc_bna_gateway_init() {
 
 			global $wpdb;
 
-			//wp_enqueue_style( 'wc_gwpay_check_css' );
+			wp_enqueue_script( 'bna-payment-js' );
 			wp_enqueue_style( 'bna-datepicker-css' );
 			wp_enqueue_script( 'bna-datepicker-js' );
 
@@ -289,16 +280,16 @@ function wc_bna_gateway_init() {
 			}
 			
 			$paymentMethods = null;
-			$payorID = get_user_meta (get_current_user_id(), 'payorID', true);
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 			if ( !empty($payorID) ) {
-				$paymentMethods =  $wpdb->get_results(
-					"SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'"
+				$paymentMethods = $wpdb->get_results(
+					"SELECT * FROM " . $wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'"
 				);
 			}
 
 			ob_start();
 			
-			include_once  dirname(__FILE__).'/../tpl/tpl_checkout_fields.php';
+			include_once  dirname(__FILE__) . '/../tpl/tpl_checkout_fields.php';
 
 			$answer = ob_get_contents();
 			ob_end_clean();
@@ -310,23 +301,23 @@ function wc_bna_gateway_init() {
 		 * Get gateway settings
 		 * @since		1.0.0
 		 */
-		public static function get_merchant_params ()
+		public static function get_merchant_params()
 		{
 			global $wpdb;
 
-			$params = $wpdb->get_var($wpdb->prepare("SELECT option_value FROM $wpdb->options WHERE option_name=%s", 
-			'woocommerce_bna_gateway_settings'));
+			$params = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name=%s", 
+			'woocommerce_bna_gateway_settings' ) );
 	
-			if (!$params) return null;
+			if ( ! $params ) return null;
 
-			preg_match_all('`"([^"]*)"`', $params, $params);
+			preg_match_all( '`"([^"]*)"`', $params, $params );
 
 			return array(
-				'serverUrl' 			=> 	WC_BNA_Gateway::get_next_arrval($params[1], 'serverUrl'), 
-				'protocol' 				=> 	WC_BNA_Gateway::get_next_arrval($params[1], 'protocol'), 
-				'applyFee'				=>	WC_BNA_Gateway::get_next_arrval($params[1], 'applyFee'),
-				'secretKey'				=>	WC_BNA_Gateway::get_next_arrval($params[1], 'secretKey'),
-				'login'					=>	WC_BNA_Gateway::get_next_arrval($params[1], 'login')
+				'serverUrl' 	=> WC_BNA_Gateway::get_next_arrval( $params[1], 'environment' ),
+				'protocol' 		=> 'v1',
+				'applyFee'		=> WC_BNA_Gateway::get_next_arrval( $params[1], 'applyFee' ),
+				'secretKey'	=> WC_BNA_Gateway::get_next_arrval( $params[1], 'secretKey' ),
+				'login'			=> WC_BNA_Gateway::get_next_arrval( $params[1], 'login' )
 			);
 		}
 
@@ -337,12 +328,12 @@ function wc_bna_gateway_init() {
  		 * @param int $key
 		 * @return string element
 		 */
-		public static function get_next_arrval($array, $key) {
+		public static function get_next_arrval( $array, $key ) {
 			$fbreak = 0;
-			foreach ($array as $arr) {
+			foreach ( $array as $arr ) {
 				
-				if ($fbreak) break;
-				if ($arr == $key) {
+				if ( $fbreak ) break;
+				if ( $arr == $key ) {
 					$fbreak ++; 
 				}
 			}
@@ -371,7 +362,7 @@ function wc_bna_gateway_init() {
 				return false;
 			}
 
-			$fees = json_decode( get_option( 'wc_bna_gateway_fees' ) );
+			$fees = get_option( 'wc_bna_gateway_fees' ); //json_decode(  )
 
 			$items = [];
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
@@ -457,7 +448,7 @@ function wc_bna_gateway_init() {
 					);
 				
 					$response_verify = json_decode( $response_verify, true );
-					
+				
 					if ( empty( $response_verify['id'] ) ) {
 						wc_add_notice( 'Error in the credit card parameters.', 'error' );
 						return false;
@@ -475,14 +466,15 @@ function wc_bna_gateway_init() {
 							if ( ! empty( $_POST['cc_expire'] ) ) {
 								$cc_expire = explode( '/', $_POST['cc_expire'] );
 							}
+							$cardNumber = str_replace( ' ', '', $_POST['cc_number'] );
 							
 							$params = array (
-								'cardNumber'	=> $_POST['cc_number'],
+								'cardNumber'	=> $cardNumber,
 								'cardHolder'		=> $_POST['cc_holder'],
 								'cardType'			=> 'credit',
 								'cardIdNumber'	=> $_POST['cc_code'],
-								'expiryMonth'	=> $cc_expire[0],
-								'expiryYear'		=> $cc_expire[1],
+								'expiryMonth'	=> trim( $cc_expire[0] ),
+								'expiryYear'		=> trim( $cc_expire[1] ),
 							);
 							foreach ( $params as $p_key => $p_val )
 								$data['paymentDetails'][$p_key] = $p_val;
@@ -585,21 +577,19 @@ function wc_bna_gateway_init() {
 			//}
 
 			if ( isset( $_POST['create_subscription'] ) ) {
-				my_log( $data_subscription );				
 				$response = $api->query(
 					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
 					$data_subscription,
 					'POST'
 				);
-				my_log( $response );
+				//my_log( $response );
 			} else {
-				my_log( $data );
 				$response = $api->query(
-					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale', //.$paymentTypeMethod.'/'.$paymentMethod,
+					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
 					$data,
 					'POST'
 				);			
-				my_log( $response );
+				//my_log( $response );
 			}
 			
 			$response = json_decode( $response, true );
@@ -743,7 +733,7 @@ function wc_bna_gateway_init() {
 		{
 			global $wpdb, $woocommerce, $BNASubscriptions;
 	
-			if ( ! isset( $result['metadata']['invoiceId'] ) ) exit(); // $result['data']['transactionInfo']['invoiceId']
+			if ( ! isset( $result['metadata']['invoiceId'] ) ) exit();
 			
 			$check_transaction_id =  $wpdb->get_results(
                 "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS ." WHERE referenceNumber='{$result['referenceUUID']}'"
@@ -754,9 +744,9 @@ function wc_bna_gateway_init() {
 			$order = wc_get_order( $result['metadata']['invoiceId'] );
 			$new_order = null;
 
-			switch ( $result['status'] ) { // ['data']['transactionStatus']
+			switch ( $result['status'] ) {
 				case 'APPROVED': 
-					if ( isset( $result['subscriptionId'] ) && $result['subscriptionId'] !== null && $order->get_status() == 'completed' ) { // ['data']['recurringPayment']					
+					if ( isset( $result['subscriptionId'] ) && $result['subscriptionId'] !== null && $order->get_status() == 'completed' ) {			
 						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );
 						$new_order = wc_get_order( $new_order_id );
 						$new_order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
@@ -805,7 +795,7 @@ function wc_bna_gateway_init() {
 			}
 
 			$payorId = get_user_meta( $order->get_user_id(), 'payorID', true );
-			$newPayorId = isset( $result['customerId'] ) ? // $result['data']['transactionInfo']['payorId']
+			$newPayorId = isset( $result['customerId'] ) ?
 				$result['customerId'] : null;
 			
 			if ( ! empty( $newPayorId ) && empty( $payorId ) ) {
@@ -816,10 +806,10 @@ function wc_bna_gateway_init() {
 				$wpdb->prefix . BNA_TABLE_TRANSACTIONS,  
 				array( 
 					'order_id'				=> empty( $new_order ) ? $order->get_id() : $new_order->get_id(),
-					'transactionToken'		=> $result['id'], // $result['data']['transactionInfo']['transactionToken']
-					'referenceNumber'		=> $result['referenceUUID'], // $result['data']['transactionInfo']['referenceNumber']
-					'transactionStatus'		=> $result['status'], // $result['data']['transactionStatus']
-					'transactionDescription'=> json_encode( $result ) // $result['data'
+					'transactionToken'		=> $result['id'],
+					'referenceNumber'		=> $result['referenceUUID'],
+					'transactionStatus'		=> $result['status'],
+					'transactionDescription'=> json_encode( $result )
 				),
 				array( 
 					'%d','%s','%s','%s','%s'

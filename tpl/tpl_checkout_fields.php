@@ -53,22 +53,19 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<div class="bna-two-inputs-wrapper">
 						<div class="bna-input-wrapper">
 							<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="bna-input" type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
-								onkeyup="return input_test(this);">
+							<input class="bna-input bna-check-cc-number" type="text" name="cc_number" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000" >
 						</div>
 						
 						<div class="bna-input-wrapper">
 							<div class="bna-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="bna-input" type="text" name="cc_expire" 
-								autocomplete="off" placeholder="MM/YY" onkeyup="return input_test(this);" maxlength="5">
+							<input class="bna-input bna-check-cc-expire" type="text" name="cc_expire" autocomplete="off" placeholder="MM/YY" maxlength="7">
 						</div>
 					</div>
 						
 					<div class="bna-three-inputs-wrapper">
 						<div class="bna-input-wrapper">
 							<div class="bna-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input  class="bna-input" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
-								onkeyup="return input_test(this);">
+							<input  class="bna-input bna-check-cc-cvc" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" >
 						</div>
 						<div class="bna-CVC-text-wrapper">
 							<div class="bna-CVC-text">
@@ -192,10 +189,24 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				$(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
 				
 				$('#payment_type').val( $(this).data('payment-type') );
+				
+				// open if only 'new-card'
+				if ( $('#paymentMethodCC').is(':visible') ) {
+					if ( $('#paymentMethodCC').length === 1 ) {
+						$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
+					}
+				}
+				
+				// open if only 'new-method'
+				if ( $('#paymentMethodDD').is(':visible') ) {
+					if ( $('#paymentMethodDD').length === 1 ) {
+						$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
+					}
+				}
 			});
 			
-			// select card or add new
-			$('#paymentMethodCC').on("select2:select", function(e) {
+			// select card or add new			
+			$('#paymentMethodCC').on("select2:select", function(e) {			
 			  let data = e.params.data;
 			  if (data.id === 'new-card') {
 					$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
@@ -232,6 +243,17 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			$('#ssRepeat').on("select2:select", function(e) {
 				$('#recurring').val( $(this).val() );
 			});
+			
+			
+			if ( $('.bna-check-cc-number').length > 0 ) {
+				Payment.formatCardNumber( $('.bna-check-cc-number') );
+			}
+			if ( $('.bna-check-cc-expire').length > 0 ) {
+				Payment.formatCardExpiry( $('.bna-check-cc-expire') );
+			}
+			if ( $('.bna-check-cc-cvc').length > 0 ) {
+				Payment.formatCardCVC( $('.bna-check-cc-cvc') );
+			}
 		})(jQuery);	
 	</script>
 

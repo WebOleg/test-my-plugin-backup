@@ -32,22 +32,20 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		<div class="bna-two-inputs-wrapper">
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="bna-input" type="text" name="cc_number" autocomplete="off" maxlength="18" placeholder="0000000000000000"
-					onkeyup="return input_test(this);">
+				<input class="bna-input bna-check-cc-number" type="text" name="cc_number" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000" >
 			</div>
 			
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="bna-input" type="text" name="cc_expire" 
-					autocomplete="off" placeholder="MM/YY" onkeyup="return input_test(this);" maxlength="5">
+				<input class="bna-input bna-check-cc-expire" type="text" name="cc_expire" 
+					autocomplete="off" placeholder="MM/YY" maxlength="7">
 			</div>
 		</div>
 			
 		<div class="bna-three-inputs-wrapper">
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input  class="bna-input" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" 
-					onkeyup="return input_test(this);">
+				<input  class="bna-input bna-check-cc-cvc" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" >
 			</div>
 			<div class="bna-CVC-text-wrapper">
 				<div class="bna-CVC-text">
@@ -55,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				</div>
 			</div>
 			<div class="bna-CVC-img-wrapper">
-				<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'img/Credit_Card_SVC.png'; ?>" />
+				<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Credit_Card_SVC.png'; ?>" />
 			</div>
 			<div  class="bna-button-wrapper bna-button-save-changes">
 				<button id="save_payment" class="bna-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
