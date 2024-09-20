@@ -77,11 +77,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 						</div>
 					</div>
 					
-					<label class="bna-checkbox-container">
-						<input type="checkbox" name="save-credit-card">
-						<span class="checkmark"></span>
-						<?php _e( 'Save Credit Card', 'wc-bna-gateway' ); ?>
-					</label>
+					<?php if ( ! empty( $payorID ) ) { ?>
+						<label class="bna-checkbox-container">
+							<input type="checkbox" name="save-credit-card">
+							<span class="checkmark"></span>
+							<?php _e( 'Save Credit Card', 'wc-bna-gateway' ); ?>
+						</label>
+					<?php } ?>
 				</div>			
 			</div>
 					
@@ -138,11 +140,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 						</div>
 					</div>
 					
-					<label class="bna-checkbox-container">
-						<input type="checkbox" name="save-credit-card">
-						<span class="checkmark"></span>
-						<?php _e( 'Save EFT Method', 'wc-bna-gateway' ); ?>
-					</label>
+					<?php if ( ! empty( $payorID ) ) { ?>
+						<label class="bna-checkbox-container">
+							<input type="checkbox" name="save-eft">
+							<span class="checkmark"></span>
+							<?php _e( 'Save EFT Method', 'wc-bna-gateway' ); ?>
+						</label>
+					<?php } ?>
 				</div>
 				
 			</div>
@@ -192,17 +196,19 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				
 				// open if only 'new-card'
 				if ( $('#paymentMethodCC').is(':visible') ) {
-					if ( $('#paymentMethodCC').length === 1 ) {
+					if ( $('#paymentMethodCC').val() === 'new-card' ) {
 						$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
 					}
 				}
 				
 				// open if only 'new-method'
 				if ( $('#paymentMethodDD').is(':visible') ) {
-					if ( $('#paymentMethodDD').length === 1 ) {
+					if ( $('#paymentMethodDD').val() === 'new-method' ) {
 						$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
 					}
 				}
+				
+				addFees();
 			});
 			
 			// select card or add new			
@@ -267,35 +273,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 	let paymentMethod = document.querySelector(".wc_payment_methods");
 	paymentMethod.addEventListener('click', event => {
-		//let paylinks = document.getElementById('payment_method_paylinks_gateway');
-		//paylinks.checked ? addFees() : removeFees();
+		let bnaPayment = document.getElementById('payment_method_bna_gateway');
+		bnaPayment.checked ? addFees() : removeFees();
 		return false;
 	});
 
-	function changeSelectbox (value, selector)
-	{
-		if (value != 0) {
-			document.querySelector(selector).style.display = 'none';
-			document.querySelector('.save-pm-div').style.display = 'none';
-			document.querySelector('.save-pm-checkbox').checked = false;
-		} else {
-			document.querySelector(selector).style.display = 'block';
-			document.querySelector('.save-pm-div').style.display = 'block';
-			document.querySelector('.save-pm-checkbox').checked = true;
-			document.querySelectorAll('.woocommerce-billing-fields__field-wrapper input, .woocommerce-billing-fields__field-wrapper select').
-				forEach((function(x){ x.removeAttribute('disabled');}))
-		}
-
-		if (value > 0) {
-			document.querySelectorAll('.woocommerce-billing-fields__field-wrapper input, .woocommerce-billing-fields__field-wrapper select').
-				forEach((function(x){ x.setAttribute('disabled', true);}));
-		}
-
-
-		addFees();
-
-		return 0;
-	}
 	function digitValid(input) 
 	{ 
 		input.value = input.value.replace(/[^\d,]/g, "");
@@ -317,20 +299,20 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			feeTab.className = 'fee-total';
 		}
 
-		//switch (select_ctab.value) {
-			//case '-1':
-				feeSum = parseFloat(allFees.etransferFlatFee);
-				feeMult = parseFloat(allFees.etransferPercentageFee);
-				//break;			
-			//case '1':
-				//feeSum = parseFloat(allFees.creditCardFlatFee);
-				//feeMult = parseFloat(allFees.creditCardPercentageFee);
-				//break;
-			//case '2':
-				//feeSum = parseFloat(allFees.directDebitFlatFee);
-				//feeMult = parseFloat(allFees.directDebitPercentageFee);
-				//break;	
-		//}
+		if ( jQuery('#payment_type').val() === 'e-transfer' ) {
+			feeSum = parseFloat(allFees.etransferFlatFee);
+			feeMult = parseFloat(allFees.etransferPercentageFee);
+			console.log( jQuery('#payment_type').val());
+		} else if ( jQuery('#payment_type').val() === 'card' ) {
+			feeSum = parseFloat(allFees.creditCardFlatFee);
+			feeMult = parseFloat(allFees.creditCardPercentageFee);
+		} else if ( jQuery('#payment_type').val() === 'eft' ) {
+			feeSum = parseFloat(allFees.directDebitFlatFee);
+			feeMult = parseFloat(allFees.directDebitPercentageFee);
+		} else {
+			feeSum = 0;
+			feeMult = 0;
+		}
 		let allFeeSum = parseFloat(globalTotal*feeMult/100) + feeSum;
 		allFeeSum = roundAccurately(allFeeSum + parseFloat(allFeeSum*13/100), 2);
 
@@ -365,17 +347,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			+ '<span class="woocommerce-Price-currencySymbol">'
 			+ curSymbol
 			+ '</span></bdi></span></strong></td>';
-	} 
-
-	//let select_ctab = document.querySelector('.checkout-tab');
-	//select_ctab.addEventListener('change', event => {
-		//event.preventDefault();
-		//let tabs = document.querySelector('.tabs');
-		//tabs.querySelector('.active').classList.remove('active');
-		//tabs.querySelectorAll('.tab')[select_ctab.options.selectedIndex].classList.add('active');
-
-		//changeSelectbox (select_ctab.value > 0 ? 0 : select_ctab.value, '.pm-et-block');
-	//}, true);
+	}
 
 	let select_bankName = document.querySelector('#bank_name');
 	let interval = setInterval(() => {
@@ -404,17 +376,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             iNum.classList.add('active');
         } 
     });
-	//let select_pmcc = document.querySelector('.pm-cc');
-	//select_pmcc.addEventListener('click', event => {
-		//event.preventDefault();
-		//changeSelectbox(select_pmcc.value != 0 ? 1: 0, '.pm-cc-block');
-	//}, true);
-
-	//let select_pmdd = document.querySelector('.pm-dd');
-	//select_pmdd.addEventListener('click', event => {
-		//event.preventDefault();
-		//changeSelectbox(select_pmdd.value != 0 ? 1: 0, '.pm-dd-block');
-	//}, true);
 
 	let input_phone = document.querySelector('#billing_phone');
 	input_phone.addEventListener('keyup', event => {
@@ -431,21 +392,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		document.querySelectorAll('.woocommerce-billing-fields__field-wrapper input, .woocommerce-billing-fields__field-wrapper select').
 			forEach((function(x){ x.removeAttribute('disabled');}))
 	}, true);
-
-	//let a_settings = document.getElementById('showHideSettings');
-	//a_settings.addEventListener('click', event => {
-		//event.preventDefault();
-		//event.stopPropagation();
-		//let settingTab = document.querySelector('.stabs');
-		//settingTab.style.display = settingTab.style.display === 'none' || settingTab.style.display === '' ? 'block' : 'none';
-
-		//$('.datepicker-here').datepicker({minDate: new Date()});
-		
-		//var first_payment_date_1 = document.getElementById('datepickers-container');
-		//first_payment_date_1.addEventListener('click', event => {
-			//document.getElementById('startDate').value = first_payment_date.value;
-		//});
-	//});
 
 	let btn_qplus = document.getElementById('qtyminus');
 	btn_qplus.addEventListener('click', event => {
@@ -505,13 +451,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		document.getElementById('qtyplus').disabled=false;		
 	});
 
-	//let ssRepeat = document.getElementById('ssRepeat');
-	//ssRepeat.addEventListener('change', event => {
-		//document.getElementById('recurring').value = ssRepeat.value;
-		//console.log(document.getElementById('recurring').value);
-		//console.log(ssRepeat.value);
-	//});
-
 	let billing_duration = document.getElementById('btn_noLimit');
 	billing_duration.addEventListener('change', event => {
 		document.getElementById('numberOfPayments').value = 0;
@@ -521,90 +460,3 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 })();	
 </script>
-
-<style scoped="scoped">
-	/*.form-row.form-row-small {
-		width: 40%;
-	}
-	.save-pm-div{
-		text-align: left;
-		margin-top: 15px;
-	}
-	#billing_address_1_field,
-	#billing_address_2_field {
-		display: none !important;
-	}
-	.institutionNumber {
-		display: none;
-	}
-	.active {
-		display: block;
-	}
-	.radio-button input:hover + span {
-		border-right-color: #40a9ff;
-		color:#fff;
-	}
-	#ck-button,
-	.ssRepeat {
-		margin:4px;
-		background-color: unset;
-		border-radius:4px;
-		border:1px solid #D0D0D0;
-		overflow:auto;
-		float:left;
-	}
-	#ck-button:hover {
-		margin:4px;
-		border-radius:4px;
-		border:1px solid #40a9ff;
-		overflow:auto;
-		float:left;
-		color:#40a9ff;
-	}
-	#ck-button label {
-		float:left;
-	}
-	#ck-button label span {
-		text-align:center;
-		padding:3px 0px;
-		display:block;
-	}
-	#ck-button label input {
-		position:absolute;
-		left:-900vh;
-	}
-	#ck-button input + span {
-		padding: 5px 10px;
-		background-color:unset;
-		color:unset;
-	}
-	#ck-button input:checked + span {
-		background-color:#40a9ff;
-		color:#fff;
-	}
-	.stabs >.tab > div > label {
-		line-height: 1;
-    	margin-top: 5px;
-	}
-	.stabs {
-		display: none;
-	}
-	.ssRepeat {
-		border: 1px solid #43454b !important;
-		font-size: 14px !important;
-		background-color: #fff !important;
-		padding: 3px 3px;
-	} 
-	#setting_number_of_payment {
-		width: 75%;
-	}
-	input.qtyplus , input.qtyminus { 
-		padding: 8px 0px;
-		width: 25px;
-		background-color: #40a9ff;
-		color: #fff;
-	}
-	.activate_input {
-		background-color: #fff !important;
-	}*/
-</style>

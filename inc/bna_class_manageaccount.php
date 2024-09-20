@@ -760,7 +760,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				}
 				
 				$response = json_decode( $response, true );
-
+	
 				empty( $response['id'] ) ? 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ADDPAYMENT_ERROR ) :
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ADDPAYMENT_SUCCESS ) ;
