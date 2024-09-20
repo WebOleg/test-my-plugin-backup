@@ -97,7 +97,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 								if ( isset( $desc->amount ) )
 									echo "<p>" . __( 'Amount:', 'wc-bna-gateway' ) . " {$desc->amount}</p>";
 							?>
-							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo $desc->fee === 0 ? 'no' : 'yes';?></p> 
+							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo $desc->fee;?></p> 
 							<?php
 								switch ( strtolower( $desc->paymentMethod ) ) {
 									case 'card':

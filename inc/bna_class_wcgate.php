@@ -362,10 +362,11 @@ function wc_bna_gateway_init() {
 				return false;
 			}
 
-			$fees = get_option( 'wc_bna_gateway_fees' ); //json_decode(  )
-
+			$fees = get_option( 'wc_bna_gateway_fees' );
+			
+			// products
 			$items = [];
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) { 
 				$item = array();
 				$_woo_product = wc_get_product( $cart_item['product_id'] );
 
@@ -385,6 +386,7 @@ function wc_bna_gateway_init() {
 				throw new Exception( "Can't find BNA payment type" );
 			}
 			
+			// customer info
 			$customerInfo = array(
 				'email'				=> $_POST['billing_email'],
 				'firstName'		=> $_POST['billing_first_name'],
@@ -399,9 +401,10 @@ function wc_bna_gateway_init() {
 				'country'			=> WC()->countries->countries[$_POST['billing_country']], //$_POST[ 'billing_country' ], 
 				'postalCode'		=> $_POST['billing_postcode'],
 			);
-
+			
+			// data
 			$data_subscription = array();
-			$data = array(
+			$data = array( 
 				'transactionTime' => date('Y-m-d\TH:i:sO'),
 				'items'				=> $items,
 				'applyFee'		=> $args['applyFee'] == 'yes' ? true : false,
@@ -414,7 +417,7 @@ function wc_bna_gateway_init() {
 			);
 
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-
+			// if payor not exist - add customer info
 			if ( ! empty( $payorID ) ) {
 				$data['customerId'] = $payorID;
 			} else {
@@ -427,17 +430,19 @@ function wc_bna_gateway_init() {
 					if ( ! empty( $_POST['cc_expire'] ) ) {
 						$cc_expire = explode( '/', $_POST['cc_expire'] );
 					}
+					$cardNumber = str_replace( ' ', '', $_POST['cc_number'] );
+					
 					$data_verify = array(
 						'transactionTime'	=> date('Y-m-d\TH:i:sO'),
 						'customerId'			=> $payorID,
 						'currency'				=> get_woocommerce_currency(),
 						'paymentDetails'	=> array(
-							'cardNumber'	=> $_POST['cc_number'],
+							'cardNumber'	=> $cardNumber,
 							'cardHolder'		=> $_POST['cc_holder'],
 							'cardType'			=> 'credit',
 							'cardIdNumber'	=> $_POST['cc_code'],
-							'expiryMonth'	=> $cc_expire[0],
-							'expiryYear'		=> $cc_expire[1],
+							'expiryMonth'	=> trim( $cc_expire[0] ),
+							'expiryYear'		=> trim( $cc_expire[1] ),
 						)
 					);
 				
@@ -457,8 +462,8 @@ function wc_bna_gateway_init() {
 			}
 
 			$paymentTypeMethod = '';
-
-			switch ( $_POST['payment-type'] ) { // paymentType
+			// paymentType
+			switch ( $_POST['payment-type'] ) { 
 				case 'card':
 					$paymentTypeMethod = 'card';
 					if ( ! empty( $_POST['paymentMethodCC'] ) ) {
@@ -516,8 +521,8 @@ function wc_bna_gateway_init() {
 
 			$paymentMethod = '';
 			$is_subscription = isset( $_POST['create_subscription'] );
-			
-			if ( isset( $_POST['create_subscription'] ) ) {
+			// subscription
+			if ( isset( $_POST['create_subscription'] ) ) { 
 				$data_subscription = array();
 				
 				$data_subscription['paymentDetails'] = $data['paymentDetails'];
@@ -582,24 +587,42 @@ function wc_bna_gateway_init() {
 					$data_subscription,
 					'POST'
 				);
-				//my_log( $response );
 			} else {
 				$response = $api->query(
 					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
 					$data,
 					'POST'
-				);			
-				//my_log( $response );
+				);							
 			}
 			
 			$response = json_decode( $response, true );
 
-			if ( ! empty( $response['id'] ) ) {			
+			if ( ! empty( $response['id'] ) ) {
+				
+				// save payment if 'save-credit-card' exists				
+				if ( ! empty( $_POST['save-credit-card'] ) && $_POST['paymentMethodCC'] === 'new-card' ) {
+					sleep(3);
+					$response_save_cc = $api->query(
+						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/card',  
+						$data['paymentDetails'], 
+						'POST'
+					);
+				}
+				// save payment if 'save-eft' exists				
+				if ( ! empty( $_POST['save-eft'] ) && $_POST[ 'paymentMethodDD' ] === 'new-method' ) {
+					sleep(3);
+					$response_save_eft = $api->query(
+						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/eft',  
+						$data['paymentDetails'], 
+						'POST'
+					);
+				}			
+					
 				$status = $order->get_status();
 				if ( ! in_array( $status, ['pending', 'completed', 'cancelled', 'processing'] ) ) {
 					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
 				}
-				sleep(10);
+				sleep(5);
 				return array(
 					'result' 	=> 'success',
 					'redirect'  => $this->get_return_url( $order )
@@ -814,7 +837,7 @@ function wc_bna_gateway_init() {
 				array( 
 					'%d','%s','%s','%s','%s'
 				)
-			);		
+			);
 		}	
   	}	//end of class
 } //class_exists

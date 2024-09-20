@@ -26,14 +26,16 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		<div class="bna-input-wrapper">
 			<div class="bna-input-label">
 				<?php _e( 'Name on Bank Account', 'wc-bna-gateway' ); ?><br>
-				<span class="bna-font-italic"><?php _e( '(the full name of the person or business associated with the bank account.)', 'wc-bna-gateway' ); ?></span></div>
-			<input class="bna-input" type="text" name="eft_holder" autocomplete="off" maxlength="100" placeholder=""
+				<span class="bna-font-italic"><?php _e( '(the full name of the person or business associated with the bank account.)', 'wc-bna-gateway' ); ?></span>
+			</div>
+			<!--<input class="bna-input" type="text" name="eft_holder" autocomplete="off" maxlength="100" placeholder="">-->
+			<select id="bank_name" name="bank_name" class="input-text"></select>
 		</div>
 		
 		<div class="bna-two-inputs-wrapper">
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Bank Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="bna-input" type="text" name="bank_number" autocomplete="off" maxlength="18" placeholder=""
+				<input class="bna-input" type="text" id="bank_number" name="bank_number" autocomplete="off" maxlength="18" placeholder=""
 					onkeyup="return input_test(this);" >
 			</div>
 			
@@ -52,12 +54,45 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			</div>
 			<div class="bna-number-img-wrapper">
 				<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Cheque_1.png'; ?>" />
-			</div>
-			<div  class="bna-button-wrapper bna-button-save-changes">
-				<button id="save_payment" class="bna-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
-			</div>
-			<input type="hidden" name="payment_type" value="eft">
+			</div>			
 		</div>
+		
+		<div  class="bna-button-wrapper bna-button-save-changes-two">
+			<button id="save_payment" class="bna-button"><?php _e( 'Add Payment Method', 'wc-bna-gateway' ); ?></button>
+		</div>
+		<input type="hidden" name="payment_type" value="eft">
 	</div>
 </form>
 <div class="loading"></div>
+
+<script type="module">
+	
+	
+	(function($) {	
+		$('#bank_name').select2();
+		
+		// select bank
+		$('#bank_name').on("select2:select", function(e) {
+			$('#bank_number').val( $(this).val() );
+		});
+	})(jQuery);
+	
+	let select_bankName = document.querySelector('#bank_name');
+	let interval = setInterval(() => {
+		if ( typeof window.bankName !== 'undefined' ) {
+			let arBankName = (Object.entries(window.bankName)).sort(function(a,b){     
+				if(a[1] > b[1]) return 1;
+				if(a[1] < b[1]) return -1;
+				return 0;
+			});
+			let options = '';
+			let i = 0;
+			for (i in arBankName) {
+				options += '<option value="'+ arBankName[i][0] +'">' + arBankName[i][1] + '</option>';
+			}
+			options += '<option value="other">&lt;&lt; Other &gt;&gt;</option>'
+			select_bankName.innerHTML += options;
+			clearInterval(interval);
+		}
+	}, 500);
+</script>
