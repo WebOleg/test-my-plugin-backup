@@ -22,7 +22,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		 *
 		 * @var string
 		 */
-		public static $endpoint_account_management = 'bna-account-management';
+		//public static $endpoint_account_management = 'bna-account-management';
 		public static $endpoint_payment_methods = 'bna-payment-methods';
 		public static $endpoint_transaction_info = 'bna-transaction-info';
 		public static $endpoint_recurring_payments = 'bna-recurring-payments';
@@ -48,7 +48,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			// Insering your new tab/page into the My Account page.
 			add_filter( 'woocommerce_account_menu_items', array( $this, 'new_menu_items' ) );
-			add_action( 'woocommerce_account_' . self::$endpoint_account_management .  '_endpoint', array( $this, 'endpoint_content_account_management' ) );
+			//add_action( 'woocommerce_account_' . self::$endpoint_account_management .  '_endpoint', array( $this, 'endpoint_content_account_management' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_payment_methods .  '_endpoint', array( $this, 'endpoint_content_payment_methods' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_transaction_info .  '_endpoint', array( $this, 'endpoint_content_transaction_info' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_recurring_payments .  '_endpoint', array( $this, 'endpoint_content_recurring_payments' ) );
@@ -78,6 +78,13 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					
 					wp_enqueue_style( 'bna-woocommerce-style', $this->plugin_url . 'assets/css/bna-style.css', '', time() );
 				}
+				
+				if ( is_wc_endpoint_url( 'edit-address' ) ) {
+					wp_enqueue_style( 'bna-datepicker-css', $this->plugin_url . 'assets/lib/datepicker/css/datepicker.min.css' );
+					wp_enqueue_script( 'bna-datepicker-js', $this->plugin_url . 'assets/lib/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
+					wp_enqueue_script( 'bna-script-js', $this->plugin_url.'assets/js/bna-script.js', array('jquery'), time(), true );
+				}
+				
 			}, 99 );
 
 			add_action( 'wp_ajax_create_payor', array( &$this, 'ajax_create_payor' ) );
@@ -118,7 +125,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		{
 			global $wp_rewrite;
 			
-			add_rewrite_endpoint( self::$endpoint_account_management, EP_ROOT | EP_PAGES );
+			//add_rewrite_endpoint( self::$endpoint_account_management, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_payment_methods, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_transaction_info, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_recurring_payments, EP_ROOT | EP_PAGES );
@@ -135,7 +142,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		 * @return array
 		 */
 		public function get_query_vars( $vars ) {
-			$vars[ self::$endpoint_account_management ] = self::$endpoint_account_management;
+			//$vars[ self::$endpoint_account_management ] = self::$endpoint_account_management;
 			$vars[ self::$endpoint_payment_methods ] = self::$endpoint_payment_methods;
 			$vars[ self::$endpoint_transaction_info ] = self::$endpoint_transaction_info;
 			$vars[ self::$endpoint_recurring_payments ] = self::$endpoint_recurring_payments;
@@ -157,10 +164,10 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			
 			if ( ! (is_main_query() && in_the_loop() && is_account_page()) || is_admin() ) return $title;
 			
-			if ( isset( $wp_query->query_vars[ self::$endpoint_account_management ] ) ) {
-				$title = __( 'Account management', 'wc-bna-gateway' );
-				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
-			}
+			//if ( isset( $wp_query->query_vars[ self::$endpoint_account_management ] ) ) {
+				//$title = __( 'Account management', 'wc-bna-gateway' );
+				//remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
+			//}
 
 			if ( isset( $wp_query->query_vars[ self::$endpoint_payment_methods ] ) ) {
 				$title = __( 'Payment methods', 'wc-bna-gateway' );
@@ -207,7 +214,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			unset( $items['customer-logout'] );
 
 			// Insert your custom endpoint.
-			$items[ self::$endpoint_account_management ] = __( 'Account info', 'wc-bna-gateway' );
+			//$items[ self::$endpoint_account_management ] = __( 'Account info', 'wc-bna-gateway' );
 			$items[ self::$endpoint_payment_methods ] = __( 'Payment methods', 'wc-bna-gateway' );
 			$items[ self::$endpoint_transaction_info ] = __( 'Transaction info', 'wc-bna-gateway' );
 			$items[ self::$endpoint_recurring_payments ] = __( 'Recurring payments', 'wc-bna-gateway' );
@@ -476,7 +483,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					"email"	=> wp_get_current_user()->user_email,				
 					"phoneCode" =>  isset( $form['phoneCode'] ) ? sanitize_text_field( $form['phoneCode'] ) : get_user_meta( $user_id, 'billing_phone_code', true ),
 					"phoneNumber"	 => isset( $form['phone'] ) ? sanitize_text_field( $form['phone'] ) : get_user_meta( $user_id, 'billing_phone', true ),
-					"birthDate"		=> isset( $form['birthday'] ) ? date( "Y-m-d\TH:i", strtotime( sanitize_text_field( $form['birthday'] ) ) ) : get_user_meta( $user_id, 'billing_birthday', true ),
+					"birthDate"		=> isset( $form['billing_birthday'] ) ? date( "Y-m-d\TH:i", strtotime( sanitize_text_field( $form['billing_birthday'] ) ) ) : get_user_meta( $user_id, 'billing_birthday', true ),
 					"address"		=> array(
 						"streetNumber"	=> isset( $form['billing_street_number'] ) ? sanitize_text_field( $form['billing_street_number'] ) : get_user_meta( $user_id, 'billing_street_number', true ),
 						"apartment"		=> isset( $form['billing_apartment'] ) ? sanitize_text_field( $form['billing_apartment'] ) : get_user_meta( $user_id, 'billing_apartment', true ),
@@ -530,7 +537,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		public function ajax_update_payor () 
 		{
 			global $wpdb;
-			
+	
 			if ( isset( $_POST['nonce'] )) {
 				if ( ! wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME ) ) {
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORNONCE );
@@ -542,7 +549,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 				foreach ( $request as $rq )
 					$form[$rq['name']] = $rq['value'];
-
+	
 				$args = WC_BNA_Gateway::get_merchant_params();
 				if ( empty( $args ) ) {
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
@@ -562,13 +569,13 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				$country  = isset( $form['billing_country'] ) ? sanitize_text_field( $form['billing_country'] ) : get_user_meta( $user_id, 'billing_country', true );
 				
 				$data = array(
-					"companyName" 	=> isset( $form['companyName'] ) ? sanitize_text_field( $form['companyName'] ) : get_user_meta( $user_id, 'billing_company', true ),
-					"firstName"		=> isset( $form['firstName'] ) ? sanitize_text_field( $form['firstName'] ) : get_user_meta( $user_id, 'billing_first_name', true ),
-					"lastName"		=> isset( $form['lastName'] ) ? sanitize_text_field( $form['lastName'] ) : get_user_meta( $user_id, 'billing_last_name', true ),
+					"companyName" 	=> isset( $form['billing_company'] ) ? sanitize_text_field( $form['billing_company'] ) : get_user_meta( $user_id, 'billing_company', true ),
+					"firstName"		=> isset( $form['billing_first_name'] ) ? sanitize_text_field( $form['billing_first_name'] ) : get_user_meta( $user_id, 'billing_first_name', true ),
+					"lastName"		=> isset( $form['billing_last_name'] ) ? sanitize_text_field( $form['billing_last_name'] ) : get_user_meta( $user_id, 'billing_last_name', true ),
 					// here email should not updated
 					//"email"	=> wp_get_current_user()->user_email,
-					"phoneCode" =>  isset( $form['phoneCode'] ) ? sanitize_text_field( $form['phoneCode'] ) : get_user_meta( $user_id, 'billing_phone_code', true ),
-					"phoneNumber"	 => isset( $form['phone'] ) ? sanitize_text_field( $form['phone'] ) : get_user_meta( $user_id, 'billing_phone', true ),
+					"phoneCode" =>  isset( $form['billing_phone_code'] ) ? sanitize_text_field( $form['billing_phone_code'] ) : get_user_meta( $user_id, 'billing_phone_code', true ),
+					"phoneNumber"	 => isset( $form['billing_phone'] ) ? sanitize_text_field( $form['billing_phone'] ) : get_user_meta( $user_id, 'billing_phone', true ),
 					"birthDate"		=> isset( $form['birthday'] ) ? date( "Y-m-d\TH:i", strtotime( sanitize_text_field( $form['birthday'] ) ) ) : get_user_meta( $user_id, 'billing_birthday', true ),
 					"address"		=> array(
 						"streetNumber"	=> isset( $form['billing_street_number'] ) ? sanitize_text_field( $form['billing_street_number'] ) : get_user_meta( $user_id, 'billing_street_number', true ),

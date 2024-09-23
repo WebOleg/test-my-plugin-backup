@@ -31,6 +31,10 @@ function bna_wc_template( $template, $template_name, $template_path ) {
 		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/orders.php';
 	} elseif ( 'my-address.php' === basename( $template ) ) {
 		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/my-address.php';
+	} elseif ( 'form-edit-address.php' === basename( $template ) ) {
+		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/form-edit-address.php';
+	} elseif ( 'form-edit-account.php' === basename( $template ) ) {
+		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/myaccount/form-edit-account.php';
 	}
 	
 	// cart
@@ -104,3 +108,19 @@ function bna_my_account_orders( $args ) {
  
 	return $args;
 }
+
+/*
+ * Change the entry title of the endpoints that appear in My Account Page
+ * 
+ * @param  $array 
+ * @return $array
+ */
+add_filter( 'woocommerce_account_menu_items', 'bna_wc_menu_items', 99, 1 );
+
+function bna_wc_menu_items( $items ) {
+    $items['edit-address'] = __( 'Account info', 'wc-bna-gateway' );
+    $items['edit-account'] = __( 'Security settings', 'wc-bna-gateway' );
+
+    return $items;
+}
+

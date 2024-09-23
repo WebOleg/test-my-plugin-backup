@@ -9,7 +9,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
-
 <fieldset id="wc-<?= esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" >
 	<div>
 		<div class="bna-payment-methods">
@@ -172,12 +171,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			<?php include "tpl_checkout_subscription_fields.php"; ?>	
 		</div>
 	</div>
+	
 	<script type="module">
 		(function($) {	
-			$('#paymentMethodCC').select2();
-			$('#ssRepeat').select2();
-			$('#paymentMethodDD').select2();
-			$('#bank_name').select2();
+			$('#paymentMethodCC').select2({ minimumResultsForSearch: -1 });
+			$('#ssRepeat').select2({ minimumResultsForSearch: -1 });
+			$('#paymentMethodDD').select2({ minimumResultsForSearch: -1 });
+			$('#bank_name').select2({ minimumResultsForSearch: -1 });
 			
 			$('#setting_first_payment_date').datepicker({
 				dateFormat: 'yyyy-mm-dd',
@@ -208,18 +208,22 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					}
 				}
 				
-				addFees();
+				//addFees();
 			});
 			
 			// select card or add new			
 			$('#paymentMethodCC').on("select2:select", function(e) {			
-			  let data = e.params.data;
-			  if (data.id === 'new-card') {
+				let data = e.params.data;
+				if (data.id === 'new-card') {
 					$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
 				} else {
 					$('.bna-payment-method__content .bna-payment-method-cards').removeClass('bna-active');
 				}
 			});
+			$('#paymentMethodCC').on("select2:opening", function(e) {
+				$('.select2-container--open .select2-dropdown .select2-search--dropdown').css('display', 'none');
+			});	
+				
 			
 			// select eft method or add new
 			$('#paymentMethodDD').on("select2:select", function(e) {
@@ -266,17 +270,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 </fieldset>
 
 <script>
-(function() {	
+(function() {
+	jQuery('#billing_phone_code_field').data('priority', '99');
 
 	let globalTotal = "<?= WC()->cart->total; ?>";
 	let curSymbol = "<?= get_woocommerce_currency_symbol(); ?>";
-
-	let paymentMethod = document.querySelector(".wc_payment_methods");
-	paymentMethod.addEventListener('click', event => {
-		let bnaPayment = document.getElementById('payment_method_bna_gateway');
-		bnaPayment.checked ? addFees() : removeFees();
-		return false;
-	});
 
 	function digitValid(input) 
 	{ 
@@ -348,6 +346,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			+ curSymbol
 			+ '</span></bdi></span></strong></td>';
 	}
+	
+	let paymentMethod = document.querySelector(".wc_payment_methods");
+	paymentMethod.addEventListener('click', event => {
+		let bnaPayment = document.getElementById('payment_method_bna_gateway');
+		bnaPayment.checked ? addFees() : removeFees();
+		return false;
+	});
 
 	let select_bankName = document.querySelector('#bank_name');
 	let interval = setInterval(() => {
