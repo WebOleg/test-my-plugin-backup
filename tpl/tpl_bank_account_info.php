@@ -69,7 +69,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	
 	
 	(function($) {	
-		$('#bank_name').select2();
+		$('#bank_name').selectWoo();
 		
 		// select bank
 		$('#bank_name').on("select2:select", function(e) {

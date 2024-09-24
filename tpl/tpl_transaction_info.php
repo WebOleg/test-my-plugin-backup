@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</div>
 	</div>
 	
-	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
+	<table class="shop_table shop_table_responsive">
 		<thead>
 			<tr>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Order #', 'wc-bna-gateway' ); ?></span></th>
@@ -65,9 +65,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				}
 				if ( empty( $imageName ) ) continue;
                 ?>
-				<tr class="woocommerce-orders-table__row order">
+				<tr class="woocommerce-orders-table__row">
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Order #', 'wc-bna-gateway' ); ?>">
-						<a href="/my-account/view-order/<?php echo $t_val->order_id; ?>/">
+						<a class="bna-transaction-order-link" href="/my-account/view-order/<?php echo $t_val->order_id; ?>/">
 							<?php echo $t_val->order_id; ?>
 						</a>
 					</td>

@@ -124,3 +124,19 @@ function bna_wc_menu_items( $items ) {
     return $items;
 }
 
+function bna_variable_css() {
+	$bna_gateway_settings = get_option( 'woocommerce_bna_gateway_settings' );
+	if ( ! empty( $bna_gateway_settings ) ) {
+    ?>
+        <style>
+            :root :where(body) {
+				--bna-font-color: <?php echo ! empty( $bna_gateway_settings['bna-font-color'] ) ? $bna_gateway_settings['bna-font-color'] : '#646464'; ?>;
+				--bna-button-color: <?php echo ! empty( $bna_gateway_settings['bna-button-color'] ) ? $bna_gateway_settings['bna-button-color'] : '#00A0E3'; ?>;
+				--bna-line-color: <?php echo ! empty( $bna_gateway_settings['bna-line-color'] ) ? $bna_gateway_settings['bna-line-color'] : '#CCC'; ?>;
+				--bna-background-color: <?php echo ! empty( $bna_gateway_settings['bna-background-color'] ) ? $bna_gateway_settings['bna-background-color'] : '#FFF'; ?>;
+			}
+        </style>
+    <?php
+	}
+}
+add_action( 'wp_head', 'bna_variable_css' );

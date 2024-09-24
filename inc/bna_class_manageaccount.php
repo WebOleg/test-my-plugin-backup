@@ -60,23 +60,23 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			
 			add_action( 'wp_enqueue_scripts', function() {
 				if ( is_cart() || is_checkout() || is_page( array( 'my-account' ) ) ) {			
-					if ( ! wp_script_is( 'select2-js' ) ) {
-						wp_enqueue_script( 'bna-select2-js', $this->plugin_url.'assets/lib/select2/js/select2.full.min.js', array('jquery'), '4.0.13', true );
+					if ( ! wp_script_is( 'selectWoo' ) ) {
+						wp_enqueue_script( 'bna-selectWoo-js', $this->plugin_url.'assets/lib/select/js/selectWoo.full.min.js', array('jquery'), WC_VERSION, true );
 					}
 					
-					if ( ! wp_style_is( 'select2-css' ) ) {
-						wp_enqueue_style( 'bna-select2-css', $this->plugin_url . 'assets/lib/select2/css/select2.min.css', '4.0.13' );
+					if ( ! wp_style_is( 'select2' ) ) {
+						wp_enqueue_style( 'bna-select2-css', $this->plugin_url . 'assets/lib/select/css/select2.min.css', '4.0.13' );
 					}
 									
-					if ( ! wp_style_is( 'woocommerce-layout-css' ) ) {				
-						wp_enqueue_style( 'bna-woocommerce-layout-css', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-layout.css', '', WC_VERSION );
+					if ( ! wp_style_is( 'woocommerce-layout' ) ) {				
+						wp_enqueue_style( 'bna-woocommerce-layout', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-layout.css', '', WC_VERSION );
 					}
 					
-					if ( ! wp_style_is( 'woocommerce-smallscreen-css' ) ) {				
-						wp_enqueue_style( 'bna-woocommerce-smallscreen-css', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-smallscreen.css', '', WC_VERSION, "only screen and (max-width: 768px)" );
+					if ( ! wp_style_is( 'woocommerce-smallscreen' ) ) {				
+						wp_enqueue_style( 'bna-woocommerce-smallscreen', WP_PLUGIN_URL . '/woocommerce/assets/css/woocommerce-smallscreen.css', '', WC_VERSION, "only screen and (max-width: 768px)" );
 					}
 					
-					wp_enqueue_style( 'bna-woocommerce-style', $this->plugin_url . 'assets/css/bna-style.css', '', time() );
+					wp_enqueue_style( 'bna-style', $this->plugin_url . 'assets/css/bna-style.css', '', time() );
 				}
 				
 				if ( is_wc_endpoint_url( 'edit-address' ) ) {
@@ -308,16 +308,16 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		 *
 		 * @return view
 		 */
-		public function endpoint_content_account_management() 
-		{
-			global $wpdb;
+		//public function endpoint_content_account_management() 
+		//{
+			//global $wpdb;
 
-			self::loading_scripts();
+			//self::loading_scripts();
 
-			$payorID = get_user_meta ( get_current_user_id(), 'payorID', true );
-			$paymentMethods =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS);
-			require_once dirname( __FILE__ ) . "/../tpl/tpl_account_management.php";
-		}
+			//$payorID = get_user_meta ( get_current_user_id(), 'payorID', true );
+			//$paymentMethods =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS);
+			//require_once dirname( __FILE__ ) . "/../tpl/tpl_account_management.php";
+		//}
 
 		/**
 		 * Managing endpoint content payment methods
@@ -576,7 +576,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					//"email"	=> wp_get_current_user()->user_email,
 					"phoneCode" =>  isset( $form['billing_phone_code'] ) ? sanitize_text_field( $form['billing_phone_code'] ) : get_user_meta( $user_id, 'billing_phone_code', true ),
 					"phoneNumber"	 => isset( $form['billing_phone'] ) ? sanitize_text_field( $form['billing_phone'] ) : get_user_meta( $user_id, 'billing_phone', true ),
-					"birthDate"		=> isset( $form['birthday'] ) ? date( "Y-m-d\TH:i", strtotime( sanitize_text_field( $form['birthday'] ) ) ) : get_user_meta( $user_id, 'billing_birthday', true ),
+					"birthDate"		=> isset( $form['billing_birthday'] ) ? date( "Y-m-d\TH:i", strtotime( sanitize_text_field( $form['billing_birthday'] ) ) ) : get_user_meta( $user_id, 'billing_birthday', true ),
 					"address"		=> array(
 						"streetNumber"	=> isset( $form['billing_street_number'] ) ? sanitize_text_field( $form['billing_street_number'] ) : get_user_meta( $user_id, 'billing_street_number', true ),
 						"apartment"		=> isset( $form['billing_apartment'] ) ? sanitize_text_field( $form['billing_apartment'] ) : get_user_meta( $user_id, 'billing_apartment', true ),

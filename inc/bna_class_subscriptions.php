@@ -1,10 +1,10 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Gateway
  *
- * @author 		ktscript
- * @category 	'Paylinks Subscription' Class
- * @version     1.0
+ * @author 		BNA
+ * @category 	'BNASubscription' Class
+ * @version     	1.0
  */
 
 if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -12,7 +12,7 @@ if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
 
 /**
- * Paylinks plugin subscription class
+ * BNA plugin subscription class
  *
  * @class 		BNASubscriptions
  * @new			BNASubscriptions
@@ -220,7 +220,7 @@ if (!class_exists('BNASubscriptions')) {
 		
 				//6 Set Order Status to processing to trigger initial emails to end user and vendor
 				$order->update_status('processing');
-				$order->add_order_note("This recurring order by Paylinks payment.");
+				$order->add_order_note("This recurring order by BNA payment.");
 			}
 
 			return $order_id;
@@ -255,7 +255,7 @@ if (!class_exists('BNASubscriptions')) {
 					wp_die();
 				}
 
-				$api = new PaylinksExchanger($args);
+				$api = new BNAExchanger($args);
 
 				$user_id = get_current_user_id();
 				$payorID = get_user_meta ($user_id, 'payorID', true);

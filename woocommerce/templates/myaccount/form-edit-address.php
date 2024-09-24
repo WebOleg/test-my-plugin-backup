@@ -40,7 +40,7 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 			<div class="woocommerce-address-fields__field-wrapper">
 				<?php
 				foreach ( $address as $key => $field ) {
-					// show billing_phone_code
+					// show billing_birthday
 					if ( $key === 'billing_company' ) {
 						$birthday = date( 'd.m.Y', strtotime( get_user_meta( $current_user_id, 'billing_birthday', true ) ) );
 						if ( empty( $birthday ) ) { $birthday = ''; }
@@ -52,7 +52,7 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 							'required' => false,
 							'maxlength' => 15,
 							'class' => array( 'form-row', 'form-row-wide' ),
-							'input_class' => array( 'input-text', 'datepicker-here' ),
+							'input_class' => array( 'input-text' ),
 						), $birthday );
 					}
 					
@@ -108,8 +108,8 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 
 <script type="module">
 	(function($) {		
-		$('#birthday').datepicker({
-			dateFormat: 'yyyy-mm-dd',
+		$('#billing_birthday').datepicker({
+			dateFormat: 'dd.mm.yyyy',
 			autoClose: true,
 		});			
 	})(jQuery);	

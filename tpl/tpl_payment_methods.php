@@ -33,9 +33,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	<table class="shop_table shop_table_responsive">
 		<thead>
 			<tr>
-				<th><?php _e( 'Payment types', 'wc-bna-gateway' ); ?></th>
-				<th><?php _e( 'Information', 'wc-bna-gateway' ); ?></th>
-				<th><?php _e( 'Manage', 'wc-bna-gateway' ); ?></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Payment types', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Information', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Manage', 'wc-bna-gateway' ); ?></span></th>
 			</tr>
 		</thead>
 
@@ -63,15 +63,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					}
 					if ( empty( $imageName ) ) continue;
 					?>
-					<tr>
-						<td>
+					<tr class="woocommerce-orders-table__row">
+						<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Information', 'wc-bna-gateway' ); ?>">
 							<img class="method-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/' . $imageName; ?>" alt="<?php echo $p_method->paymentType; ?>" />
 						</td>
-						<td>
+						<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Recurring', 'wc-bna-gateway' ); ?>">
 							<?php							
 								switch ( $p_method->paymentType ) {
 									case 'card':
-										echo $data->cardNumber . '<br>' . __( 'Expiry: ', 'wc-bna-gateway' ) . $data->expiryMonth . '/' . $data->expiryYear;
+										echo $data->cardBrand . ': ' .$data->cardNumber . '<br>' . __( 'Expiry: ', 'wc-bna-gateway' ) . $data->expiryMonth . '/' . $data->expiryYear;
 										break;
 									case 'eft':
 										echo $data->accountNumber . '/' . $data->transitNumber . '<br>' . __( 'Institution: ', 'wc-bna-gateway' ) . $data->bankName; 
@@ -82,8 +82,10 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 								}							
 							?>
 						</td>
-						<td>
-							<a class="method-delete btn-del-payment" data-id="<?php echo $p_method->id; ?>" href="#"><?php _e( 'Delete', 'wc-bna-gateway' ); ?></a>
+						<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
+							<button class="btn-del-payment" data-id="<?php echo $p_method->id; ?>">
+								<img class="bna-delete-img" src="<?php echo $this->plugin_url . 'assets/img/trash-solid.svg'; ?>" >
+							</button>
 						</td>
 					</tr>
 					<?php

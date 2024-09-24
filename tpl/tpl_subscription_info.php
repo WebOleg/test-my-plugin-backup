@@ -29,16 +29,16 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</div>
 	</div>
 	
-	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
+	<table class="shop_table shop_table_responsive">
 		<thead>
-			<tr>
-				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Manage', 'wc-bna-gateway' ); ?></span></th>
+			<tr>		
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Base Order', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Recurring', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Start', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Number of payments', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Desc.', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Created', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Manage', 'wc-bna-gateway' ); ?></span></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -66,16 +66,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				}
 				if ( empty( $imageName ) ) continue;
 				?>
-				<tr class="woocommerce-orders-table__row order">
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
-						<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>">
-							<div>
-								<img src="<?php echo $this->plugin_url.'/assets/img/trash-solid.svg'; ?>" >
-							</div>
-						</button>
-					</td>
+				<tr class="woocommerce-orders-table__row">
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Base Order', 'wc-bna-gateway' ); ?>">
-						<a href="/my-account/view-order/<?php echo $desc->invoiceInfo->invoiceId; ?>/">
+						<a class="bna-subscription-order-link" href="/my-account/view-order/<?php echo $desc->invoiceInfo->invoiceId; ?>/">
 							<?php echo $desc->invoiceInfo->invoiceId; ?>
 						</a>
 					</td>
@@ -103,12 +96,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 								if ( isset( $desc->amount ) )
 									echo "<p>" . __( 'Refunded:', 'wc-bna-gateway' ) . " {$desc->amount}</p>";
 							?>
-							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo $desc->applyFee === false ? 'no' : 'yes'; ?></p>                                          
+							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo ! empty( $desc->fee ) ? $desc->fee : 'No'; ?></p>                                          
 							<p><?php _e( 'Payment Method:', 'wc-bna-gateway' ); ?> <?php echo $desc->paymentMethod; ?></p>
 							<?php
 								switch ( strtolower( $desc->paymentMethod ) ) {
 									case 'card':
-										echo "<p>" . __( 'Card #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->cardNumber}</p>";
+										echo "<p>" . ucfirst( $desc->paymentDetails->cardBrand ) . ':  ' . " {$desc->paymentDetails->cardNumber}</p>";
 										break;
 									case 'eft':
 										echo "<p>" . __( 'Account #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->accountNumber}</p>";
@@ -122,8 +115,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 							?>
 						</details>
 					</td>
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Created', 'wc-bna-gateway' ); ?>">
 						<?php echo date( 'Y-m-d H:i:s', strtotime( $s_val->created_time ) );?>
+					</td>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
+						<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>">
+							<img  class="bna-delete-img" src="<?php echo $this->plugin_url . 'assets/img/trash-solid.svg'; ?>" >
+						</button>
 					</td>
 				</tr>
 			<?php

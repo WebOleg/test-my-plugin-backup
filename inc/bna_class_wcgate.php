@@ -223,9 +223,9 @@ function wc_bna_gateway_init() {
 					'desc_tip'    => true,
 				),
 				'applyFee' => array(
-					'title'   => __( 'Enable/Disable', 'wc-gateway-paylinks' ),
+					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Apply Paylinks Payment Fee', 'wc-gateway-paylinks' ),
+					'label'   => __( 'Apply BNA Payment Fee', 'wc-bna-gateway' ),
 					'default' => 'false'
 				),
 				'environment' => array(
@@ -242,6 +242,32 @@ function wc_bna_gateway_init() {
 				'secretKey' => array(
 					'title'       => __( 'Secret key', 'wc-bna-gateway' ),
 					'type'        => 'password'
+				),
+				
+				'bna-colors-title' =>array(
+					'title' => __( 'Colors options', 'wc-bna-gateway' ),
+					'type'  => 'title',
+					'description'  => __( 'Here you can change the default colors.', 'wc-bna-gateway' ),
+				),
+				'bna-font-color' => array(
+					'title'       => __( 'Font color', 'wc-bna-gateway' ),
+					'type'      => 'color',
+					'default' => '#646464'
+				),
+				'bna-button-color' => array(
+					'title'       => __( 'Button color', 'wc-bna-gateway' ),
+					'type'      => 'color',
+					'default' => '#00A0E3'
+				),
+				'bna-line-color' => array(
+					'title'       => __( 'Line color', 'wc-bna-gateway' ),
+					'type'      => 'color',
+					'default' => '#CCC'
+				),
+				'bna-background-color' => array(
+					'title'       => __( 'Background color', 'wc-bna-gateway' ),
+					'type'      => 'color',
+					'default' => '#FFF'
 				),
 			);
 		}
@@ -391,16 +417,18 @@ function wc_bna_gateway_init() {
 				'email'				=> $_POST['billing_email'],
 				'firstName'		=> $_POST['billing_first_name'],
 				'lastName'		=> $_POST['billing_last_name'],
-				//'phoneCode'		=> $_POST['billing_phone_code'],
+				'phoneCode'		=> $_POST['billing_phone_code'],
 				'phoneNumber'	=> $_POST['billing_phone'], // "phone"
-				'streetNumber'	=> $_POST['billing_street_number'],
-				'streetName'		=> $_POST['billing_street_name'],
-				//'apartment'		=> $_POST['billing_apartment'],
-				'city'					=> $_POST['billing_city'],
-				'province'			=> WC()->countries->get_states( $_POST['billing_country'] )[$_POST[ 'billing_state' ]],  //$_POST[ 'billing_country' ] .'-'. $_POST[ 'billing_state' ],
-				'country'			=> WC()->countries->countries[$_POST['billing_country']], //$_POST[ 'billing_country' ], 
-				'postalCode'		=> $_POST['billing_postcode'],
+				'address' => array(
+					'streetNumber'	=> $_POST['billing_street_number'],
+					'streetName'		=> $_POST['billing_street_name'],
+					'city'					=> $_POST['billing_city'],
+					'province'			=> WC()->countries->get_states( $_POST['billing_country'] )[$_POST[ 'billing_state' ]],  //$_POST[ 'billing_country' ] .'-'. $_POST[ 'billing_state' ],
+					'country'			=> WC()->countries->countries[$_POST['billing_country']], //$_POST[ 'billing_country' ], 
+					'postalCode'		=> $_POST['billing_postcode'],
+				),
 			);
+			if ( ! empty( $_POST['billing_apartment'] ) ) { $customerInfo['address']['apartment'] = $_POST['billing_apartment']; }
 			
 			// data
 			$data_subscription = array();
@@ -468,9 +496,9 @@ function wc_bna_gateway_init() {
 					$paymentTypeMethod = 'card';
 					if ( ! empty( $_POST['paymentMethodCC'] ) ) {
 						if ( $_POST['paymentMethodCC'] === 'new-card' ) {
-							if ( ! empty( $_POST['cc_expire'] ) ) {
+							//if ( ! empty( $_POST['paymentMethodCC'] ) && ! empty( $_POST['cc_expire'] ) ) {
 								$cc_expire = explode( '/', $_POST['cc_expire'] );
-							}
+							//}
 							$cardNumber = str_replace( ' ', '', $_POST['cc_number'] );
 							
 							$params = array (
@@ -486,9 +514,22 @@ function wc_bna_gateway_init() {
 						} else {
 							$data['paymentDetails'] = array( "id" => $_POST['paymentMethodCC'] );
 						}
-
-					} 
-					self::add_payment_fee ($order, $fees->creditCardPercentageFee, $fees->creditCardFlatFee);
+					} elseif ( ! is_user_logged_in() && ! empty( $_POST['cc_holder'] ) && ! empty( $_POST['cc_number'] ) && ! empty( $_POST['cc_expire'] ) && ! empty( $_POST['cc_code'] ) ) {
+						$cc_expire = explode( '/', $_POST['cc_expire'] );
+						$cardNumber = str_replace( ' ', '', $_POST['cc_number'] );
+							
+						$params = array (
+							'cardNumber'	=> $cardNumber,
+							'cardHolder'		=> $_POST['cc_holder'],
+							'cardType'			=> 'credit',
+							'cardIdNumber'	=> $_POST['cc_code'],
+							'expiryMonth'	=> trim( $cc_expire[0] ),
+							'expiryYear'		=> trim( $cc_expire[1] ),
+						);
+						foreach ( $params as $p_key => $p_val )
+							$data['paymentDetails'][$p_key] = $p_val;
+					}
+					self::add_payment_fee( $order, $fees->creditCardPercentageFee, $fees->creditCardFlatFee );
 					break;
 				case 'eft':
 					$paymentTypeMethod = 'eft';
@@ -504,8 +545,16 @@ function wc_bna_gateway_init() {
 						} else {
 							$data['paymentDetails'] = array( "id" => $_POST['paymentMethodDD'] );
 						}
+					} elseif ( ! is_user_logged_in() && ! empty( $_POST['bank_name'] ) && ! empty( $_POST['accountNumber'] ) && ! empty( $_POST['transitNumber'] ) ) {
+							$params = array (
+								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['institutionNumber'],
+								"accountNumber"	=> $_POST['accountNumber'],
+								"transitNumber"	=> $_POST['transitNumber']
+							);
+							foreach ( $params as $p_key => $p_val )
+									$data['paymentDetails'][$p_key] = $p_val;
 					}
-					self::add_payment_fee ($order, $fees->directDebitPercentageFee, $fees->directDebitFlatFee);
+					self::add_payment_fee( $order, $fees->directDebitPercentageFee, $fees->directDebitFlatFee );
 					break;
 				case 'e-transfer':
 					$paymentTypeMethod = 'e-transfer';
@@ -515,7 +564,7 @@ function wc_bna_gateway_init() {
 					foreach ( $params as $p_key => $p_val )
 						$data['paymentDetails'][$p_key] = $p_val;
 
-					self::add_payment_fee ($order, $fees->etransferPercentageFee, $fees->etransferFlatFee);
+					self::add_payment_fee( $order, $fees->etransferPercentageFee, $fees->etransferFlatFee );
 					break;
 			}
 
@@ -594,9 +643,9 @@ function wc_bna_gateway_init() {
 					'POST'
 				);							
 			}
-			
+my_log($data);			
 			$response = json_decode( $response, true );
-
+my_log($response);
 			if ( ! empty( $response['id'] ) ) {
 				
 				// save payment if 'save-credit-card' exists				
@@ -768,14 +817,15 @@ function wc_bna_gateway_init() {
 			$new_order = null;
 
 			switch ( $result['status'] ) {
-				case 'APPROVED': 
+				case 'APPROVED':
+				case 'approved': 
 					if ( isset( $result['subscriptionId'] ) && $result['subscriptionId'] !== null && $order->get_status() == 'completed' ) {			
 						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );
 						$new_order = wc_get_order( $new_order_id );
 						$new_order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
 						$new_order->payment_complete();
 						wc_reduce_stock_levels ($new_order->get_id());
-					} else if ( $result['action'] === 'SALE' ) { // ['action''data']['transactionType'
+					} else if ( $result['action'] === 'SALE' || $result['action'] === 'sale' ) { // ['action''data']['transactionType'
 						$order->update_status( 'completed', __('Order completed.', 'wc-bna-gateway') );
 						$order->payment_complete();
 						wc_reduce_stock_levels( $order->get_id() );
