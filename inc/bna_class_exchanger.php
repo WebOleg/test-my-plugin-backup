@@ -10,8 +10,6 @@
  * @version		1.0
  */
 
-//require_once dirname( __FILE__ ). "/bna_class_encryption.php";
-
 /**
  * Error constants
  *
@@ -147,7 +145,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
       $this->errno = curl_errno( $ch );
       $info = curl_getinfo( $ch );
       curl_close( $ch );
-      
+
       return $response;
     }
 

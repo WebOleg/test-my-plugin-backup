@@ -109,7 +109,7 @@ body.woocommerce-account .woocommerce .woocommerce-button.button.cancel {
 	flex: 0 0 350px;
 }
 .woocommerce-account .woocommerce .woocommerce-MyAccount-content {
-	flex: 0 1 auto;
+	flex: 0 1 calc(100% - 400px);
 	width: 100%;
 }
 .woocommerce-account .woocommerce::after,
