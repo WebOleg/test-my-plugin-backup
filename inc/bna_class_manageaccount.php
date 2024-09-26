@@ -760,17 +760,18 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					);
 					
 					$response = $api->query(
-						$args['serverUrl'] . '/' . $args['protocol'].'/customers/' . $payorID . '/eft',  
+						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/eft',  
 						$data,
 						'POST'
 					);
 				}
 				
 				$response = json_decode( $response, true );
-	
+				
 				empty( $response['id'] ) ? 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ADDPAYMENT_ERROR ) :
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ADDPAYMENT_SUCCESS ) ;
+						
 			}
 		
 			wp_die();

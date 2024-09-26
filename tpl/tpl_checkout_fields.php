@@ -8,6 +8,15 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+$is_card_exists = false;
+$is_eft_exists = false;
+if ( is_array( $paymentMethods ) ) {
+	foreach ( $paymentMethods as $pm_val ) {
+		if ( $pm_val->paymentType === 'card' ) { $is_card_exists = true; }
+		if ( $pm_val->paymentType === 'eft' ) { $is_eft_exists = true; }
+	}
+}
 ?>
 <fieldset id="wc-<?= esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" >
 	<div>
@@ -24,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				</div>
 			</div>
 			<div class="bna-payment-method__content">
-				<?php if ( is_user_logged_in() ) { ?>
+				<?php if ( is_user_logged_in() && $is_card_exists ) { ?>
 					<div class="bna-payment-method__content-title"><?php _e( 'Select Credit Card you want to pay', 'wc-bna-gateway' ); ?></div>
 					<select class="bna-checkout-select-card" id="paymentMethodCC" name="paymentMethodCC" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">			
 						<?php
@@ -98,7 +107,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				</div>
 			</div>
 			<div class="bna-payment-method__content">
-				<?php if ( is_user_logged_in() ) { ?>
+				<?php if ( is_user_logged_in() && $is_eft_exists ) { ?>
 					<div class="bna-payment-method__content-title"><?php _e( 'Saved payment methods', 'wc-bna-gateway' ); ?></div>
 					<select class="bna-checkout-select-card" id="paymentMethodDD" name="paymentMethodDD" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">					
 						<?php

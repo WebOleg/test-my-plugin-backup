@@ -44,7 +44,7 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 					if ( $key === 'billing_company' ) {
 						$birthday = date( 'd.m.Y', strtotime( get_user_meta( $current_user_id, 'billing_birthday', true ) ) );
 						if ( empty( $birthday ) ) { $birthday = ''; }
-						woocommerce_form_field( 'birthday', array(
+						woocommerce_form_field( 'billing_birthday', array(
 							'type' => 'text',
 							'id' => 'billing_birthday',
 							'label' => __( 'Birthday', 'wc-bna-gateway' ),

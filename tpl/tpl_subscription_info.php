@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</div>
 	</div>
 	
-	<table class="shop_table shop_table_responsive">
+	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
 		<thead>
 			<tr>		
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Base Order', 'wc-bna-gateway' ); ?></span></th>
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			</tr>
 		</thead>
 		<tbody>
-			<?php                    
+			<?php                  
 			foreach ( $subscriptions as $s_val ) {
 				$desc = json_decode( $s_val->recurringDescription );
 
@@ -68,8 +68,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				?>
 				<tr class="woocommerce-orders-table__row">
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Base Order', 'wc-bna-gateway' ); ?>">
-						<a class="bna-subscription-order-link" href="/my-account/view-order/<?php echo $desc->invoiceInfo->invoiceId; ?>/">
-							<?php echo $desc->invoiceInfo->invoiceId; ?>
+						<a class="bna-orders-order-link" href="/my-account/view-order/<?php echo $desc->invoiceInfo->invoiceId; ?>/">
+							<?php echo '#' . $desc->invoiceInfo->invoiceId; ?>
 						</a>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Recurring', 'wc-bna-gateway' ); ?>">

@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</a>
 	</div>
 	<div class="bna-desc"><?php _e( 'The following payment methods will be available on the checkout page.', 'wc-bna-gateway' ); ?></div>
-	<table class="shop_table shop_table_responsive">
+	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
 		<thead>
 			<tr>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Payment types', 'wc-bna-gateway' ); ?></span></th>

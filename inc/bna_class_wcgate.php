@@ -269,6 +269,16 @@ function wc_bna_gateway_init() {
 					'type'      => 'color',
 					'default' => '#FFF'
 				),
+				'bna-privacy-policy-title' =>array(
+					'title' => __( 'Privacy policy.', 'wc-bna-gateway' ),
+					'type'  => 'title',
+					'description'  => __( 'Here you can add privacy policy links.', 'wc-bna-gateway' ),
+				),
+				'bna-recurring-pp-link' => array(
+					'title'       => __( 'Recurring privacy policy link', 'wc-bna-gateway' ),
+					'type'      => 'url',
+					'description'	=> __( 'Recurring Payment Agreement.', 'wc-bna-gateway' ),
+				),
 			);
 		}
 	
@@ -643,9 +653,9 @@ function wc_bna_gateway_init() {
 					'POST'
 				);							
 			}
-my_log($data);			
+		
 			$response = json_decode( $response, true );
-my_log($response);
+
 			if ( ! empty( $response['id'] ) ) {
 				
 				// save payment if 'save-credit-card' exists				
@@ -743,7 +753,7 @@ my_log($response);
 					}
 
 					$result = json_decode( $data, true );
-
+my_log($result);
 					switch ( $endpoint ) {
 						case 'transactions':
 							self::endpoint_transactions( $result );
@@ -804,45 +814,50 @@ my_log($response);
 		public static function endpoint_transactions( $result )
 		{
 			global $wpdb, $woocommerce, $BNASubscriptions;
-	
-			if ( ! isset( $result['metadata']['invoiceId'] ) ) exit();
 			
+			$invoice_id = '';
+			
+			if ( isset( $result['metadata']['invoiceId'] ) ) { $invoice_id = $result['metadata']['invoiceId']; }
+			
+			if ( empty( $invoice_id ) && isset( $result['invoiceInfo']['invoiceId'] ) ) { $invoice_id = $result['invoiceInfo']['invoiceId']; }
+	
+			if ( empty( $invoice_id ) ) exit();
+
 			$check_transaction_id =  $wpdb->get_results(
                 "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS ." WHERE referenceNumber='{$result['referenceUUID']}'"
             );
 
             if ( ! empty( $check_transaction_id ) || count( $check_transaction_id ) >= 1)  exit();
-			
-			$order = wc_get_order( $result['metadata']['invoiceId'] );
+		
+			$order = wc_get_order( $invoice_id );
 			$new_order = null;
 
-			switch ( $result['status'] ) {
-				case 'APPROVED':
-				case 'approved': 
-					if ( isset( $result['subscriptionId'] ) && $result['subscriptionId'] !== null && $order->get_status() == 'completed' ) {			
-						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );
-						$new_order = wc_get_order( $new_order_id );
-						$new_order->update_status('completed', __('Order completed.', 'wc-bna-gateway'));
+			switch ( strtolower( $result['status'] ) ) {
+				case 'approved':
+					if ( isset( $result['subscriptionId'] ) && $order->get_status() === 'completed'  ) {					
+						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );		
+						$new_order = wc_get_order( $new_order_id );		
+						$new_order->update_status( 'completed', __('Order completed.', 'wc-bna-gateway') );
 						$new_order->payment_complete();
 						wc_reduce_stock_levels ($new_order->get_id());
-					} else if ( $result['action'] === 'SALE' || $result['action'] === 'sale' ) { // ['action''data']['transactionType'
+					} else if ( strtolower( $result['action'] ) === 'sale' ) {
 						$order->update_status( 'completed', __('Order completed.', 'wc-bna-gateway') );
 						$order->payment_complete();
 						wc_reduce_stock_levels( $order->get_id() );
 						$woocommerce->cart->empty_cart();
 					} 
+					
 					break;
-				case 'DECLINED':
-					if ( !isset($result['data']['recurringPayment']) && $order->get_status() !== 'completed' ) {
-						$order->update_status('on-hold', __('Waiting for payment.', 'wc-bna-gateway'));
+				case 'declined':
+					if ( ! isset( $result['subscriptionId'] ) && $order->get_status() !== 'completed' ) {
+						$order->update_status( 'on-hold', __('Waiting for payment.', 'wc-bna-gateway') );
 					}
-					break;
-				
-				case 'REFUNDED':
-				case 'RETURNED':
-				case 'CHARGEDBACK':
-					$amount = floatval( $result['data']['transactionInfo']['refundedAmount'] ) - 
-						floatval( $result['data']['transactionInfo']['paylinksFee'] );
+					break;				
+				case 'refunded':
+				case 'returned':
+				case 'chargedback':
+					$amount = floatval( $result['transactionInfo']['refundedAmount'] ) - 
+						floatval( $result['transactionInfo']['paylinksFee'] );
 					if ( $order->get_remaining_refund_amount() >= $amount ) {
 						$refund = wc_create_refund(
 							array(
@@ -861,10 +876,10 @@ my_log($response);
 						error_log(__('Refund requested exceeds remaining order balance of ' . $order->get_total(), 'wc-bna-gateway'));
 					}     
 					break;
-				case 'BATCHED':
-				case 'PENDING':
+				case 'batched':
+				case 'pending':
 				default:
-					$order->update_status('pending', __('Pending.', 'wc-bna-gateway'));
+					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
 			}
 
 			$payorId = get_user_meta( $order->get_user_id(), 'payorID', true );
@@ -875,6 +890,10 @@ my_log($response);
 				add_user_meta( $order->get_user_id(), 'payorID', $newPayorId );
 				$payorId = $newPayorId;
 			}
+			
+			unset( $result['customerInfo'] );
+			unset( $result['paymentMethods'] );
+			
 			$wpdb->insert( 
 				$wpdb->prefix . BNA_TABLE_TRANSACTIONS,  
 				array( 
