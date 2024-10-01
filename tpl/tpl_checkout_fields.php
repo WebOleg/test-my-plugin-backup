@@ -8,6 +8,15 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+$is_card_exists = false;
+$is_eft_exists = false;
+if ( is_array( $paymentMethods ) ) {
+	foreach ( $paymentMethods as $pm_val ) {
+		if ( $pm_val->paymentType === 'card' ) { $is_card_exists = true; }
+		if ( $pm_val->paymentType === 'eft' ) { $is_eft_exists = true; }
+	}
+}
 ?>
 <fieldset id="wc-<?= esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" >
 	<div>
@@ -24,21 +33,24 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				</div>
 			</div>
 			<div class="bna-payment-method__content">
-				<div class="bna-payment-method__content-title"><?php _e( 'Select Credit Card you want to pay', 'wc-bna-gateway' ); ?></div>
-				<select class="bna-checkout-select-card" id="paymentMethodCC" name="paymentMethodCC" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">			
-					<?php
-						if ( is_array($paymentMethods) ) {
-							foreach ($paymentMethods as $pm_val) {
-								if ( $pm_val->paymentType === 'card' ) {
-									echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
-												$pm_val->paymentType . ' : ' . $pm_val->paymentInfo .
-											"</option>";
+				<?php if ( is_user_logged_in() && $is_card_exists ) { ?>
+					<div class="bna-payment-method__content-title"><?php _e( 'Select Credit Card you want to pay', 'wc-bna-gateway' ); ?></div>
+					<select class="bna-checkout-select-card" id="paymentMethodCC" name="paymentMethodCC" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">			
+						<?php
+							if ( is_array( $paymentMethods ) ) {
+								foreach ( $paymentMethods as $pm_val ) {
+									$pm_desc = json_decode( $pm_val->paymentDescription );
+									if ( $pm_val->paymentType === 'card' ) {
+										echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
+													$pm_desc->cardBrand . ': ' . $pm_val->paymentInfo .
+												"</option>";
+									}
 								}
 							}
-						}
-					?>
-					<option value="new-card"><?php _e( 'Add New Card', 'wc-bna-gateway' ); ?></option>
-				</select>
+						?>
+						<option value="new-card"><?php _e( 'Add New Card', 'wc-bna-gateway' ); ?></option>
+					</select>
+				<?php } ?>
 				
 				<div class="bna-payment-method-cards">
 					<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
@@ -95,21 +107,24 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				</div>
 			</div>
 			<div class="bna-payment-method__content">
-				<div class="bna-payment-method__content-title"><?php _e( 'Saved payment methods', 'wc-bna-gateway' ); ?></div>
-				<select class="bna-checkout-select-card" id="paymentMethodDD" name="paymentMethodDD" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">					
-					<?php
-						if ( is_array($paymentMethods) ) {
-							foreach ($paymentMethods as $pm_val) {
-								if ( $pm_val->paymentType === 'eft' ) {
-									echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
-												$pm_val->paymentInfo . ' : ' . $data->institutionNumber .
-											"</option>";
+				<?php if ( is_user_logged_in() && $is_eft_exists ) { ?>
+					<div class="bna-payment-method__content-title"><?php _e( 'Saved payment methods', 'wc-bna-gateway' ); ?></div>
+					<select class="bna-checkout-select-card" id="paymentMethodDD" name="paymentMethodDD" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">					
+						<?php
+							if ( is_array( $paymentMethods ) ) {
+								foreach ( $paymentMethods as $pm_val ) {
+									$pm_desc = json_decode( $pm_val->paymentDescription );
+									if ( $pm_val->paymentType === 'eft' ) {
+										echo "<option value=\"".$pm_val->paymentMethodId."\">" .
+													$pm_val->paymentInfo . ' : ' . $pm_desc->bankName .
+												"</option>";
+									}
 								}
 							}
-						}
-					?>
-					<option value="new-method"><?php _e( 'Add New Method', 'wc-bna-gateway' ); ?></option>
-				</select>
+						?>
+						<option value="new-method"><?php _e( 'Add New Method', 'wc-bna-gateway' ); ?></option>
+					</select>
+				<?php } ?>
 				
 				<div class="bna-payment-method-eft">
 					<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
@@ -168,104 +183,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			
 			<input type="hidden" id="payment_type" name="payment-type" value="">
 			
-			<?php include "tpl_checkout_subscription_fields.php"; ?>	
+			<?php
+			if ( is_user_logged_in() ) {
+				include "tpl_checkout_subscription_fields.php";
+			}	
+			?>
 		</div>
 	</div>
-	
-	<script type="module">
-		(function($) {	
-			$('#paymentMethodCC').select2({ minimumResultsForSearch: -1 });
-			$('#ssRepeat').select2({ minimumResultsForSearch: -1 });
-			$('#paymentMethodDD').select2({ minimumResultsForSearch: -1 });
-			$('#bank_name').select2({ minimumResultsForSearch: -1 });
-			
-			$('#setting_first_payment_date').datepicker({
-				dateFormat: 'yyyy-mm-dd',
-				autoClose: true,
-			});
-			
-			// select payment method (cc, i-transfer, eft, google pay, apple pay)
-			$('.bna-payment-methods .bna-checkout-radio').click(function(){
-				$(this).parent().parent().find('.bna-checkout-radio.selected').removeClass('selected');	
-				if ( $('.bna-payment-method__content').is(':visible') ) { $('.bna-payment-method__content').css('display', 'none'); }
-				$(this).addClass('selected');
-				$(this).parent().next().css('display', 'block');
-				$(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
-				
-				$('#payment_type').val( $(this).data('payment-type') );
-				
-				// open if only 'new-card'
-				if ( $('#paymentMethodCC').is(':visible') ) {
-					if ( $('#paymentMethodCC').val() === 'new-card' ) {
-						$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
-					}
-				}
-				
-				// open if only 'new-method'
-				if ( $('#paymentMethodDD').is(':visible') ) {
-					if ( $('#paymentMethodDD').val() === 'new-method' ) {
-						$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
-					}
-				}
-				
-				//addFees();
-			});
-			
-			// select card or add new			
-			$('#paymentMethodCC').on("select2:select", function(e) {			
-				let data = e.params.data;
-				if (data.id === 'new-card') {
-					$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
-				} else {
-					$('.bna-payment-method__content .bna-payment-method-cards').removeClass('bna-active');
-				}
-			});
-			$('#paymentMethodCC').on("select2:opening", function(e) {
-				$('.select2-container--open .select2-dropdown .select2-search--dropdown').css('display', 'none');
-			});	
-				
-			
-			// select eft method or add new
-			$('#paymentMethodDD').on("select2:select", function(e) {
-			  let data = e.params.data;
-			  if (data.id === 'new-method') {
-					$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
-				} else {
-					$('.bna-payment-method__content .bna-payment-method-eft').removeClass('bna-active');
-				}
-			});
-			
-			// select bank
-			$('#bank_name').on("select2:select", function(e) {
-				$('#institutionNumber').val( $(this).val() );
-			});
-			
-			// select 'checkbox' recurring
-			$('.bna-checkbox-container input[name="create_subscription"]').on('change', function(event) {
-				if (event.currentTarget.checked) {
-					$(this).parent().next().addClass('bna-active');
-				} else {
-					$(this).parent().next().removeClass('bna-active');
-				}
-			});
-			
-			// select recurring period
-			$('#ssRepeat').on("select2:select", function(e) {
-				$('#recurring').val( $(this).val() );
-			});
-			
-			
-			if ( $('.bna-check-cc-number').length > 0 ) {
-				Payment.formatCardNumber( $('.bna-check-cc-number') );
-			}
-			if ( $('.bna-check-cc-expire').length > 0 ) {
-				Payment.formatCardExpiry( $('.bna-check-cc-expire') );
-			}
-			if ( $('.bna-check-cc-cvc').length > 0 ) {
-				Payment.formatCardCVC( $('.bna-check-cc-cvc') );
-			}
-		})(jQuery);	
-	</script>
 
 </fieldset>
 
@@ -464,4 +388,112 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	paymentMethod.click();
 
 })();	
+</script>
+
+<script type="module">
+	(function($) {	
+		$('#paymentMethodCC').selectWoo();	
+		$('#ssRepeat').selectWoo();
+		$('#paymentMethodDD').selectWoo();
+		$('#bank_name').select2();
+		$('#paymentMethodCC, #ssRepeat, #paymentMethodDD').on("select2:open", function(e) {
+		  $('.select2-search__field').css('display', 'none');
+		});
+		
+		$('#setting_first_payment_date').datepicker({
+			dateFormat: 'yyyy-mm-dd',
+			autoClose: true,
+		});
+		
+		// select payment method (cc, i-transfer, eft, google pay, apple pay)
+		$('.bna-payment-methods .bna-checkout-radio').click(function(){
+			$(this).parent().parent().find('.bna-checkout-radio.selected').removeClass('selected');	
+			if ( $('.bna-payment-method__content').is(':visible') ) { $('.bna-payment-method__content').css('display', 'none'); }
+			$(this).addClass('selected');
+			$(this).parent().next().css('display', 'block');
+			$(this).parent().next().find('select.bna-checkout-select-card').css({'visibility': 'visible', 'opacity': '1'});
+			
+			$('#payment_type').val( $(this).data('payment-type') );
+			
+			// open if only 'new-card'
+			if ( $('#paymentMethodCC').is(':visible') ) {
+				if ( $('#paymentMethodCC').val() === 'new-card' ) {
+					$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
+				}
+			}
+			
+			// show if the user is not logged
+			if ( $('#paymentMethodCC').length === 0 ) {
+				$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
+			}
+			
+			// open if only 'new-method'
+			if ( $('#paymentMethodDD').is(':visible') ) {
+				if ( $('#paymentMethodDD').val() === 'new-method' ) {
+					$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
+				}
+			}
+			
+			// show if the user is not logged
+			if ( $('#paymentMethodDD').length === 0 ) {
+				$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
+			}
+			
+			addFees();
+		});
+		
+		// select card or add new			
+		$('#paymentMethodCC').on("select2:select", function(e) {			
+			let data = e.params.data;
+			if (data.id === 'new-card') {
+				$('.bna-payment-method__content .bna-payment-method-cards').addClass('bna-active');
+			} else {
+				$('.bna-payment-method__content .bna-payment-method-cards').removeClass('bna-active');
+			}
+		});
+		$('#paymentMethodCC').on("select2:opening", function(e) {
+			$('.select2-container--open .select2-dropdown .select2-search--dropdown').css('display', 'none');
+		});	
+			
+		
+		// select eft method or add new
+		$('#paymentMethodDD').on("select2:select", function(e) {
+		  let data = e.params.data;
+		  if (data.id === 'new-method') {
+				$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
+			} else {
+				$('.bna-payment-method__content .bna-payment-method-eft').removeClass('bna-active');
+			}
+		});
+		
+		// select bank
+		$('#bank_name').on("select2:select", function(e) {
+			$('#institutionNumber').val( $(this).val() );
+		});
+		
+		// select 'checkbox' recurring
+		$('.bna-checkbox-container input[name="create_subscription"]').on('change', function(event) {
+			if (event.currentTarget.checked) {
+				$(this).parent().next().addClass('bna-active');
+			} else {
+				$(this).parent().next().removeClass('bna-active');
+			}
+		});
+		
+		// select recurring period
+		$('#ssRepeat').on("select2:select", function(e) {
+			$('#recurring').val( $(this).val() );
+		});
+		
+		
+		if ( $('.bna-check-cc-number').length > 0 ) {
+			Payment.formatCardNumber( $('.bna-check-cc-number') );
+		}
+		if ( $('.bna-check-cc-expire').length > 0 ) {
+			Payment.formatCardExpiry( $('.bna-check-cc-expire') );
+		}
+		if ( $('.bna-check-cc-cvc').length > 0 ) {
+			Payment.formatCardCVC( $('.bna-check-cc-cvc') );
+		}
+	})(jQuery);	
 </script>

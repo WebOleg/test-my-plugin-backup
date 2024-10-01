@@ -1,5 +1,5 @@
 <?php
-
+$bna_gateway_settings = get_option( 'woocommerce_bna_gateway_settings' );
 ?>
 
 <label class="bna-checkbox-container">
@@ -70,9 +70,11 @@
 	</div>
 
 	<label class="bna-checkbox-container">
-		<input type="checkbox" name="i-agree">
+		<input type="checkbox" name="i-agree" checked required>
 		<span class="checkmark"></span>
 		<?php _e( 'I have read and agree to the terms presented in the ', 'wc-bna-gateway' ); ?>
-		<a href="#"><?php _e( 'Recurring Payment Agreement.', 'wc-bna-gateway' ); ?></a>
+		<a class="woocommerce-privacy-policy-link" href="<?php echo ! empty( $bna_gateway_settings['bna-recurring-pp-link'] ) ? esc_url( $bna_gateway_settings['bna-recurring-pp-link'] ) : '#'; ?>">
+			<?php _e( 'Recurring Payment Agreement.', 'wc-bna-gateway' ); ?>
+		</a>
 	</label>
 </div>

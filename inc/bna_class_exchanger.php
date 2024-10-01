@@ -29,7 +29,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		 * @var string
 		 */
     private $token = null;
-    private $paylinks_args = null;
+    private $bna_args = null;
     private $cookies = array();
 
     public $errmsg = '';
@@ -43,7 +43,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
         return null;
       }
 
-      $this->paylinks_args = $args;
+      $this->bna_args = $args;
     }
 
 	/**
@@ -73,12 +73,12 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 	 */
     public function query( $url_method, $postparams = null, $custom_request = 'POST' )
     {
-		$credentials = base64_encode( $this->paylinks_args['login'] . ':' . $this->paylinks_args['secretKey'] );
+		$credentials = base64_encode( $this->bna_args['login'] . ':' . $this->bna_args['secretKey'] );
 		
 		$headers = array(
 		  'Content-Type: application/json',
 		  'Authorization: Basic ' . $credentials,
-		  'Access-Control-Allow-Origin: ' . $this->paylinks_args['serverUrl'],
+		  'Access-Control-Allow-Origin: ' . $this->bna_args['serverUrl'],
 		  'Origin: '.	( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http" ) . "://$_SERVER[HTTP_HOST]"
 		);
 

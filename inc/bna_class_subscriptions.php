@@ -1,10 +1,10 @@
 <?php
 /**
- * Woocommerce Paylinks Gateway
+ * Woocommerce BNA Gateway
  *
- * @author 		ktscript
- * @category 	'Paylinks Subscription' Class
- * @version     1.0
+ * @author 		BNA
+ * @category 	'BNASubscription' Class
+ * @version     	1.0
  */
 
 if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -12,7 +12,7 @@ if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
 
 /**
- * Paylinks plugin subscription class
+ * BNA plugin subscription class
  *
  * @class 		BNASubscriptions
  * @new			BNASubscriptions
@@ -49,7 +49,10 @@ if (!class_exists('BNASubscriptions')) {
             );
 
             if ( empty( $subscription ) || count( $subscription ) < 1) {
-                $wpdb->insert( 
+				unset( $result['customerInfo'] );
+				unset( $result['paymentMethods'] );
+				
+				$wpdb->insert( 
                     $wpdb->prefix . BNA_TABLE_RECURRING,  
                     array( 
                         'user_id'				=> $base_order->get_user_id(),
@@ -61,7 +64,7 @@ if (!class_exists('BNASubscriptions')) {
                         'nextChargeDate'	=> $result['remainingPayments'],
                         'expire'		        	=> empty( $result['expire'] ) ? "" : $result['expire'],
                         'numberOfPayments'   => isset( $result['remainingPayments'] ) ? $result['remainingPayments'] : -1,
-                        'recurringDescription'  => json_encode( $result )
+                        'recurringDescription' => json_encode( $result ),
                     ),
                     array( 
                         '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
@@ -82,7 +85,7 @@ if (!class_exists('BNASubscriptions')) {
                     ." WHERE recurringId='{$result['id']}'"
                 );
             }
-		}	
+		}
 
 		/**
 		 * Creating an order in manual mode
@@ -95,31 +98,32 @@ if (!class_exists('BNASubscriptions')) {
 		
 			$original_order = new WC_Order( $original_order_id );
 			$currentUser = $original_order->get_user_id(); 
-		
+
 			//1 Create Order
-			$order_data =  array(
-				'post_type'     => 'shop_order',
-				'post_title'    => sprintf( __( 'Recurring Order &ndash; %s', 'woocommerce' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'woocommerce' ) ) ),
-				'post_status'   => 'publish',
-				'ping_status'   => 'closed',
-				'post_excerpt'  => 'Recurring Order based on original order ' . $original_order_id,
-				'post_author'   => $original_order->get_user_id(),
-				'post_password' => uniqid( 'order_' )   // Protects the post just in case
-			);
-		
-			$order_id = wp_insert_post( $order_data, true );
-		
+			//$order = new WC_Order($order_id);		
+			$order = wc_create_order();
+			$order_id = $order->get_id();							
+			$order->set_parent_id($original_order_id);
+			$order->set_customer_id( $currentUser );
+
 			if ( is_wp_error( $order_id ) ) {
 				error_log("Unable to create order:" . $order_id->get_error_message());
 				wp_die();
 			} else {
-		
-				$order = new WC_Order($order_id);
-
-				$order->set_parent_id($original_order_id);
-		
-				//2 Update Order Header
-		
+						
+				$order_data =  array(
+					//'post_type'     => 'shop_order',
+					'ID'                =>  $order_id,
+					'post_title'    => sprintf( __( 'Recurring Order &ndash; %s', 'woocommerce' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'woocommerce' ) ) ),
+					'post_status'   => 'publish',
+					'ping_status'   => 'closed',
+					'post_excerpt'  => 'Recurring Order based on original order ' . $original_order_id,
+					'post_author'   => $original_order->get_user_id(),
+					'post_password' => uniqid( 'order_' )   // Protects the post just in case
+				);			
+				$order_id = wp_insert_post( $order_data, true );				
+				
+				//2 Update Order Header		
 				update_post_meta( $order_id, '_order_shipping',         get_post_meta($original_order_id, '_order_shipping', true) );
 				update_post_meta( $order_id, '_order_discount',         get_post_meta($original_order_id, '_order_discount', true) );
 				update_post_meta( $order_id, '_cart_discount',          get_post_meta($original_order_id, '_cart_discount', true) );
@@ -158,8 +162,7 @@ if (!class_exists('BNASubscriptions')) {
 				update_post_meta( $order_id, '_shipping_state',         get_post_meta($original_order_id, '_shipping_state', true));
 				update_post_meta( $order_id, '_shipping_postcode',      get_post_meta($original_order_id, '_shipping_postcode', true));
 		
-				//5 Add Line Items
-		
+				//5 Add Line Items		
 				foreach($original_order->get_items() as $originalOrderItem){
 		
 					$itemName 	= $originalOrderItem['name'];
@@ -220,7 +223,7 @@ if (!class_exists('BNASubscriptions')) {
 		
 				//6 Set Order Status to processing to trigger initial emails to end user and vendor
 				$order->update_status('processing');
-				$order->add_order_note("This recurring order by Paylinks payment.");
+				$order->add_order_note("This recurring order by BNA payment.");
 			}
 
 			return $order_id;
@@ -255,7 +258,7 @@ if (!class_exists('BNASubscriptions')) {
 					wp_die();
 				}
 
-				$api = new PaylinksExchanger($args);
+				$api = new BNAExchanger($args);
 
 				$user_id = get_current_user_id();
 				$payorID = get_user_meta ($user_id, 'payorID', true);
