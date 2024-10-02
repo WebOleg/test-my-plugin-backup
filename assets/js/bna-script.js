@@ -31,12 +31,12 @@ function input_test(input) {
         startLoadingAnimation();
 
         $.ajax({
-            url         : bna_data.url,
+            url         : bnaData.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action    : 'create_payor',
-                nonce     : bna_data.nonce,
+                nonce     : bnaData.nonce,
                 fieldtext : $('.form_create_payor').serializeArray() 
             },
             success: function( data ) {
@@ -67,12 +67,12 @@ function input_test(input) {
         startLoadingAnimation();
 
         $.ajax({
-            url         : bna_data.url,
+            url         : bnaData.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action    : 'update_payor',
-                nonce     : bna_data.nonce,
+                nonce     : bnaData.nonce,
                 fieldtext : $('.form_update_payor').serializeArray() 
             },
             success: function( data ) {
@@ -99,12 +99,12 @@ function input_test(input) {
         //startLoadingAnimation();
 
         //$.ajax({
-            //url         : bna_data.url,
+            //url         : bnaData.url,
             //type        : 'POST', 
             //dataType    : "json",
             //data        : {
                 //action    : 'update_payor',
-                //nonce     : bna_data.nonce,
+                //nonce     : bnaData.nonce,
                 //fieldtext : $('.form_update_address').serializeArray() 
             //},
             //success: function( data ) {
@@ -132,12 +132,12 @@ function input_test(input) {
         startLoadingAnimation();
 
         $.ajax({
-            url         : bna_data.url,
+            url         : bnaData.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action    : 'delete_payor',
-                nonce     : bna_data.nonce,
+                nonce     : bnaData.nonce,
             },
             success: function( data ) {
                 stopLoadingAnimation();
@@ -168,12 +168,12 @@ function input_test(input) {
         startLoadingAnimation();
 
         $.ajax({
-            url         : bna_data.url,
+            url         : bnaData.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action  : 'delete_payment',
-                nonce   : bna_data.nonce,
+                nonce   : bnaData.nonce,
                 id      : self.data('id') 
             },
             success: function( data ) {
@@ -194,38 +194,54 @@ function input_test(input) {
             }
         });    
     });
-
+	
     $('#save_payment').on('click', function(event){
         event.stopPropagation();
-        event.preventDefault(); 
+        event.preventDefault();
+        
+        $('.bna-input').each(function(i) {
+			if ( $(this).val() == 0 ) {
+				$(this).addClass('invalid');
+			}
+		});	
+        
+        let invalidElements = $('.invalid');
+        if (invalidElements.length) {
+			return false;
+		} else {
+			let self = $(this);
+			self.prop('disabled', true);
 
-        let self = $(this);
-        self.prop('disabled', true);
+			startLoadingAnimation();
 
-        startLoadingAnimation();
+			$.ajax({
+				url         : bnaData.url,
+				type        : 'POST', 
+				dataType    : "json",
+				data        : {
+					action    : 'add_payment',
+					nonce     : bnaData.nonce,
+					fieldtext : $('.form_save_payment').serializeArray() 
+				},
+				success: function( data ) {
 
-        $.ajax({
-            url         : bna_data.url,
-            type        : 'POST', 
-            dataType    : "json",
-            data        : {
-                action    : 'add_payment',
-                nonce     : bna_data.nonce,
-                fieldtext : $('.form_save_payment').serializeArray() 
-            },
-            success: function( data ) {
-
-                stopLoadingAnimation();
-                let message = $('.woocommerce-notices-wrapper');
-                message.get(0).scrollIntoView();
-                message.html(data.message);
-                self.prop('disabled', false);
-				
-            },
-            error: function( data ){
-                //console.log(data);
-            }
-        });    
+					stopLoadingAnimation();
+					let message = $('.woocommerce-notices-wrapper');
+					message.get(0).scrollIntoView();
+					message.html(data.message);
+					
+					setTimeout(()=>{
+						window.location.href=bnaData.paymentMethodsEndpointUrl;
+					}, 1000);
+					
+					self.prop('disabled', false);
+					
+				},
+				error: function( data ){
+					//console.log(data);
+				}
+			}); 
+		}  
     });
 
 
@@ -241,12 +257,12 @@ function input_test(input) {
         startLoadingAnimation();
 
         $.ajax({
-            url         : bna_data.url,
+            url         : bnaData.url,
             type        : 'POST', 
             dataType    : "json",
             data        : {
                 action  : 'delete_subscription',
-                nonce   : bna_data.nonce,
+                nonce   : bnaData.nonce,
                 id      : self.data('id') 
             },
             success: function( data ) {
@@ -267,15 +283,5 @@ function input_test(input) {
             }
         });    
     });
-    
-    if ( $('.bna-check-cc-number').length > 0 ) {
-		Payment.formatCardNumber( $('.bna-check-cc-number') );
-	}
-    if ( $('.bna-check-cc-expire').length > 0 ) {
-		Payment.formatCardExpiry( $('.bna-check-cc-expire') );
-	}
-    if ( $('.bna-check-cc-cvc').length > 0 ) {
-		Payment.formatCardCVC( $('.bna-check-cc-cvc') );
-	}
 
 })(jQuery);

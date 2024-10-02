@@ -32,20 +32,25 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		<div class="bna-two-inputs-wrapper">
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="bna-input bna-check-cc-number" type="text" name="cc_number" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000" >
+				<input class="bna-input" id="credit-card-number" type="text" name="cc_number" autocomplete="off" 
+					autocorrect="off" autocapitalize="none" spellcheck="false"
+					maxlength="22" placeholder="0000 0000 0000 0000" >
 			</div>
 			
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="bna-input bna-check-cc-expire" type="text" name="cc_expire" 
-					autocomplete="off" placeholder="MM/YY" maxlength="7">
+				<input class="bna-input" id="expiration" type="text" name="cc_expire" autocomplete="off"
+					autocorrect="off" autocapitalize="none" spellcheck="false"
+					 placeholder="MM/YY" maxlength="7">
 			</div>
 		</div>
 			
 		<div class="bna-three-inputs-wrapper">
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input  class="bna-input bna-check-cc-cvc" type="text" name="cc_code" autocomplete="off" placeholder="CVC" maxlength="3" >
+				<input  class="bna-input" id="cvv" type="text" name="cc_code" autocomplete="off" 
+					autocorrect="off" autocapitalize="none" spellcheck="false"
+					placeholder="CVC" maxlength="4" >
 			</div>
 			<div class="bna-CVC-text-wrapper">
 				<div class="bna-CVC-text">
@@ -63,3 +68,27 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	</div>
 </form>
 <div class="loading"></div>
+
+<script type="module">
+	(function($) {
+		// validation field
+		$('form.form_save_payment input[name="cc_holder"]').on('blur keyup', function() {
+			if ( $(this).val().length >= 3 ) {
+				$(this).removeClass('invalid');
+			} else {
+				$(this).addClass('invalid');
+			}
+		});
+	})(jQuery);
+	
+	
+	// validation fields
+	const credit=document.getElementById('credit-card-number');
+    if ( credit !== null ) { make_credit_card_input(credit); }
+    
+    const cvv=document.getElementById('cvv');
+    if ( cvv !== null ) { make_cvv_input(cvv); }
+       
+    const expiration=document.getElementById('expiration');
+    if ( expiration !== null ) { make_expiration_input(expiration); }
+</script>

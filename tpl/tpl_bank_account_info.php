@@ -28,29 +28,28 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<?php _e( 'Name on Bank Account', 'wc-bna-gateway' ); ?><br>
 				<span class="bna-font-italic"><?php _e( '(the full name of the person or business associated with the bank account.)', 'wc-bna-gateway' ); ?></span>
 			</div>
-			<!--<input class="bna-input" type="text" name="eft_holder" autocomplete="off" maxlength="100" placeholder="">-->
 			<select id="bank_name" name="bank_name" class="input-text"></select>
 		</div>
 		
 		<div class="bna-two-inputs-wrapper">
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Bank Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input class="bna-input" type="text" id="bank_number" name="bank_number" autocomplete="off" maxlength="18" placeholder=""
-					onkeyup="return input_test(this);" >
+				<input class="bna-input" type="text" id="bank_number" name="bank_number" 
+					autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="3" >
 			</div>
 			
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
 				<input class="bna-input" type="text" name="account_number" 
-					autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="18" >
+					autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="8" >
 			</div>
 		</div>
 			
 		<div class="bna-two-inputs-wrapper">
 			<div class="bna-input-wrapper">
 				<div class="bna-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-				<input  class="bna-input" type="text" name="transit_number" autocomplete="off" placeholder="" maxlength="18" 
-					onkeyup="return input_test(this);" >
+				<input  class="bna-input" type="text" name="transit_number" 
+					autocomplete="off" placeholder=""  onkeyup="return input_test(this);" maxlength="5" >
 			</div>
 			<div class="bna-number-img-wrapper">
 				<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Cheque_1.png'; ?>" />
@@ -66,14 +65,46 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 <div class="loading"></div>
 
 <script type="module">
-	
-	
 	(function($) {	
 		$('#bank_name').selectWoo();
 		
 		// select bank
 		$('#bank_name').on("select2:select", function(e) {
 			$('#bank_number').val( $(this).val() );
+			$('#bank_number').removeClass('invalid');
+		});
+		// and select bank by id cod
+		$('#bank_number').on('keyup', function() {
+			let bankNumberVal = $('#bank_number').val();
+			$('#bank_name option').each(function(i) {
+				if ( parseInt( $(this).val() ) === parseInt(bankNumberVal) ) {
+					$('#bank_number').removeClass('invalid');
+					$('#bank_name').selectWoo().val( $(this).val() ).trigger('change');
+					return false;
+				} else { $('#bank_number').addClass('invalid'); }				
+			});
+		});
+		// validation fields
+		$('form.form_save_payment input[name="bank_number"]').on('blur keyup', function() {
+			if ( $(this).val().length >= 1 ) {
+				//$(this).removeClass('invalid');
+			} else {
+				$(this).addClass('invalid');
+			}
+		});
+		$('form.form_save_payment input[name="account_number"]').on('blur keyup', function() {
+			if ( $(this).val().length >= 7 ) {
+				$(this).removeClass('invalid');
+			} else {
+				$(this).addClass('invalid');
+			}
+		});
+		$('form.form_save_payment input[name="transit_number"]').on('blur keyup', function() {
+			if ( $(this).val().length >= 3 ) {
+				$(this).removeClass('invalid');
+			} else {
+				$(this).addClass('invalid');
+			}
 		});
 	})(jQuery);
 	
@@ -90,7 +121,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			for (i in arBankName) {
 				options += '<option value="'+ arBankName[i][0] +'">' + arBankName[i][1] + '</option>';
 			}
-			options += '<option value="other">&lt;&lt; Other &gt;&gt;</option>'
 			select_bankName.innerHTML += options;
 			clearInterval(interval);
 		}

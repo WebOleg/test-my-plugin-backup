@@ -42,7 +42,7 @@ if (!class_exists('BNASubscriptions')) {
 	
 			if ( ! isset( $result['id'] ) ) exit();
 
-			$base_order = wc_get_order( $result['invoiceInfo']['invoiceId'] );
+			$base_order = wc_get_order( $result['metadata']['invoiceId'] );
 
             $subscription =  $wpdb->get_results(
                 "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['id']}'" // subscriptionId
@@ -56,7 +56,7 @@ if (!class_exists('BNASubscriptions')) {
                     $wpdb->prefix . BNA_TABLE_RECURRING,  
                     array( 
                         'user_id'				=> $base_order->get_user_id(),
-                        'order_id'		        => $result['invoiceInfo']['invoiceId'],
+                        'order_id'		        => $result['metadata']['invoiceId'],
                         'recurringId'		    => $result['id'],
                         'recurring'		        => $result['recurrence'],
                         'status'		        	=> $result['status'],
@@ -237,54 +237,45 @@ if (!class_exists('BNASubscriptions')) {
 		{
 			global $wpdb;
 
-			$paymentTypeMethod	= 'account';
-			$paymentMethod 		= 'delete-recurring';
-			
-			if( isset($_POST['nonce'])) {
-				if ( !wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORNONCE);
+			if ( isset( $_POST['nonce'] ) ) {
+				if ( ! wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORNONCE );
 					wp_die();
 				}
 								
 				$subscription_id = $_POST['id'];
-				if ( empty($subscription_id) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERRORID);
+				if ( empty( $subscription_id ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_ERRORID  );
 					wp_die();
 				}
 
 				$args = WC_BNA_Gateway::get_merchant_params();
-				if ( empty($args) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
+				if ( empty( $args ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
 					wp_die();
 				}
 
 				$api = new BNAExchanger($args);
 
 				$user_id = get_current_user_id();
-				$payorID = get_user_meta ($user_id, 'payorID', true);
+				$payorID = get_user_meta ( $user_id, 'payorID', true );
 				
-				$reccuringInfo =  $wpdb->get_row("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE id={$subscription_id}");
+				$reccuringInfo =  $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_RECURRING . " WHERE id={$subscription_id}" );
 
-				if ( empty($reccuringInfo) || empty($payorID) ) {
-					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
+				if ( empty( $reccuringInfo ) || empty( $payorID ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPAYOR );
 					wp_die();
 				}
-
-				$data = (object) [
-					"payorId" => $payorID,
-					"recurringId" => $reccuringInfo->recurringId
-				];
-
-
+				
 				$response = $api->query(
-					$args['serverUrl'].'/'.$args['protocol'].'/'.$paymentTypeMethod.'/'.$paymentMethod,  
-					$data,
+					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription/' . $reccuringInfo->recurringId,  
+					'',
 					'DELETE'
 				);
 	
-				empty($response['success']) ? 
-						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERROR) : 
-						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_SUCCESS);
+				empty( $response['success'] ) ?
+						BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_SUCCESS ) :
+						BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_ERROR ) ;
 			}
 		
 			wp_die();

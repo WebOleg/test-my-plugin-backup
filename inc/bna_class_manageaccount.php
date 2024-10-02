@@ -65,7 +65,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					}
 					
 					if ( ! wp_style_is( 'select2' ) ) {
-						wp_enqueue_style( 'bna-select2-css', $this->plugin_url . 'assets/lib/select/css/select2.min.css', '4.0.13' );
+						wp_enqueue_style( 'bna-select2-css', $this->plugin_url . 'assets/lib/select/css/select2.min.css', '', '4.0.13' );
 					}
 									
 					if ( ! wp_style_is( 'woocommerce-layout' ) ) {				
@@ -106,13 +106,14 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			wp_register_script( 'bna-datepicker-js', $this->plugin_url . 'assets/lib/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );
 			wp_enqueue_script( 'bna-bank-names-js', $this->plugin_url . 'assets/js/bankNames.js', array(), '1.0.0', true );
 			wp_register_script( 'wc-country-select', site_url() . '/wp-content/plugins/woocommerce/assets/js/frontend/country-select.min.js', array('jquery'), null, true );
-			wp_register_script( 'bna-payment-js', $this->plugin_url . 'assets/lib/payment/payment.js', array('jquery'), '', true );
-			wp_register_script( 'bna-script-js', $this->plugin_url.'assets/js/bna-script.js', array('jquery'), time(), true );			
+			wp_register_script( 'bna-cc-form-validator', $this->plugin_url . 'assets/lib/cc-form-validator/cc-form-validator.js', '', time(), true );
+			wp_register_script( 'bna-script', $this->plugin_url.'assets/js/bna-script.js', array('jquery'), time(), true );			
 
-			wp_localize_script( 'bna-datepicker-js', 'bna_data',
+			wp_localize_script( 'bna-datepicker-js', 'bnaData',
 				array(
 					'url' 	=> admin_url('admin-ajax.php'),
-					'nonce' => wp_create_nonce(BNA_CONST_NONCE_NAME)
+					'nonce' => wp_create_nonce(BNA_CONST_NONCE_NAME),
+					'paymentMethodsEndpointUrl' => esc_url( wc_get_account_endpoint_url( 'bna-payment-methods' ) )
 				)	
 			);
 		}
@@ -125,7 +126,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		{
 			global $wp_rewrite;
 			
-			//add_rewrite_endpoint( self::$endpoint_account_management, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_payment_methods, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_transaction_info, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_recurring_payments, EP_ROOT | EP_PAGES );
@@ -142,7 +142,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		 * @return array
 		 */
 		public function get_query_vars( $vars ) {
-			//$vars[ self::$endpoint_account_management ] = self::$endpoint_account_management;
 			$vars[ self::$endpoint_payment_methods ] = self::$endpoint_payment_methods;
 			$vars[ self::$endpoint_transaction_info ] = self::$endpoint_transaction_info;
 			$vars[ self::$endpoint_recurring_payments ] = self::$endpoint_recurring_payments;
@@ -164,11 +163,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			
 			if ( ! (is_main_query() && in_the_loop() && is_account_page()) || is_admin() ) return $title;
 			
-			//if ( isset( $wp_query->query_vars[ self::$endpoint_account_management ] ) ) {
-				//$title = __( 'Account management', 'wc-bna-gateway' );
-				//remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
-			//}
-
 			if ( isset( $wp_query->query_vars[ self::$endpoint_payment_methods ] ) ) {
 				$title = __( 'Payment methods', 'wc-bna-gateway' );
 				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
@@ -214,7 +208,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			unset( $items['customer-logout'] );
 
 			// Insert your custom endpoint.
-			//$items[ self::$endpoint_account_management ] = __( 'Account info', 'wc-bna-gateway' );
 			$items[ self::$endpoint_payment_methods ] = __( 'Payment methods', 'wc-bna-gateway' );
 			$items[ self::$endpoint_transaction_info ] = __( 'Transaction info', 'wc-bna-gateway' );
 			$items[ self::$endpoint_recurring_payments ] = __( 'Recurring payments', 'wc-bna-gateway' );
@@ -231,10 +224,9 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		{
 			wp_enqueue_style( 'bna-datepicker-css' );
 			wp_enqueue_script( 'bna-datepicker-js');
-			//wp_enqueue_script( 'bna-bank-names-js');			
 			wp_enqueue_script( 'wc-country-select' );
-			wp_enqueue_script( 'bna-payment-js' );
-			wp_enqueue_script( 'bna-script-js');			
+			wp_enqueue_script( 'bna-cc-form-validator' );
+			wp_enqueue_script( 'bna-script');			
 		}
 		
 		/**
@@ -302,22 +294,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_UPDATE_ACCOUNT_ERROR) : 
 				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_UPDATE_ACCOUNT_SUCCESS);
 		}
-
-		/**
-		 * Managing endpoint content accounts management 
-		 *
-		 * @return view
-		 */
-		//public function endpoint_content_account_management() 
-		//{
-			//global $wpdb;
-
-			//self::loading_scripts();
-
-			//$payorID = get_user_meta ( get_current_user_id(), 'payorID', true );
-			//$paymentMethods =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS);
-			//require_once dirname( __FILE__ ) . "/../tpl/tpl_account_management.php";
-		//}
 
 		/**
 		 * Managing endpoint content payment methods
@@ -786,9 +762,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		{
 			global $wpdb;
 
-			$paymentTypeMethod	= 'account';
-			$paymentMethod 		= 'delete-paymentmethod';
-			
 			if( isset( $_POST['nonce'] )) {
 				if ( !wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME) ) {
 					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORNONCE);
@@ -963,34 +936,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				} else {
 					$wpdb->query( "DELETE FROM ".$wpdb->prefix . BNA_TABLE_SETTINGS." WHERE payorId='$payorID'" );
 				}
-			}	
-
-			//$wpdb->query("DELETE FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE user_id='$user->ID'");
-
-			//if ( isset( $result['data']['subscriptions'] ) ) {
-
-				//foreach ( $result['data']['subscriptions'] as $rkey => $rval) {
-					//$wpdb->insert( 
-						//$wpdb->prefix.BNA_TABLE_RECURRING,  
-						//array( 
-							//'user_id'				=> $user->ID,
-							//'order_id'		        => $rval['transactionInfo']['invoiceId'],
-							//'recurringId'		    => $rval['recurringId'],
-							//'recurring'		    	=> $rval['recurring'],
-							//'status'		        => $rval['status'],
-							//'startDate'		        => $rval['startDate'],
-							//'nextChargeDate'		=> $rval['nextChargeDate'],
-							//'expire'		        => empty( $rval['expire'] ) ? "" : $rval['expire'],
-							//'numberOfPayments'      => isset( $rval['numberOfPayments'] ) ? $rval['numberOfPayments'] : -1,
-							//'recurringDescription'  => json_encode((object)[ 'transactionInfo' => $rval['transactionInfo'], 
-								//'cartItems' => $rval['cartItems']] )
-						//),
-						//array( 
-							//'%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
-						//)
-					//);
-				//}
-			//}	
+			}
 
 			wp_die();
 		}	

@@ -59,7 +59,10 @@ function bna_wc_template( $template, $template_name, $template_path ) {
 		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/review-order.php';
 	} elseif ( 'thankyou.php' === basename( $template ) ) {
 		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/thankyou.php';
+	} elseif ( 'form-pay.php' === basename( $template ) ) {
+		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-pay.php';
 	}
+	
 
 	return $template;
 }
@@ -71,7 +74,7 @@ function bna_wc_template( $template, $template_name, $template_path ) {
 add_filter(
 	'woocommerce_account_orders_columns',
 	function( $columns ) {
-		$columns['order-number']  = __( 'Order Number', 'wc-bna-gateway' );
+		$columns['order-number']  = __( 'Order', 'wc-bna-gateway' );
 		$columns['order-date']    = __( 'Order Placed', 'wc-bna-gateway' );
 		$columns['order-status']  = __( 'Order Status', 'wc-bna-gateway' );
 		$columns['order-total']   = __( 'Order Total', 'wc-bna-gateway' );
@@ -132,6 +135,7 @@ function bna_variable_css() {
             :root :where(body) {
 				--bna-font-color: <?php echo ! empty( $bna_gateway_settings['bna-font-color'] ) ? $bna_gateway_settings['bna-font-color'] : '#646464'; ?>;
 				--bna-button-color: <?php echo ! empty( $bna_gateway_settings['bna-button-color'] ) ? $bna_gateway_settings['bna-button-color'] : '#00A0E3'; ?>;
+				--bna-button-text-color: <?php echo ! empty( $bna_gateway_settings['bna-button-text-color'] ) ? $bna_gateway_settings['bna-button-text-color'] : '#FFF'; ?>;
 				--bna-line-color: <?php echo ! empty( $bna_gateway_settings['bna-line-color'] ) ? $bna_gateway_settings['bna-line-color'] : '#CCC'; ?>;
 				--bna-background-color: <?php echo ! empty( $bna_gateway_settings['bna-background-color'] ) ? $bna_gateway_settings['bna-background-color'] : '#FFF'; ?>;
 			}

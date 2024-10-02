@@ -25,7 +25,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		
 		<div class="bna-input-wrapper">
 			<div class="bna-input-label"><?php _e( 'New E-Mail', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-			<input class="bna-input" type="email" name="email" autocomplete="off" maxlength="100" placeholder="Email">
+			<input class="bna-input" type="email" name="email" value="<?php echo wp_get_current_user()->user_email;?>" maxlength="100" 
+				placeholder="login@domain" readonly>
 		</div>
 		
 		<div  class="bna-button-wrapper bna-mt-60">
