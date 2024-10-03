@@ -106,7 +106,7 @@ function wc_bna_gateway_init() {
 		public function site_load_styles()
 		{
 			$fees = get_option( 'wc_bna_gateway_fees' );
-			wp_register_script( 'bna-payment-js', $this->plugin_url .'assets/lib/payment/payment.js', '', '', true );
+			wp_register_script( 'bna-cc-form-validator', $this->plugin_url . 'assets/lib/cc-form-validator/cc-form-validator.js', '', time(), true );
 			wp_localize_script( 'jquery', 'bna_fee',
 				array(
 					"creditCardPercentageFee" => $fees['creditCardPercentage'],
@@ -259,6 +259,11 @@ function wc_bna_gateway_init() {
 					'type'      => 'color',
 					'default' => '#00A0E3'
 				),
+				'bna-button-text-color' => array(
+					'title'       => __( 'Button text color', 'wc-bna-gateway' ),
+					'type'      => 'color',
+					'default' => '#FFF'
+				),
 				'bna-line-color' => array(
 					'title'       => __( 'Line color', 'wc-bna-gateway' ),
 					'type'      => 'color',
@@ -307,7 +312,7 @@ function wc_bna_gateway_init() {
 
 			global $wpdb;
 
-			wp_enqueue_script( 'bna-payment-js' );
+			wp_enqueue_script( 'bna-cc-form-validator' );
 			wp_enqueue_style( 'bna-datepicker-css' );
 			wp_enqueue_script( 'bna-datepicker-js' );
 
@@ -387,7 +392,6 @@ function wc_bna_gateway_init() {
  
 			global $wpdb;
 			global $woocommerce;
-
 
 			static::$order_id = $order_id;
 			$order = wc_get_order( $order_id );
@@ -546,7 +550,7 @@ function wc_bna_gateway_init() {
 					if ( ! empty( $_POST[ 'paymentMethodDD' ] ) ) {
 						if ( $_POST[ 'paymentMethodDD' ] === 'new-method' ) {
 							$params = array (
-								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['institutionNumber'],
+								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['bank_number'],
 								"accountNumber"	=> $_POST['accountNumber'],
 								"transitNumber"	=> $_POST['transitNumber']
 							);
@@ -557,7 +561,7 @@ function wc_bna_gateway_init() {
 						}
 					} elseif ( ! is_user_logged_in() && ! empty( $_POST['bank_name'] ) && ! empty( $_POST['accountNumber'] ) && ! empty( $_POST['transitNumber'] ) ) {
 							$params = array (
-								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['institutionNumber'],
+								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['bank_number'],
 								"accountNumber"	=> $_POST['accountNumber'],
 								"transitNumber"	=> $_POST['transitNumber']
 							);
@@ -604,41 +608,10 @@ function wc_bna_gateway_init() {
 				$data_subscription['invoiceInfo'] = array(
 					'invoiceId' => strval( $order_id ),				
 				);
+				$data_subscription['metadata']	= array(
+					'invoiceId' => $order_id,				
+				);
 			}
-
-			//if ( is_user_logged_in() ) {
-				//if ( empty( $_POST['save_payment'] ) ) {
-					//if ( empty($payorID) ) {
-						//$paymentMethod = $is_subscription 
-							//? 'recurring-save-payor-payment'	
-							//: 'one-time-save-payor-payment';
-					//} else {
-						//if ( empty($data->paymentMethodId) ) {
-							//$paymentMethod = $is_subscription 
-								//? 'recurring-existing-payor'
-								//: 'one-time-existing-payor';
-						//} else {
-							//$paymentMethod = $is_subscription 
-								//? 'recurring-existing-payor-existing-payment'
-								//: 'one-time-existing-payor-existing-payment';
-						//}
-					//}
-				//} else {
-					//if ( empty($payorID) ) {
-						//$paymentMethod = $is_subscription 
-							//? 'recurring-save-payor-save-payment'
-							//: "one-time-save-payor-save-payment";
-					//} else {
-						//$paymentMethod = $is_subscription 
-							//? 'recurring-existing-payor-save-payment'
-							//: 'one-time-existing-payor-save-payment';
-					//}
-				//}
-			//} else {
-				//$paymentMethod =  $is_subscription  
-					//? 'recurring-payment'
-					//: 'one-time-payment';
-			//}
 
 			if ( isset( $_POST['create_subscription'] ) ) {
 				$response = $api->query(
