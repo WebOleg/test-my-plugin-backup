@@ -84,8 +84,8 @@ function wc_bna_gateway_init() {
 			$this->description  = $this->get_option( 'description' );
 			$this->instructions = $this->get_option( 'instructions', $this->description );
 
-			$this->plugin_name = plugin_basename(dirname(dirname(__FILE__)));
-			$this->plugin_url = trailingslashit(plugin_dir_url(dirname(__FILE__)));
+			$this->plugin_name = plugin_basename( dirname( dirname( __FILE__ ) ) );
+			$this->plugin_url = trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) );
 
 			add_action( 'woocommerce_thankyou_' . $this->id, array( &$this, 'thankyou_page' ) );
 			add_action( 'woocommerce_thankyou', array( &$this, 'thankyou_page' ));
@@ -401,6 +401,10 @@ function wc_bna_gateway_init() {
 				wc_add_notice( 'Error configuring payment parameters.', 'error' );
 				return false;
 			}
+			
+my_log( $_POST );
+wc_add_notice( 'Test POST.', 'error' );
+				return false;
 
 			$fees = get_option( 'wc_bna_gateway_fees' );
 			
@@ -510,9 +514,9 @@ function wc_bna_gateway_init() {
 					$paymentTypeMethod = 'card';
 					if ( ! empty( $_POST['paymentMethodCC'] ) ) {
 						if ( $_POST['paymentMethodCC'] === 'new-card' ) {
-							//if ( ! empty( $_POST['paymentMethodCC'] ) && ! empty( $_POST['cc_expire'] ) ) {
-								$cc_expire = explode( '/', $_POST['cc_expire'] );
-							//}
+							
+							$cc_expire = explode( '/', $_POST['cc_expire'] );
+							
 							$cardNumber = str_replace( ' ', '', $_POST['cc_number'] );
 							
 							$params = array (

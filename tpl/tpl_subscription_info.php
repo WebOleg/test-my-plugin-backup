@@ -119,7 +119,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 						<?php echo date( 'Y-m-d H:i:s', strtotime( $s_val->created_time ) );?>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
-						<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>">
+						<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>" data-order-id="<?php echo $desc->invoiceInfo->invoiceId; ?>">
 							<img  class="bna-delete-img" src="<?php echo $this->plugin_url . 'assets/img/trash-solid.svg'; ?>" >
 						</button>
 					</td>
@@ -131,3 +131,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	</table>
 	
 </section>
+
+<div id="jquery-ui-dialog" title="A dialog">
+            <p>You can move this dialog box, or close it with the 'X' sign at the top-right.</p>
+        </div>

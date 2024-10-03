@@ -160,7 +160,7 @@ function input_test(input) {
         event.stopPropagation();
         event.preventDefault(); 
 
-        if ( confirm("Are you sure?") == false) exit();
+        if ( confirm("Do you want to delete the payment method \n" + $(this).data('current-method') + "?") == false) { return false; }
 
         let self = $(this);
         self.prop('disabled', true);
@@ -249,7 +249,7 @@ function input_test(input) {
         event.stopPropagation();
         event.preventDefault(); 
 
-        if ( confirm("Are you sure?") == false) exit();
+        if ( confirm('Do you want to delete the order #' + $(this).data('order-id') + '?') == false) { return false; }
 
         let self = $(this);
         self.prop('disabled', true);
