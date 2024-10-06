@@ -112,7 +112,7 @@ function bna_my_account_orders( $args ) {
 	return $args;
 }
 
-/*
+/**
  * Change the entry title of the endpoints that appear in My Account Page
  * 
  * @param  $array 
@@ -126,6 +126,13 @@ function bna_wc_menu_items( $items ) {
 
     return $items;
 }
+
+/**
+ * Adding custom styles
+ * 
+ * @return css styles
+ */
+add_action( 'wp_head', 'bna_variable_css' );
 
 function bna_variable_css() {
 	$bna_gateway_settings = get_option( 'woocommerce_bna_gateway_settings' );
@@ -143,4 +150,21 @@ function bna_variable_css() {
     <?php
 	}
 }
-add_action( 'wp_head', 'bna_variable_css' );
+
+
+/**
+* Validate checkout process
+* 
+* @return string
+*/
+
+add_action( 'woocommerce_checkout_process', 'bna_checkout_process_validation' );
+
+function bna_checkout_process_validation() {
+
+if ( ! $_POST['billing_phone_code'] ) wc_add_notice( __( '<strong>Country Phone Code</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+if ( ! $_POST['payment-type'] ) wc_add_notice( __( "You needs to chose payment type: 'Credit Card', 'Direct Payment' or 'e-Transfer'.", 'wc-bna-gateway' ) , 'error' );
+
+}
+
+

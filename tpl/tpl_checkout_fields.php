@@ -68,6 +68,7 @@ if ( is_array( $paymentMethods ) ) {
 			+ '</span></bdi></span></strong></td>';
 		
 		let totalTab = document.querySelector('.order-total');
+		if ( ! totalTab ) { totalTab = document.querySelector('.product-total'); }
 		totalTab.innerHTML = 	
 			'<th>Total</th>'
 			+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
@@ -92,7 +93,7 @@ if ( is_array( $paymentMethods ) ) {
 			+ '</span></bdi></span></strong></td>';
 	}
 </script>
-<fieldset id="wc-<?= esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" >
+<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" >
 	<div>
 		<div class="bna-payment-methods">
 			
@@ -276,8 +277,6 @@ if ( is_array( $paymentMethods ) ) {
 <script>
 (function() {
 	jQuery('#billing_phone_code_field').data('priority', '99');
-
-	
 	
 	let paymentMethod = document.querySelector(".wc_payment_methods");
 	paymentMethod.addEventListener('click', event => {
@@ -348,7 +347,7 @@ if ( is_array( $paymentMethods ) ) {
 		first_payment_date.disabled=true;
 		first_payment_date.classList.remove('activate_input');
 		//first_payment_date.value = new Date().toISOString().slice(0, 10);
-		document.getElementById('startDate').value = "<?=BNA_SUBSCRIPTION_SETTING_STARTDATE;?>";
+		document.getElementById('startDate').value = "<?php echo BNA_SUBSCRIPTION_SETTING_STARTDATE;?>";
 	});
 
 	let btn_firstPayment = document.getElementById('btn_firstPayment');
@@ -371,7 +370,7 @@ if ( is_array( $paymentMethods ) ) {
 		number_of_payment.classList.remove('activate_input');
 		document.getElementById('qtyminus').disabled=true;
 		document.getElementById('qtyplus').disabled=true;
-		document.getElementById('numberOfPayments').value = "<?=BNA_SUBSCRIPTION_SETTING_NUMPAYMENT;?>";
+		document.getElementById('numberOfPayments').value = "<?php echo BNA_SUBSCRIPTION_SETTING_NUMPAYMENT;?>";
 	});
 	
 	let btn_numPayment = document.getElementById('btn_numPayment');
@@ -402,9 +401,26 @@ if ( is_array( $paymentMethods ) ) {
 		  $('.select2-search__field').css('display', 'none');
 		});
 		
+		// validation before send order
+		$('#place_order').on('click', function(event) {
+			$('.bna-input:visible').each(function(i) {
+				if ( $(this).val() == 0 ) {
+					$(this).addClass('invalid');
+				}
+			});
+			let invalidElements = $('.invalid');
+			if (invalidElements.length) {
+				event.stopPropagation();
+				event.preventDefault();
+				return false;
+			}
+		});
+		
+		//var minDate = $('#setting_first_payment_date').datepicker('getDate');
 		$('#setting_first_payment_date').datepicker({
 			dateFormat: 'yyyy-mm-dd',
 			autoClose: true,
+			minDate: new Date(),
 		});
 		
 		// select payment method (cc, i-transfer, eft, google pay, apple pay)
@@ -440,6 +456,11 @@ if ( is_array( $paymentMethods ) ) {
 			if ( $('#paymentMethodDD').length === 0 ) {
 				$('.bna-payment-method__content .bna-payment-method-eft').addClass('bna-active');
 			}
+			
+			// remove class invalid
+			$('.bna-input').each(function(i) {
+				$(this).removeClass('invalid');
+			});
 			
 			addFees();
 		});

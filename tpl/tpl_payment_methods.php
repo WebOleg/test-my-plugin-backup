@@ -68,22 +68,24 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 							<img class="method-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/' . $imageName; ?>" alt="<?php echo $p_method->paymentType; ?>" />
 						</td>
 						<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Recurring', 'wc-bna-gateway' ); ?>">
-							<?php							
+							<?php
+								$current_method = '';
 								switch ( $p_method->paymentType ) {
 									case 'card':
-										echo $data->cardBrand . ': ' .$data->cardNumber . '<br>' . __( 'Expiry: ', 'wc-bna-gateway' ) . $data->expiryMonth . '/' . $data->expiryYear;
+										$current_method = $data->cardBrand . ': ' .$data->cardNumber . '<br>' . __( 'Expiry: ', 'wc-bna-gateway' ) . $data->expiryMonth . '/' . $data->expiryYear;
 										break;
 									case 'eft':
-										echo $data->accountNumber . '/' . $data->transitNumber . '<br>' . __( 'Institution: ', 'wc-bna-gateway' ) . $data->bankName; 
+										$current_method = $data->accountNumber . '/' . $data->transitNumber . '<br>' . __( 'Institution: ', 'wc-bna-gateway' ) . $data->bankName; 
 										break;
 									case 'e-transfer':
-										echo __( 'Email: ', 'wc-bna-gateway' ) . $data->interacEmail;
+										$current_method = __( 'Email: ', 'wc-bna-gateway' ) . $data->interacEmail;
 										break;
-								}							
+								}
+								echo $current_method;					
 							?>
 						</td>
 						<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
-							<button class="btn-del-payment" data-id="<?php echo $p_method->id; ?>">
+							<button class="btn-del-payment" data-id="<?php echo $p_method->id; ?>" data-current-method="<?php echo str_replace( '<br>', ' ', $current_method ); ?>">
 								<img class="bna-delete-img" src="<?php echo $this->plugin_url . 'assets/img/trash-solid.svg'; ?>" >
 							</button>
 						</td>
