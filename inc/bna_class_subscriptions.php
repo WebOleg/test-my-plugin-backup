@@ -41,22 +41,29 @@ if (!class_exists('BNASubscriptions')) {
 			global $wpdb, $woocommerce;
 	
 			if ( ! isset( $result['id'] ) ) exit();
+			
+			if ( isset( $result['metadata']['invoiceId'] ) ) { $invoice_id = $result['metadata']['invoiceId']; }
+			
+			if ( empty( $invoice_id ) && isset( $result['invoiceInfo']['invoiceId'] ) ) { $invoice_id = $result['invoiceInfo']['invoiceId']; }
 
-			$base_order = wc_get_order( $result['metadata']['invoiceId'] );
+			if ( empty( $invoice_id ) ) exit();
+			
+			$base_order = wc_get_order( $invoice_id );		
 
             $subscription =  $wpdb->get_results(
-                "SELECT * FROM ".$wpdb->prefix.BNA_TABLE_RECURRING." WHERE recurringId='{$result['id']}'" // subscriptionId
+                "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_RECURRING . " WHERE recurringId='{$result['id']}'"
             );
+            
+            unset( $result['customerInfo'] );
+			unset( $result['paymentMethods'] );
 
             if ( empty( $subscription ) || count( $subscription ) < 1) {
-				unset( $result['customerInfo'] );
-				unset( $result['paymentMethods'] );
 				
 				$wpdb->insert( 
                     $wpdb->prefix . BNA_TABLE_RECURRING,  
                     array( 
                         'user_id'				=> $base_order->get_user_id(),
-                        'order_id'		        => $result['metadata']['invoiceId'],
+                        'order_id'		        => $invoice_id,
                         'recurringId'		    => $result['id'],
                         'recurring'		        => $result['recurrence'],
                         'status'		        	=> $result['status'],
@@ -72,10 +79,10 @@ if (!class_exists('BNASubscriptions')) {
                 );
             } else {
 				$json = json_encode( $result );
-                $wpdb->query("UPDATE ".$wpdb->prefix.BNA_TABLE_RECURRING
+                $wpdb->query("UPDATE " . $wpdb->prefix . BNA_TABLE_RECURRING
                     ." SET "
                         ."status='{$result['status']}', "
-                        .( isset($result['startPaymentDate']) 
+                        .( isset( $result['startPaymentDate'] ) 
                             ? "startDate='{$result['startPaymentDate']}', "
                             : ""
                         )

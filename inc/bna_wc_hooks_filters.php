@@ -154,17 +154,66 @@ function bna_variable_css() {
 
 /**
 * Validate checkout process
-* 
-* @return string
 */
-
 add_action( 'woocommerce_checkout_process', 'bna_checkout_process_validation' );
 
 function bna_checkout_process_validation() {
+	if ( ! $_POST['billing_phone_code'] ) wc_add_notice( __( '<strong>Country Phone Code</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+	if ( ! $_POST['payment-type'] ) wc_add_notice( __( "You needs to chose payment type: 'Credit Card', 'Direct Payment' or 'e-Transfer'.", 'wc-bna-gateway' ) , 'error' );
 
-if ( ! $_POST['billing_phone_code'] ) wc_add_notice( __( '<strong>Country Phone Code</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
-if ( ! $_POST['payment-type'] ) wc_add_notice( __( "You needs to chose payment type: 'Credit Card', 'Direct Payment' or 'e-Transfer'.", 'wc-bna-gateway' ) , 'error' );
-
+	if ( ! empty( $_POST['payment-type'] ) && $_POST['payment-type'] === 'card' ) {
+		if ( ! isset( $_POST['paymentMethodCC'] ) || $_POST['paymentMethodCC'] === 'new-card' ) {
+			if ( ! $_POST['cc_holder'] ) wc_add_notice( __( '<strong>Cardholder Name</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+			if ( ! $_POST['cc_number'] ) wc_add_notice( __( '<strong>Card Number</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+			if ( ! $_POST['cc_expire'] ) wc_add_notice( __( '<strong>Expiry Date</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+			if ( ! $_POST['cc_code'] ) wc_add_notice( __( '<strong>CVC</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+		} 
+	} elseif ( ! empty( $_POST['payment-type'] ) && $_POST['payment-type'] === 'eft' ) {
+		if ( ! isset( $_POST['paymentMethodDD'] ) || $_POST['paymentMethodDD'] === 'new-method' ) {
+			if ( ! $_POST['bank_number'] ) wc_add_notice( __( '<strong>Institution Number</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+			if ( ! $_POST['account_number'] ) wc_add_notice( __( '<strong>Account Number</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+			if ( ! $_POST['transit_number'] ) wc_add_notice( __( '<strong>Transit Number</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+		} 
+	} elseif ( ! empty( $_POST['payment-type'] ) && $_POST['payment-type'] === 'e-transfer' ) {
+		if ( ! $_POST['email_transfer'] ) wc_add_notice( __( '<strong>Interac Email</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
+	}
 }
 
+/**
+* Removing symbols from phone number
+* 
+* @param  $int
+*/
+add_action( 'profile_update', 'bna_save_details', 10, 1 );
+add_action( 'user_register', 'bna_save_details', 10, 1 );
+
+function bna_save_details( $user_id ) {
+	if ( isset( $_POST['billing_phone'] ) ) {
+		$billing_phone = str_replace( '+', '', $_POST['billing_phone'] );	
+		update_user_meta( $user_id, 'billing_phone', sanitize_text_field( $billing_phone ) );
+	}
+}
+
+/**
+ * Added the 'Country Phone Code' field to profile.php
+ * 
+ * @param  $array
+ * @return $array
+ */
+add_filter( 'woocommerce_customer_meta_fields', 'bna_customer_meta_fields', 10, 1 );
+
+function bna_customer_meta_fields( $array ) {
+	$new_billing_fields = array();
+	foreach ( $array['billing']['fields'] as $key => $value ) {
+		if ( $key === 'billing_phone' ) {
+			$new_billing_fields['billing_phone_code'] = array(
+				'label'       => __( 'Country Phone Code', 'woocommerce' ),
+				'description' => '',
+			);
+		}
+		$new_billing_fields[$key] = $value;
+	}
+	$array['billing']['fields'] = $new_billing_fields;
+	return $array;
+}
 

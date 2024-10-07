@@ -111,6 +111,14 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 		$('#billing_birthday').datepicker({
 			dateFormat: 'dd.mm.yyyy',
 			autoClose: true,
-		});			
+		});	
+		
+		if ( $('#billing_phone').length > 0 ) {
+			let input_phone = document.querySelector('#billing_phone');
+			input_phone.addEventListener('keyup', event => {
+				event.preventDefault();
+				input_phone.value = input_phone.value.replace(/[^\d,]/g, "");
+			}, true);
+		}	
 	})(jQuery);	
 </script>

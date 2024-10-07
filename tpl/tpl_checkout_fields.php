@@ -45,7 +45,7 @@ if ( is_array( $paymentMethods ) ) {
 		if ( jQuery('#payment_type').val() === 'e-transfer' ) {
 			feeSum = parseFloat(allFees.etransferFlatFee);
 			feeMult = parseFloat(allFees.etransferPercentageFee);
-			console.log( jQuery('#payment_type').val());
+			//console.log( jQuery('#payment_type').val());
 		} else if ( jQuery('#payment_type').val() === 'card' ) {
 			feeSum = parseFloat(allFees.creditCardFlatFee);
 			feeMult = parseFloat(allFees.creditCardPercentageFee);
@@ -67,15 +67,27 @@ if ( is_array( $paymentMethods ) ) {
 			+ curSymbol
 			+ '</span></bdi></span></strong></td>';
 		
-		let totalTab = document.querySelector('.order-total');
-		if ( ! totalTab ) { totalTab = document.querySelector('.product-total'); }
-		totalTab.innerHTML = 	
-			'<th>Total</th>'
-			+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
-			+ parseFloat(parseFloat(globalTotal) + allFeeSum).toFixed(2).replace('.', ',')
-			+ '<span class="woocommerce-Price-currencySymbol">'
-			+ curSymbol
-			+ '</span></bdi></span></strong></td>';
+		let totalTab = document.querySelector('.bna-order-review .order-total');
+		if (totalTab !== null) {
+			totalTab.innerHTML = 	
+				'<th>Total</th>'
+				+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
+				+ parseFloat(parseFloat(globalTotal) + allFeeSum).toFixed(2).replace('.', ',')
+				+ '<span class="woocommerce-Price-currencySymbol">'
+				+ curSymbol
+				+ '</span></bdi></span></strong></td>';			
+		}
+		let totalTabOrderPay = jQuery('table.shop_table tfoot tr:nth-child(4)');
+		if (totalTabOrderPay !== null) {
+			totalTabOrderPay[0].innerHTML = 
+				'<th>Total</th>'
+					+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
+					+ parseFloat(parseFloat(globalTotal) + allFeeSum).toFixed(2).replace('.', ',')
+					+ '<span class="woocommerce-Price-currencySymbol">'
+					+ curSymbol
+					+ '</span></bdi></span></strong></td>';
+		}
+		
 	} 
 
 	function removeFees() 
@@ -403,16 +415,17 @@ if ( is_array( $paymentMethods ) ) {
 		
 		// validation before send order
 		$('#place_order').on('click', function(event) {
-			$('.bna-input:visible').each(function(i) {
+			$('.bna-input:visible, input.input-text:not(#billing_company, #billing_apartment)').each(function(i) {
 				if ( $(this).val() == 0 ) {
 					$(this).addClass('invalid');
+				} else {
+					$(this).removeClass('invalid');
 				}
 			});
-			let invalidElements = $('.invalid');
-			if (invalidElements.length) {
-				event.stopPropagation();
-				event.preventDefault();
-				return false;
+		});
+		$('input.input-text').on('blur keyup', function() {
+			if ( $(this).val().length >= 3 ) {
+				$(this).removeClass('invalid');
 			}
 		});
 		
@@ -458,7 +471,7 @@ if ( is_array( $paymentMethods ) ) {
 			}
 			
 			// remove class invalid
-			$('.bna-input').each(function(i) {
+			$('.bna-input:hidden').each(function(i) {
 				$(this).removeClass('invalid');
 			});
 			
@@ -544,7 +557,7 @@ if ( is_array( $paymentMethods ) ) {
 			}
 		});
 		$('input[name="account_number"]').on('blur keyup', function() {
-			if ( $(this).val().length >= 7 ) {
+			if ( $(this).val().length >= 3 ) {
 				$(this).removeClass('invalid');
 			} else {
 				$(this).addClass('invalid');
