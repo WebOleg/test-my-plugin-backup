@@ -242,57 +242,72 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			$user = get_userdata( $user_id );
 
-			if ( $user->user_email === $old_user_data->data->user_email ) {
-				return $user_id;
-			}
-
-			$paymentTypeMethod	= 'account';
-			$paymentMethod 		= 'update-payor';
-			
 			$args = WC_BNA_Gateway::get_merchant_params();
 			if ( empty( $args) ) {
-				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPARAMS);
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
 				wp_die();
 			}
 
-			$api = new BNAExchanger( $args);
+			$api = new BNAExchanger( $args );
 			
-			$payorID = get_user_meta ( $user_id, 'payorID', true);
-			if ( empty( $payorID) ) {
-				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_ERRORPAYOR);
+			$payorID = get_user_meta ( $user_id, 'payorID', true );
+			if ( empty( $payorID ) ) {
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPAYOR );
 				wp_die();
 			}
 
-			$data = (object) [
-				"payorId" => $payorID,
-				"payorInfo" => (object) [
-					"companyName" 	=> get_user_meta( $user_id, 'billing_company', true ),
-					"firstName"		=> get_user_meta( $user_id, 'billing_first_name', true ),
-					"lastName"		=> get_user_meta( $user_id, 'billing_last_name', true ),
-					"emailAddress"	=> $user->user_email,
-					"phone"			=> get_user_meta( $user_id, 'billing_phone', true ),
-					"birthday"		=> get_user_meta( $user_id, 'billing_birthday', true ),
-					"address"		=> (object) [
-						"streetNumber"	=> get_user_meta( $user_id, 'billing_street_number', true ),
-						"apartment"		=> get_user_meta( $user_id, 'billing_apartment', true ),
-						"streetName"	=> get_user_meta( $user_id, 'billing_street_name', true ),
-						"postalZip"		=> get_user_meta( $user_id, 'billing_postcode', true ),
-						"city"			=> get_user_meta( $user_id, 'billing_city', true ),
-						"province"		=> get_user_meta( $user_id, 'billing_state', true ),
-						"country"		=> get_user_meta( $user_id, 'billing_country', true ),
-					]
-				]
-			];
+			$province = get_user_meta( $user_id, 'billing_state', true );
+			$country  = get_user_meta( $user_id, 'billing_country', true );
+			
+			$data = array(
+				"companyName" 	=> get_user_meta( $user_id, 'billing_company', true ),
+				"firstName"		=> get_user_meta( $user_id, 'billing_first_name', true ),
+				"lastName"		=> get_user_meta( $user_id, 'billing_last_name', true ),
+				// here email should not updated
+				//"email"	=> wp_get_current_user()->user_email,
+				"phoneCode" =>  get_user_meta( $user_id, 'billing_phone_code', true ),
+				"phoneNumber"	 => get_user_meta( $user_id, 'billing_phone', true ),
+				"birthDate"		=> get_user_meta( $user_id, 'billing_birthday', true ),
+				"address"		=> array(
+					"streetNumber"	=> get_user_meta( $user_id, 'billing_street_number', true ),
+					"apartment"		=> get_user_meta( $user_id, 'billing_apartment', true ),
+					"streetName"	=> get_user_meta( $user_id, 'billing_street_name', true ),
+					"postalCode"		=> get_user_meta( $user_id, 'billing_postcode', true ),
+					"city"			=> get_user_meta( $user_id, 'billing_city', true ),
+					"province"		=> WC()->countries->get_states( $country )[ $province ],
+					"country"		=> WC()->countries->countries[ $country ]
+				)
+			);
+			
+			// search empty fields and delate
+			$filtered_data = array();			
+			foreach ( $data as $key => $value ) {
+				if ( ! empty( $value ) ) {
+					if ( $key == 'address' ) {
+						$address = array();
+						foreach ( $value as $k => $v ) {
+							if ( ! empty( $v ) ) {
+								$address[$k] = $v;
+							}
+						}
+						$filtered_data['address'] = $address;
+					} else {
+						$filtered_data[$key] = $value;
+					}
+				}
+			}
 
 			$response = $api->query(
-				$args['serverUrl'].'/'.$args['protocol'].'/'.$paymentTypeMethod.'/'.$paymentMethod,  
-				$data,
-				'PUT'
+				$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID, 
+				$filtered_data,
+				'PATCH'
 			);
 
-			empty( $response['success'] ) ? 
-				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_UPDATE_ACCOUNT_ERROR) : 
-				BNAJsonMsgAnswer::send_json_answer(BNA_MSG_UPDATE_ACCOUNT_SUCCESS);
+			$response = json_decode( $response, true );
+		
+			empty( $response['id'] ) ? 
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS );
 		}
 
 		/**
@@ -307,7 +322,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			$payorID = get_user_meta (get_current_user_id(), 'payorID', true);
 			$paymentMethods =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS);
-			require_once dirname(__FILE__). "/../tpl/tpl_payment_methods.php";
+			require_once dirname( __FILE__ ). "/../tpl/tpl_payment_methods.php";
 		}
 
 		/**
@@ -382,7 +397,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			self::loading_scripts();
 
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-			require_once dirname(__FILE__). "/../tpl/tpl_add_credit_card.php";
+			require_once dirname( __FILE__ ). "/../tpl/tpl_add_credit_card.php";
 		}
 		
 		/**
@@ -396,7 +411,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			self::loading_scripts();
 
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-			require_once dirname(__FILE__). "/../tpl/tpl_bank_account_info.php";
+			require_once dirname( __FILE__ ). "/../tpl/tpl_bank_account_info.php";
 		}
 		
 		/**
@@ -410,7 +425,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			self::loading_scripts();
 
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-			require_once dirname(__FILE__). "/../tpl/tpl_e_transfer_info.php";
+			require_once dirname( __FILE__ ). "/../tpl/tpl_e_transfer_info.php";
 		}
 
 		/**
@@ -588,9 +603,8 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					'PATCH'
 				);
 
-				// add fields to the database
 				$response = json_decode( $response, true );
-				
+			
 				empty( $response['id'] ) ? 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS );
@@ -827,7 +841,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			$user = get_user_by( 'email', $result['email'] );
 
 			if ( empty( $user) ) {
-				$config = $wpdb->get_row( "SELECT user_id FROM ".$wpdb->prefix . BNA_TABLE_SETTINGS. 
+				$config = $wpdb->get_row( "SELECT user_id FROM " . $wpdb->prefix . BNA_TABLE_SETTINGS. 
 					" WHERE payorId='".$result['id']."'" );
 				if ( empty( $config) ) {
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ENDPOINT_ACCOUNT_ERRUSER );
@@ -843,7 +857,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					case 'companyName':	$field = 'billing_company'; break;
 					case 'firstName':			$field = 'billing_first_name'; break;
 					case 'lastName':			$field = 'billing_last_name'; break;
-					case 'phoneCode':	$field = 'billing_phone_code'; break;
+					case 'phoneCode':		$field = 'billing_phone_code'; break;
 					case 'phoneNumber':	$field = 'billing_phone'; break;
 					case 'birthDate':			$field = 'billing_birthday'; break;
 					//case 'emailAddress':		$wpdb->query("UPDATE {$wpdb->users} SET user_email='{$rval}' WHERE ID={$user->ID}");
@@ -934,7 +948,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 						}
 					}
 				} else {
-					$wpdb->query( "DELETE FROM ".$wpdb->prefix . BNA_TABLE_SETTINGS." WHERE payorId='$payorID'" );
+					$wpdb->query( "DELETE FROM " . $wpdb->prefix . BNA_TABLE_SETTINGS . " WHERE payorId='$payorID'" );
 				}
 			}
 

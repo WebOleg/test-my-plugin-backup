@@ -401,10 +401,6 @@ function wc_bna_gateway_init() {
 				wc_add_notice( 'Error configuring payment parameters.', 'error' );
 				return false;
 			}
-			
-my_log( $_POST );
-wc_add_notice( 'Test POST.', 'error' );
-				return false;
 
 			$fees = get_option( 'wc_bna_gateway_fees' );
 			
@@ -427,7 +423,7 @@ wc_add_notice( 'Test POST.', 'error' );
 			$api = new BNAExchanger($args);
 
 			if ( empty( $_POST['payment-type'] ) ) {
-				throw new Exception( "Can't find BNA payment type" );
+				throw new Exception( __( 'Can\'t find BNA payment type', 'wc-bna-gateway' ) );
 			}
 			
 			// customer info
@@ -512,7 +508,7 @@ wc_add_notice( 'Test POST.', 'error' );
 			switch ( $_POST['payment-type'] ) { 
 				case 'card':
 					$paymentTypeMethod = 'card';
-					if ( ! empty( $_POST['paymentMethodCC'] ) ) {
+					if ( isset( $_POST['paymentMethodCC'] ) ) {
 						if ( $_POST['paymentMethodCC'] === 'new-card' ) {
 							
 							$cc_expire = explode( '/', $_POST['cc_expire'] );
@@ -532,7 +528,7 @@ wc_add_notice( 'Test POST.', 'error' );
 						} else {
 							$data['paymentDetails'] = array( "id" => $_POST['paymentMethodCC'] );
 						}
-					} elseif ( ! is_user_logged_in() && ! empty( $_POST['cc_holder'] ) && ! empty( $_POST['cc_number'] ) && ! empty( $_POST['cc_expire'] ) && ! empty( $_POST['cc_code'] ) ) {
+					} else {
 						$cc_expire = explode( '/', $_POST['cc_expire'] );
 						$cardNumber = str_replace( ' ', '', $_POST['cc_number'] );
 							
@@ -551,23 +547,23 @@ wc_add_notice( 'Test POST.', 'error' );
 					break;
 				case 'eft':
 					$paymentTypeMethod = 'eft';
-					if ( ! empty( $_POST[ 'paymentMethodDD' ] ) ) {
+					if ( isset( $_POST['paymentMethodDD'] ) ) {
 						if ( $_POST[ 'paymentMethodDD' ] === 'new-method' ) {
 							$params = array (
 								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['bank_number'],
-								"accountNumber"	=> $_POST['accountNumber'],
-								"transitNumber"	=> $_POST['transitNumber']
+								"accountNumber"	=> $_POST['account_number'],
+								"transitNumber"	=> $_POST['transit_number']
 							);
 							foreach ( $params as $p_key => $p_val )
 									$data['paymentDetails'][$p_key] = $p_val;
 						} else {
 							$data['paymentDetails'] = array( "id" => $_POST['paymentMethodDD'] );
 						}
-					} elseif ( ! is_user_logged_in() && ! empty( $_POST['bank_name'] ) && ! empty( $_POST['accountNumber'] ) && ! empty( $_POST['transitNumber'] ) ) {
+					} else {
 							$params = array (
 								"bankNumber"		=> $_POST['bank_name'] !== 'other' ? $_POST['bank_name'] : $_POST['bank_number'],
-								"accountNumber"	=> $_POST['accountNumber'],
-								"transitNumber"	=> $_POST['transitNumber']
+								"accountNumber"	=> $_POST['account_number'],
+								"transitNumber"	=> $_POST['transit_number']
 							);
 							foreach ( $params as $p_key => $p_val )
 									$data['paymentDetails'][$p_key] = $p_val;
@@ -630,7 +626,7 @@ wc_add_notice( 'Test POST.', 'error' );
 					'POST'
 				);							
 			}
-		
+
 			$response = json_decode( $response, true );
 
 			if ( ! empty( $response['id'] ) ) {

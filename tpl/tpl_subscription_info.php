@@ -131,7 +131,3 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	</table>
 	
 </section>
-
-<div id="jquery-ui-dialog" title="A dialog">
-            <p>You can move this dialog box, or close it with the 'X' sign at the top-right.</p>
-        </div>
