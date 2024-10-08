@@ -92,6 +92,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			//add_action( 'wp_ajax_delete_payor', array(&$this, 'ajax_delete_payor' ) );
 			add_action( 'wp_ajax_delete_payment', array( &$this, 'ajax_delete_payment' ) );
 			add_action( 'wp_ajax_add_payment', array( &$this, 'ajax_add_payment' ) );
+			add_action( 'wp_ajax_copy_billing_address_to_shipping', array( &$this, 'ajax_copy_billing_address_to_shipping' ) );
 
 			add_action( 'profile_update', array( &$this, 'check_user_profile_updated' ), 10, 2 );
 		}
@@ -822,6 +823,118 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERROR);
 			}
 		
+			wp_die();
+		}
+		
+		/**
+		 * Copy billing address to shipping
+		 *
+		 * @return json
+		 */
+		public function ajax_copy_billing_address_to_shipping() 
+		{
+			if ( isset( $_POST['nonce'] )) {
+				if ( ! wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORNONCE );
+					wp_die();
+				}
+				
+				$current_user_id = get_current_user_id();
+				if ( empty( $current_user_id ) ) { wp_die(); }
+				
+				$updated = false;
+				
+				$shipping_first_name = get_user_meta( $current_user_id, 'shipping_first_name', true );
+				if ( empty( $shipping_first_name ) ) {
+					$billing_first_name = get_user_meta( $current_user_id, 'billing_first_name', true );
+					if ( $billing_first_name ) {
+						update_user_meta( $current_user_id, 'shipping_first_name', sanitize_text_field( $billing_first_name ) );
+						$updated = true;
+					}
+				}
+				
+				$shipping_last_name = get_user_meta( $current_user_id, 'shipping_last_name', true );
+				if ( empty( $shipping_last_name ) ) {
+					$billing_last_name = get_user_meta( $current_user_id, 'billing_last_name', true );
+					if ( $billing_last_name ) {
+						update_user_meta( $current_user_id, 'shipping_last_name', sanitize_text_field( $billing_last_name ) );
+						$updated = true;
+					}
+				}				
+				
+				$shipping_company = get_user_meta( $current_user_id, 'shipping_company', true );
+				if ( empty( $shipping_company ) ) {
+					$billing_company = get_user_meta( $current_user_id, 'billing_company', true );
+					if ( $billing_company ) {
+						update_user_meta( $current_user_id, 'shipping_company', sanitize_text_field( $billing_company ) );
+						$updated = true;
+					}
+				}
+				
+				$shipping_address_1 = get_user_meta( $current_user_id, 'shipping_address_1', true );
+				if ( empty( $shipping_address_1 ) ) {
+					$billing_address_1 = get_user_meta( $current_user_id, 'billing_address_1', true );
+					if ( $billing_address_1 ) {
+						update_user_meta( $current_user_id, 'shipping_address_1', sanitize_text_field( $billing_address_1 ) );
+						$updated = true;
+					}
+				}
+				
+				$shipping_address_2 = get_user_meta( $current_user_id, 'shipping_address_2', true );
+				if ( empty( $shipping_address_2 ) ) {
+					$billing_address_2 = get_user_meta( $current_user_id, 'billing_address_2', true );
+					if ( $billing_address_2 ) {
+						update_user_meta( $current_user_id, 'shipping_address_2', sanitize_text_field( $billing_address_2 ) );
+						$updated = true;
+					}
+				}				
+				
+				$shipping_country = get_user_meta( $current_user_id, 'shipping_country', true );
+				if ( empty( $shipping_country ) ) {
+					$billing_country = get_user_meta( $current_user_id, 'billing_country', true );
+					if ( $billing_country ) {
+						update_user_meta( $current_user_id, 'shipping_country', sanitize_text_field( $billing_country ) );
+						$updated = true;
+					}
+				}
+				
+				$shipping_state = get_user_meta( $current_user_id, 'shipping_state', true );
+				if ( empty( $shipping_state ) ) {
+					$billing_state = get_user_meta( $current_user_id, 'billing_state', true );
+					if ( $billing_state ) {
+						update_user_meta( $current_user_id, 'shipping_state', sanitize_text_field( $billing_state ) );
+						$updated = true;
+					}
+				}
+				
+				$shipping_city = get_user_meta( $current_user_id, 'shipping_city', true );
+				if ( empty( $shipping_city ) ) {
+					$billing_city = get_user_meta( $current_user_id, 'billing_city', true );
+					if ( $billing_city ) {
+						update_user_meta( $current_user_id, 'shipping_city', sanitize_text_field( $billing_city ) );
+						$updated = true;
+					}
+				}
+				
+				$shipping_postcode = get_user_meta( $current_user_id, 'shipping_postcode', true );
+				if ( empty( $shipping_postcode ) ) {
+					$billing_postcode = get_user_meta( $current_user_id, 'billing_postcode', true );
+					if ( $billing_postcode ) {
+						update_user_meta( $current_user_id, 'shipping_postcode', sanitize_text_field( $billing_postcode ) );
+						$updated = true;
+					}
+				}
+				
+				if ( $updated === true ) {
+					$message =
+						'<ul class="woocommerce-message">' .
+							'<li>'.__( 'Shipping fields updated.', 'wc-bna-gateway' ).'</li>' .
+						'</ul>';
+					$status = 'true';
+					echo ( json_encode( array( 'success'=> $status, 'message' => $message ) ) );
+				} else { echo json_encode( array( 'success'=> 'false' ) ); }
+			}
+			
 			wp_die();
 		}
 

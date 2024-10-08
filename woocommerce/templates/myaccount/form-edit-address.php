@@ -29,49 +29,39 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 	$current_user_id = get_current_user_id();
 	$payorID = get_user_meta( $current_user_id, 'payorID', true );
 	?>
-
-	<form class="<?php if ( empty( $payorID ) ) { echo 'form_create_payor'; } else { echo 'form_update_payor'; } ?>" >
-
+	
+	<?php if ( 'billing' === $load_address ) { ?>
+		<form class="<?php if ( empty( $payorID ) ) { echo 'form_create_payor'; } else { echo 'form_update_payor'; } ?>" >
+	<?php } else { ?>
+		<form method="post">
+	<?php } ?>
+	
 		<h3><?php echo apply_filters( 'woocommerce_my_account_edit_address_title', $page_title, $load_address ); ?></h3><?php // @codingStandardsIgnoreLine ?>
-
+		
+		<?php
+		if ( get_user_meta( $current_user_id, 'shipping_first_name', true ) &&
+			get_user_meta( $current_user_id, 'shipping_last_name', true ) &&
+			get_user_meta( $current_user_id, 'shipping_company', true ) &&
+			get_user_meta( $current_user_id, 'shipping_address_1', true ) &&
+			get_user_meta( $current_user_id, 'shipping_address_2', true ) &&
+			get_user_meta( $current_user_id, 'shipping_country', true ) &&
+			get_user_meta( $current_user_id, 'shipping_state', true ) &&
+			get_user_meta( $current_user_id, 'shipping_city', true ) &&
+			get_user_meta( $current_user_id, 'shipping_postcode', true ) ) {
+				$display = 'none';
+			} else { $display = 'block'; }
+		?>
+		<div class="bna-address-copy" style="display: <?php echo $display; ?>">
+			<button id="bna-address-copy_button" class="bna-address-copy_button"><?php _e( 'Copy', 'wc-bna-gateway' ); ?></button>
+			<span  class="bna-address-copy_span"><?php _e( 'Copy shipping address from billing address', 'wc-bna-gateway' ); ?></span>
+		</div>
+		
 		<div class="woocommerce-address-fields">
 			<?php do_action( "woocommerce_before_edit_address_form_{$load_address}" ); ?>
 
 			<div class="woocommerce-address-fields__field-wrapper">
 				<?php
 				foreach ( $address as $key => $field ) {
-					// show billing_birthday
-					if ( $key === 'billing_company' ) {
-						$birthday = date( 'd.m.Y', strtotime( get_user_meta( $current_user_id, 'billing_birthday', true ) ) );
-						if ( empty( $birthday ) ) { $birthday = ''; }
-						woocommerce_form_field( 'billing_birthday', array(
-							'type' => 'text',
-							'id' => 'billing_birthday',
-							'label' => __( 'Birthday', 'wc-bna-gateway' ),
-							'placeholder' => __( 'XX.XX.XXXX', 'wc-bna-gateway' ),
-							'required' => false,
-							'maxlength' => 15,
-							'class' => array( 'form-row', 'form-row-wide' ),
-							'input_class' => array( 'input-text' ),
-						), $birthday );
-					}
-					
-					// show billing_phone_code
-					if ( $key === 'billing_phone' ) {
-						$billing_phone_code = get_user_meta( $current_user_id, 'billing_phone_code', true );
-						if ( empty( $billing_phone_code ) ) { $billing_phone_code = ''; }
-						woocommerce_form_field( 'billing_phone_code', array(
-							'type' => 'text',
-							'id' => 'billing_phone_code',
-							'label' => __( 'Country Phone Code', 'wc-bna-gateway' ),
-							'placeholder' => __( '+1', 'wc-bna-gateway' ),
-							'required' => true,
-							'maxlength' => 6,
-							'class' => array( 'form-row', 'form-row-wide' ),
-							'input_class' => array( 'input-text' ),
-						), $billing_phone_code );
-					}
-					
 					woocommerce_form_field( $key, $field, wc_get_post_data_by_key( $key, $field['value'] ) );
 				}
 				?>
@@ -81,20 +71,29 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 
 			
 			<?php
-			if ( empty( $payorID ) ) {
-				?>
-				<div class="form-row form-row-wide">
-					<button type="submit" class="button alt btn-margin wp-element-button" id="create_payor" 
-						name="create_payor"><?php _e( 'Save Address', 'wc-bna-gateway' ); ?></button>
-				</div>
-				<?php
+			if ( 'billing' === $load_address ) {
+				if ( empty( $payorID ) ) {
+					?>
+					<div class="form-row form-row-wide">
+						<button type="submit" class="button alt btn-margin wp-element-button" id="create_payor" 
+							name="create_payor"><?php _e( 'Save Address', 'wc-bna-gateway' ); ?></button>
+					</div>
+					<?php
+				} else {
+					?>
+					<div class="form-row form-row-wide">
+						<button type="submit" class="button alt btn-margin  wp-element-button" id="update_payor" 
+							name="update_payor"><?php _e( 'Save Address', 'wc-bna-gateway' ); ?></button>
+					</div>
+					<?php
+				}
 			} else {
 				?>
-				<div class="form-row form-row-wide">
-					<button type="submit" class="button alt btn-margin  wp-element-button" id="update_payor" 
-						name="update_payor"><?php _e( 'Save Address', 'wc-bna-gateway' ); ?></button>
-					</div>
-				</form>
+				<p>
+					<button type="submit" class="button<?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?> wp-element-button" name="save_address" value="<?php esc_attr_e( 'Save address', 'woocommerce' ); ?>"><?php esc_html_e( 'Save address', 'woocommerce' ); ?></button>
+					<?php wp_nonce_field( 'woocommerce-edit_address', 'woocommerce-edit-address-nonce' ); ?>
+					<input type="hidden" name="action" value="edit_address" />
+				</p>
 				<?php
 			}
 			?>

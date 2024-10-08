@@ -912,6 +912,25 @@ body.woocommerce-checkout .woocommerce #bank_name {
 	visibility: visible;
 }
 
+/* myaccount form-edit-address */
+.bna-address-copy {
+	display: block;
+	margin: 50px auto 30px;
+}
+.bna-address-copy_button {
+	border: 1px solid var(--bna-button-color);
+	background: var(--bna-background-color);
+	color: var(--bna-button-color) !important;
+	box-shadow: unset;
+	font-size: 13px;
+	padding: 10px;
+	display: inline-block;
+}
+.bna-address-copy_span {
+	font-size: 13px;
+	padding-left: 10px;
+	display: inline-block;
+}
 
 /* Transaction */
 .img-transaction-type {

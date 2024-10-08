@@ -46,8 +46,8 @@ function input_test(input) {
                 message.html(data.message);
                 self.prop('disabled', false);
                 
-                setTimeout(function() {
-					window.location.href;
+				setTimeout(()=>{
+					window.location.reload();
 				}, 3000);
             },
             error: function( data ){
@@ -81,13 +81,58 @@ function input_test(input) {
                 message.get(0).scrollIntoView();
                 message.html(data.message);
                 self.prop('disabled', false);
+                
+                setTimeout(()=>{
+					window.location.reload();
+				}, 3000);
             },
             error: function( data ){
                 //console.log(data);
             }
         });    
     });
+    
+    // Copy shipping address from billing address
+	$('#bna-address-copy_button').on('click', function(event){
+        event.stopPropagation();
+        event.preventDefault(); 
 
+        let self = $(this);
+        self.prop('disabled', true);
+
+        startLoadingAnimation();
+
+        $.ajax({
+            url         : bnaData.url,
+            type        : 'POST', 
+            dataType    : "json",
+            data        : {
+                action    : 'copy_billing_address_to_shipping',
+                nonce     : bnaData.nonce
+            },
+            success: function( data ) {
+                stopLoadingAnimation();
+                
+                if( data.success === 'true' ){
+					let message = $('.woocommerce-notices-wrapper');
+					message.get(0).scrollIntoView();
+					message.html(data.message);
+				}
+				
+                self.prop('disabled', false);
+                
+				if( data.success === 'true' ){
+					setTimeout(()=>{
+						window.location.reload();
+					}, 1000);
+				}
+            },
+            error: function( data ){
+                //console.log(data);
+            }
+        });    
+    });
+	
     // update address
     //$('#update_address').on('click', function(event){
         //event.stopPropagation();
@@ -122,39 +167,41 @@ function input_test(input) {
     //});
     
     // delete payor
-    $('#delete_payor').on('click', function(event){
-        event.stopPropagation();
-        event.preventDefault(); 
+    //$('#delete_payor').on('click', function(event){
+        //event.stopPropagation();
+        //event.preventDefault(); 
 
-        let self = $(this);
-        self.prop('disabled', true);
+        //let self = $(this);
+        //self.prop('disabled', true);
 
-        startLoadingAnimation();
+        //startLoadingAnimation();
 
-        $.ajax({
-            url         : bnaData.url,
-            type        : 'POST', 
-            dataType    : "json",
-            data        : {
-                action    : 'delete_payor',
-                nonce     : bnaData.nonce,
-            },
-            success: function( data ) {
-                stopLoadingAnimation();
-                let message = $('.woocommerce-notices-wrapper');
-                message.get(0).scrollIntoView();
-                message.html(data.message);
-                self.prop('disabled', false);
+        //$.ajax({
+            //url         : bnaData.url,
+            //type        : 'POST', 
+            //dataType    : "json",
+            //data        : {
+                //action    : 'delete_payor',
+                //nonce     : bnaData.nonce,
+            //},
+            //success: function( data ) {
+                //stopLoadingAnimation();
+                //let message = $('.woocommerce-notices-wrapper');
+                //message.get(0).scrollIntoView();
+                //message.html(data.message);
+                //self.prop('disabled', false);
                 
-                setTimeout(function() {
-					window.location.href;
-				}, 3000);
-            },
-            error: function( data ){
-                //console.log(data);
-            }
-        });    
-    });
+                //if( data.success === 'true' ){
+					//setTimeout(()=>{
+						//window.location.reload();
+					//}, 1000);
+				//}
+            //},
+            //error: function( data ){
+                ////console.log(data);
+            //}
+        //});    
+    //});
 
     $('.btn-del-payment').on('click', function(event){
         event.stopPropagation();
@@ -185,7 +232,7 @@ function input_test(input) {
 
                 setTimeout(()=>{
                     window.location.reload();
-                }, 1000);
+                }, 3000);
 
                 self.prop('disabled', false);
             },

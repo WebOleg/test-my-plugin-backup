@@ -230,7 +230,7 @@ if (!class_exists('BNASubscriptions')) {
 		
 				//6 Set Order Status to processing to trigger initial emails to end user and vendor
 				$order->update_status('processing');
-				$order->add_order_note("This recurring order by BNA payment.");
+				$order->add_order_note( __( "This recurring order by BNA payment.", 'wc-bna-gateway' ) );
 			}
 
 			return $order_id;
