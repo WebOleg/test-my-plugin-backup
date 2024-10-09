@@ -180,7 +180,7 @@ function bna_checkout_process_validation() {
 }
 
 /**
-* Removing symbols from phone number
+* Removing symbols from phone number in the profile.php file
 * 
 * @param  $int
 */
@@ -217,3 +217,40 @@ function bna_customer_meta_fields( $array ) {
 	return $array;
 }
 
+add_filter( 'woocommerce_address_to_edit', 'bna_address_to_edit', 10, 2 );
+function bna_address_to_edit( $address, $load_address ) {
+	$new_address = array();
+	foreach ( $address as $key => $value ) {
+		if ( $key === 'billing_company' ) {
+			$birthday = date( 'd.m.Y', strtotime( get_user_meta( get_current_user_id(), 'billing_birthday', true ) ) );
+			if ( empty( $birthday ) ) { $birthday = ''; }
+			$new_address['billing_birthday'] = array(
+				'label' => __( 'Birthday', 'wc-bna-gateway' ),
+				'placeholder' => __( 'XX.XX.XXXX', 'wc-bna-gateway' ),
+				'required' => false,
+				'maxlength' => 15,
+				'class' => array( 'form-row', 'form-row-wide' ),
+				'input_class' => array( 'input-text' ),
+				'value' => $birthday,
+			);
+		}
+		
+		if ( $key === 'billing_phone' ) {
+			$billing_phone_code = get_user_meta( get_current_user_id(), 'billing_phone_code', true );
+			if ( empty( $billing_phone_code ) ) { $billing_phone_code = ''; }
+			$new_address['billing_phone_code'] = array(
+				'label' => __( 'Country Phone Code', 'wc-bna-gateway' ),
+				'placeholder' => __( '+1', 'wc-bna-gateway' ),
+				'required' => true,
+				'maxlength' => 6,
+				'class' => array( 'form-row', 'form-row-wide' ),
+				'input_class' => array( 'input-text' ),
+				'value' => $billing_phone_code,
+			);
+		}
+		
+		$new_address[$key] = $value;
+	}
+	//$array['billing']['fields'] = $new_billing_fields;
+	return $new_address;
+}

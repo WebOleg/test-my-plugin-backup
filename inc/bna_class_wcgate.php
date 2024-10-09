@@ -406,20 +406,35 @@ function wc_bna_gateway_init() {
 			
 			// products
 			$items = [];
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) { 
-				$item = array();
-				$_woo_product = wc_get_product( $cart_item['product_id'] );
+			//foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) { 
+				//$item = array();
+				//$_woo_product = wc_get_product( $cart_item['product_id'] );
 
-				$sku = $_woo_product->get_sku;
-				$item['sku']= ! empty( $sku ) ? $sku : strval( $cart_item['product_id'] ); // if 'sku' not exist add 'product_id'
-				$item['quantity'] = $cart_item['quantity']; 						
-				$item['price'] = wc_get_price_including_tax( $_woo_product ); 		
-				$item['amount'] = $item['price'] * $item['quantity'];				
-				$item['description'] = $_woo_product->get_title(); 					
+				//$sku = $_woo_product->get_sku;
+				//$item['sku']= ! empty( $sku ) ? $sku : strval( $cart_item['product_id'] ); // if 'sku' not exist add 'product_id'
+				//$item['quantity'] = $cart_item['quantity']; 						
+				//$item['price'] = wc_get_price_including_tax( $_woo_product ); 		
+				//$item['amount'] = $item['price'] * $item['quantity'];				
+				//$item['description'] = $_woo_product->get_title(); 					
 
-				$items[] = $item; 
+				//$items[] = $item; 
+			//}
+
+			foreach( $order->get_items() as $id => $item ){
+				$prod = array();
+				//$_woo_product = wc_get_product( $item->get_product_id() );
+				$_woo_product = $item->get_product();
+
+				$sku = $_woo_product->get_sku();
+				$prod['sku']= ! empty( $sku ) ? $sku : strval( $item->get_product_id() ); // if 'sku' not exist add 'product_id'
+				$prod['quantity'] = $item->get_quantity(); 						
+				$prod['price'] = wc_get_price_including_tax( $_woo_product ); 		
+				$prod['amount'] = $prod['price'] * $prod['quantity'];				
+				$prod['description'] = $item->get_name(); 					
+
+				$items[] = $prod; 
 			}
-
+		
 			$api = new BNAExchanger($args);
 
 			if ( empty( $_POST['payment-type'] ) ) {
@@ -450,8 +465,8 @@ function wc_bna_gateway_init() {
 				'transactionTime' => date('Y-m-d\TH:i:sO'),
 				'items'				=> $items,
 				'applyFee'		=> $args['applyFee'] == 'yes' ? true : false,
-				'subtotal'			=> 
-					($woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping()),
+				'subtotal'			=> $order->get_total(),
+					//($woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping()),
 				'currency'			=> get_woocommerce_currency(),
 				'metadata'		=> array(
 					'invoiceId' => $order_id,				

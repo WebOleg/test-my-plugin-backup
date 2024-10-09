@@ -17,9 +17,13 @@ if ( is_array( $paymentMethods ) ) {
 		if ( $pm_val->paymentType === 'eft' ) { $is_eft_exists = true; }
 	}
 }
+if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variable
+	?>
+	<script>var globalTotal = "<?php echo  WC()->cart->total; ?>";</script>	
+	<?php
+}
 ?>
 <script>
-	var globalTotal = "<?php echo WC()->cart->total; ?>";
 	var curSymbol = "<?php echo get_woocommerce_currency_symbol(); ?>";
 	
 	function input_test(input) { 
@@ -45,7 +49,6 @@ if ( is_array( $paymentMethods ) ) {
 		if ( jQuery('#payment_type').val() === 'e-transfer' ) {
 			feeSum = parseFloat(allFees.etransferFlatFee);
 			feeMult = parseFloat(allFees.etransferPercentageFee);
-			//console.log( jQuery('#payment_type').val());
 		} else if ( jQuery('#payment_type').val() === 'card' ) {
 			feeSum = parseFloat(allFees.creditCardFlatFee);
 			feeMult = parseFloat(allFees.creditCardPercentageFee);
@@ -78,7 +81,7 @@ if ( is_array( $paymentMethods ) ) {
 				+ '</span></bdi></span></strong></td>';			
 		}
 		let totalTabOrderPay = jQuery('table.shop_table tfoot tr:nth-child(4)');
-		if (totalTabOrderPay !== null) {
+		if (totalTabOrderPay.length > 0) {
 			totalTabOrderPay[0].innerHTML = 
 				'<th>Total</th>'
 					+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
@@ -288,7 +291,7 @@ if ( is_array( $paymentMethods ) ) {
 
 <script>
 (function() {
-	jQuery('#billing_phone_code_field').data('priority', '99');
+	//jQuery('#billing_phone_code_field').data('priority', '99');
 	
 	let paymentMethod = document.querySelector(".wc_payment_methods");
 	paymentMethod.addEventListener('click', event => {

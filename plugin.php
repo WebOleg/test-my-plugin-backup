@@ -79,12 +79,12 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			$this->plugin_url = trailingslashit( plugin_dir_url( ( __FILE__ ) ) );
 			register_activation_hook( $this->plugin_name, array( 'BNAPluginManager', 'activate' ) );
 			register_deactivation_hook( $this->plugin_name, array( 'BNAPluginManager', 'deactivate' ) );
-			register_uninstall_hook( $this->plugin_name, array( 'BNAPluginManager', 'uninstall' ) );
+			//register_uninstall_hook( $this->plugin_name, array( 'BNAPluginManager', 'uninstall' ) );
 
-			add_filter( 'woocommerce_checkout_fields' , array( &$this,'custom_override_checkout_fields') );
+			add_filter( 'woocommerce_checkout_fields' , array( &$this, 'custom_override_checkout_fields') );
 
 			if ( is_admin() ) {
-				add_action( 'woocommerce_admin_order_data_after_order_details', array( &$this,'show_order_itemmeta' ) );
+				add_action( 'woocommerce_admin_order_data_after_order_details', array( &$this, 'show_order_itemmeta' ) );
 			}
 			add_filter( 'woocommerce_states', array( &$this, 'custom_woocommerce_states' ) );
 			add_filter( 'woocommerce_countries', array( &$this, 'custom_woocommerce_countries' ) );
@@ -98,15 +98,15 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 		{
 			global $wpdb;
 			
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-			$link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD);
+			$link = mysqli_connect( DB_HOST, DB_USER, DB_PASSWORD );
 
-			if ($link) {
-				if ( version_compare(mysqli_get_server_info($link), '4.1.0', '>=') ) {
-					if ( ! empty($wpdb->charset) )
+			if ( $link ) {
+				if ( version_compare( mysqli_get_server_info( $link ), '4.1.0', '>=' ) ) {
+					if ( ! empty( $wpdb->charset ) )
 						$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-					if ( ! empty($wpdb->collate) )
+					if ( ! empty( $wpdb->collate ) )
 						$charset_collate .= " COLLATE $wpdb->collate";
 				}
 				mysqli_close($link);
@@ -116,7 +116,7 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			}
 
 			$sql_table = 
-				'CREATE TABLE `'.$wpdb->prefix.BNA_TABLE_TRANSACTIONS.'` (
+				'CREATE TABLE `' . $wpdb->prefix . BNA_TABLE_TRANSACTIONS . '` (
 					`id` bigint(20) unsigned NOT NULL auto_increment,
 					`order_id` varchar(100) NOT NULL,
 					`transactionToken` varchar(100) NOT NULL,
@@ -125,13 +125,13 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 					`transactionStatus` varchar(100) NOT NULL,
 					`created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 					PRIMARY KEY (`id`)
-					)' .$charset_collate.";";
-			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.BNA_TABLE_TRANSACTIONS."'") != $wpdb->prefix.BNA_TABLE_TRANSACTIONS ) {
-				dbDelta($sql_table);
+					)' . $charset_collate . ";";
+			if ( $wpdb->get_var( "show tables like '" . $wpdb->prefix . BNA_TABLE_TRANSACTIONS . "'" ) != $wpdb->prefix . BNA_TABLE_TRANSACTIONS ) {
+				dbDelta( $sql_table );
 			}
 
 			$sql_table = 
-				'CREATE TABLE `'.$wpdb->prefix.BNA_TABLE_SETTINGS.'` (
+				'CREATE TABLE `' . $wpdb->prefix . BNA_TABLE_SETTINGS . '` (
 					`id` bigint(20) unsigned NOT NULL auto_increment,
 					`user_id` bigint(20) unsigned NOT NULL,
 					`payorId`	varchar(100) NOT NULL,
@@ -142,13 +142,13 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 					`paymentDescription` varchar(2000) NOT NULL,
 					`created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 					PRIMARY KEY (`id`)
-					)' .$charset_collate.";";
-			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.BNA_TABLE_SETTINGS."'") != $wpdb->prefix.BNA_TABLE_SETTINGS ) {
-				dbDelta($sql_table);
+					)' . $charset_collate . ";";
+			if ( $wpdb->get_var( "show tables like '" . $wpdb->prefix . BNA_TABLE_SETTINGS . "'" ) != $wpdb->prefix . BNA_TABLE_SETTINGS ) {
+				dbDelta( $sql_table );
 			}	
 			
 			$sql_table = 
-			'CREATE TABLE `'.$wpdb->prefix.BNA_TABLE_RECURRING.'` (
+			'CREATE TABLE `' . $wpdb->prefix . BNA_TABLE_RECURRING . '` (
 				`id` bigint(20) unsigned NOT NULL auto_increment,
 				`user_id` bigint(20) unsigned NOT NULL,
 				`order_id` varchar(100) NOT NULL,
@@ -162,9 +162,9 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				`recurringDescription` varchar(2000) NOT NULL,
 				`created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY (`id`)
-				)' .$charset_collate.";";
-			if ( $wpdb->get_var("show tables like '".$wpdb->prefix.BNA_TABLE_RECURRING."'") != $wpdb->prefix.BNA_TABLE_RECURRING ) {
-				dbDelta($sql_table);
+				)' . $charset_collate . ";";
+			if ( $wpdb->get_var( "show tables like '" . $wpdb->prefix . BNA_TABLE_RECURRING . "'" ) != $wpdb->prefix . BNA_TABLE_RECURRING ) {
+				dbDelta( $sql_table );
 			}
 		}
 
@@ -184,8 +184,8 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 		public static function uninstall() 
 		{
 			global $wpdb;
-			$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->prefix.BNA_TABLE_TRANSACTIONS);
-			$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->prefix.BNA_TABLE_SETTINGS);
+			$wpdb->query( "DROP TABLE IF EXISTS " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS );
+			$wpdb->query( "DROP TABLE IF EXISTS " . $wpdb->prefix . BNA_TABLE_SETTINGS );
 		}
 
 		/**
@@ -196,16 +196,16 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 		*/
 		public function custom_woocommerce_states( $states ) 
 		{
-			$iso_codes = file_get_contents($this->plugin_url.'assets/js/iso-3166-2.json');
+			$iso_codes = file_get_contents( $this->plugin_url.'assets/js/iso-3166-2.json' );
 
-			if ( !empty( $iso_codes ) ) {
-				$iso = json_decode($iso_codes, true);
+			if ( ! empty( $iso_codes ) ) {
+				$iso = json_decode( $iso_codes, true );
 
-				foreach($iso as $ikey => $ival) {
+				foreach ( $iso as $ikey => $ival ) {
 					$states[$ikey] = array();
-					foreach($ival['divisions'] as $dkey => $dval) {
-						$state = explode('-', $dkey);
-						$state = array_pop($state);
+					foreach ( $ival['divisions'] as $dkey => $dval ) {
+						$state = explode( '-', $dkey );
+						$state = array_pop( $state );
 						$states[$ikey][$state] = $dval;
 					}
 				}
@@ -222,12 +222,12 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 		*/
 		public function custom_woocommerce_countries( $countries ) 
 		{
-			$iso_codes = file_get_contents($this->plugin_url.'assets/js/iso-3166-2.json');
+			$iso_codes = file_get_contents( $this->plugin_url.'assets/js/iso-3166-2.json' );
 
-			if ( !empty( $iso_codes ) ) {
-				$iso = json_decode($iso_codes, true);
+			if ( ! empty( $iso_codes ) ) {
+				$iso = json_decode( $iso_codes, true );
 
-				foreach($iso as $ikey => $ival) {
+				foreach ( $iso as $ikey => $ival ) {
 					$countries[$ikey] = $ival['name'];
 				}
 			}
@@ -261,9 +261,19 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				'required' => false,
 				'class' => array('form-row-wide'),
 			);
+			$fields['billing']['billing_phone_code'] = array(
+				'type' => 'text', 
+				'label' => __( 'Country Phone Code', 'wc-bna-gateway' ),
+				'placeholder' => __( '+1', 'wc-bna-gateway' ),
+				'required' => true,
+				'maxlength' => 6,
+				'class' => array( 'form-row', 'form-row-wide' ),
+				'input_class' => array( 'input-text' ),
+			);
 
 			$fields['billing']['billing_address_1']['required'] = false;
 			$fields['billing']['billing_address_2']['required'] = false;
+			$fields['billing']['billing_phone_code']['priority'] = 99;
 
 			$order_fields = array(
 				"billing_first_name", 
@@ -276,14 +286,15 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				"billing_street_name", 
 				"billing_street_number", 
 				"billing_apartment", 
-				"billing_email", 
+				"billing_email",
+				"billing_phone_code",
 				"billing_phone",
 				"billing_address_1",
 				"billing_address_2",
 			);
 		
 			$new = [];
-			foreach($order_fields as $key => $o_field) {
+			foreach ( $order_fields as $key => $o_field ) {
 				$new [$o_field] = $fields["billing"][$o_field];
 			}
 			$fields["billing"] = $new;
