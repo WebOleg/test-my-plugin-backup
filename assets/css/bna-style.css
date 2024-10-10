@@ -219,7 +219,8 @@ body.woocommerce-checkout .woocommerce form.checkout .bna-order-review select.bn
 }
 
 /* Customize the label (the container) */
-body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container {
+body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container,
+body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-container {
 	display: block;
 	position: relative;
 	padding-left: 55px;
@@ -233,7 +234,8 @@ body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container {
 	color: var(--bna-font-color);
 }
 /* Hide the browser's default checkbox */
-body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container input {
+body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container input,
+body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-container input {
 	position: absolute;
 	opacity: 0;
 	cursor: pointer;
@@ -241,7 +243,8 @@ body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container inp
 	width: 0;
 }
 /* Create a custom checkbox */
-body.woocommerce-checkout .woocommerce form.checkout .checkmark {
+body.woocommerce-checkout .woocommerce form.checkout .checkmark,
+body.woocommerce-order-pay .woocommerce form.bna-form-pay .checkmark {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -251,11 +254,13 @@ body.woocommerce-checkout .woocommerce form.checkout .checkmark {
 	border: 2px solid #CCC;
 }
 /* On mouse-over, add a grey background color */
-body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container:hover input ~ .checkmark {
+body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container:hover input ~ .checkmark,
+body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-container:hover input ~ .checkmark {
 	border: 2px solid var(--bna-button-color);
 }
 /* When the checkbox is checked, add a blue background */
-body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container input:checked ~ .checkmark {
+body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container input:checked ~ .checkmark,
+body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-container input:checked ~ .checkmark {
 	background-color: var(--bna-button-color);
 	background-image: url('../img/check-mark.svg');
 	background-size: 12px 14px;
@@ -750,6 +755,7 @@ body.woocommerce-checkout .woocommerce form#order_review {
 	flex-wrap: wrap;
 	gap: 30px;
 	margin-bottom: 60px;
+	align-items: flex-start;
 }
 body.woocommerce-checkout .woocommerce form.checkout .bna-customer-details,
 body.woocommerce-checkout .woocommerce form#order_review table.shop_table {
@@ -967,6 +973,9 @@ a.woocommerce-privacy-policy-link:hover {
 .bna-delete-img {
 	width: 22px;
 	height: 22px;
+}
+.woocommerce-button.cancel .bna-delete-img {
+	margin-left: 20px;
 }
 
 /* Credit card */

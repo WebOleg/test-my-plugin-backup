@@ -56,11 +56,6 @@ define( 'BNA_TABLE_TRANSACTIONS', 'bna_transactions' );
 define( 'BNA_TABLE_SETTINGS', 'bna_settings' );
 define( 'BNA_TABLE_RECURRING', 'bna_recurring' );
 
-define( 'BNA_PAYMENT_TYPE_ETRANFER', -1 );
-define( 'BNA_PAYMENT_TYPE_CREDITCARD', 1 );
-define( 'BNA_PAYMENT_TYPE_DIRECTDEBIT', 2 );
-define( 'BNA_PAYMENT_TYPE_DIRECTCREDIT', 4 );
-
 define( 'BNA_SUBSCRIPTION_SETTING_REPEAT', 'monthly' );
 define( 'BNA_SUBSCRIPTION_SETTING_STARTDATE', 0 ); //date('Y-m-d'));
 define( 'BNA_SUBSCRIPTION_SETTING_NUMPAYMENT', 0 );
@@ -314,18 +309,17 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			global $wpdb;
 
 			echo '<p class="form-field form-field-wide">&nbsp;</p>';
-			echo '<h3>'.__('Extra Details', 'wc-bna-gateway').'</h3>';
+			echo '<h3>' . __('Extra Details', 'wc-bna-gateway') . '</h3>';
 
-			$paymentInfo =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_TRANSACTIONS." WHERE order_id=".$order->get_id());
-			foreach($paymentInfo as $pi_key => $pi_val) {
-				$data = json_decode($pi_val->transactionDescription); 
+			$paymentInfo =  $wpdb->get_results( "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS . " WHERE order_id=" . $order->get_id() );
+			foreach ( $paymentInfo as $pi_key => $pi_val ) {
+				$data = json_decode( $pi_val->transactionDescription );
 				?>
-					<p class="form-field form-field-wide"><strong><?=__( 'Transaction #', 'wc-bna-gateway' ).$pi_key;?>:</strong></p>
-					<p class="form-field form-field-wide"><?=__( 'Transaction token', 'wc-bna-gateway' );?>: <?=$pi_val->transactionToken;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Reference number', 'wc-bna-gateway' );?>: <?=$pi_val->referenceNumber;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Type', 'wc-bna-gateway' );?>: <?=$data->transactionType;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Status', 'wc-bna-gateway' );?>: <?=$data->transactionStatus;?></p>
-					<p class="form-field form-field-wide"><?=__( 'Created', 'wc-bna-gateway' );?>: <?=$pi_val->created_time;?></p>
+					<p class="form-field form-field-wide"><strong><?php _e( 'Transaction number', 'wc-bna-gateway' ); ?>: <?php echo $data->id; ?></strong></p>
+					<p class="form-field form-field-wide"><?php _e( 'Reference number', 'wc-bna-gateway' ); ?>: <?php echo $pi_val->referenceNumber;?></p>
+					<p class="form-field form-field-wide"><?php _e( 'Payment method', 'wc-bna-gateway' );?>: <?php echo $data->paymentMethod;?></p>
+					<p class="form-field form-field-wide"><?php _e( 'Status', 'wc-bna-gateway' );?>: <?php echo $pi_val->transactionStatus;?></p>
+					<p class="form-field form-field-wide"><?php _e( 'Created', 'wc-bna-gateway' );?>: <?php echo $pi_val->created_time;?></p>
 					<p class="form-field form-field-wide">&nbsp;</p>
 				<?php
 			}

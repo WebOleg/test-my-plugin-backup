@@ -22,7 +22,7 @@ $totals = $order->get_order_item_totals(); // phpcs:ignore WordPress.WP.GlobalVa
 <script>
 	var globalTotal = "<?php echo $order->get_total(); ?>";
 </script>
-<form id="order_review" method="post">
+<form id="order_review" class="bna-form-pay" method="post">
 
 	<table class="shop_table">
 		<thead>
