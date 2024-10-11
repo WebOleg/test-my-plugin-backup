@@ -82,8 +82,16 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		}
 		let totalTabOrderPay = jQuery('table.shop_table tfoot tr:nth-child(4)');
 		if (totalTabOrderPay.length > 0) {
+			feeTab.innerHTML = 
+				'<th  colspan="2">BNA Fee (Includes HST)	</th>'
+				+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
+				+ allFeeSum.toFixed(2).replace('.', ',')
+				+ '<span class="woocommerce-Price-currencySymbol">'
+				+ curSymbol
+				+ '</span></bdi></span></strong></td>';
+			
 			totalTabOrderPay[0].innerHTML = 
-				'<th>Total</th>'
+				'<th colspan="2">Total</th>'
 					+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
 					+ parseFloat(parseFloat(globalTotal) + allFeeSum).toFixed(2).replace('.', ',')
 					+ '<span class="woocommerce-Price-currencySymbol">'

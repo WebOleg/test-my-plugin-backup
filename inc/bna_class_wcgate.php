@@ -460,7 +460,6 @@ function wc_bna_gateway_init() {
 			if ( ! empty( $_POST['billing_apartment'] ) ) { $customerInfo['address']['apartment'] = $_POST['billing_apartment']; }
 			
 			// data
-			$data_subscription = array();
 			$data = array( 
 				'transactionTime' => date('Y-m-d\TH:i:sO'),
 				'items'				=> $items,
@@ -617,8 +616,8 @@ function wc_bna_gateway_init() {
 				$data_subscription['action'] = 'SALE';
 				$data_subscription['paymentMethod'] = $paymentTypeMethod;
 				$data_subscription['applyFee'] = $args['applyFee'] == 'yes' ? true : false;
-				$data_subscription['subtotal'] = 
-					( $woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping() );
+				$data_subscription['subtotal'] = $order->get_total();
+					//( $woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping() );
 				$data_subscription['currency'] = get_woocommerce_currency();
 				$data_subscription['invoiceInfo'] = array(
 					'invoiceId' => strval( $order_id ),				
