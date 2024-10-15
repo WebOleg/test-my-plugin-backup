@@ -19,15 +19,25 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 <div class="bna-payment-method" style="<?php echo empty( $payorID ) ? 'display:none;' : 'display:block;'; ?>" >
 	<div  class="bna-few-buttons-wrapper">
-		<a href="<?php echo wc_get_account_endpoint_url( 'bna-add-credit-card' ); ?>" class="bna-button bna-button-flex">
-			<?php _e( 'Add Card', 'wc-bna-gateway' ); ?>
-		</a>
-		<a href="<?php echo wc_get_account_endpoint_url( 'bna-bank-account-info' ); ?>" class="bna-button bna-button-flex">
-			<?php _e( 'Add EFT', 'wc-bna-gateway' ); ?>
-		</a>
-		<a href="<?php echo wc_get_account_endpoint_url( 'bna-e-transfer-info' ); ?>" class="bna-button bna-button-flex">
-			<?php _e( 'Add e-Transfer', 'wc-bna-gateway' ); ?>
-		</a>
+		<?php
+			$bna_gateway_settings = get_option( 'woocommerce_bna_gateway_settings' );
+			$woo_currency = get_woocommerce_currency();
+		?>
+		<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway_settings['bna-payment-method-card'] === 'yes' && in_array( $woo_currency, BNA_CARD_ALLOWED_CURRENCY ) ) { ?>
+			<a href="<?php echo wc_get_account_endpoint_url( 'bna-add-credit-card' ); ?>" class="bna-button bna-button-flex">
+				<?php _e( 'Add Card', 'wc-bna-gateway' ); ?>
+			</a>
+		<?php } ?>
+		<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-eft'] ) && $bna_gateway_settings['bna-payment-method-eft'] === 'yes' && in_array( $woo_currency, BNA_EFT_ALLOWED_CURRENCY ) ) { ?>
+			<a href="<?php echo wc_get_account_endpoint_url( 'bna-bank-account-info' ); ?>" class="bna-button bna-button-flex">
+				<?php _e( 'Add EFT', 'wc-bna-gateway' ); ?>
+			</a>
+		<?php } ?>
+		<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-e-transfer'] ) && $bna_gateway_settings['bna-payment-method-e-transfer'] === 'yes' && in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) { ?>	
+			<a href="<?php echo wc_get_account_endpoint_url( 'bna-e-transfer-info' ); ?>" class="bna-button bna-button-flex">
+				<?php _e( 'Add e-Transfer', 'wc-bna-gateway' ); ?>
+			</a>
+		<?php } ?>	
 	</div>
 	<div class="bna-desc"><?php _e( 'The following payment methods will be available on the checkout page.', 'wc-bna-gateway' ); ?></div>
 	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">

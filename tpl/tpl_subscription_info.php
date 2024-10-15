@@ -37,7 +37,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Start', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Number of payments', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Desc.', 'wc-bna-gateway' ); ?></span></th>
-				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Created', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Manage', 'wc-bna-gateway' ); ?></span></th>
 			</tr>
 		</thead>
@@ -84,6 +83,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Desc.', 'wc-bna-gateway' ); ?>">
 						<details><summary><?php _e( 'more...', 'wc-bna-gateway' ); ?></summary>
 							<p><?php _e( 'ID:', 'wc-bna-gateway' ); ?> <?php echo $s_val->recurringId; ?></p>
+							<p><?php _e( 'Created:', 'wc-bna-gateway' ); ?> <?php echo date( 'Y-m-d H:i:s', strtotime( $s_val->created_time ) ); ?></p>
 							<p><?php _e( 'Status:', 'wc-bna-gateway' ); ?> <?php echo $s_val->status; ?></p>
 							<p><?php _e( 'Currency:', 'wc-bna-gateway' ); ?> <?php echo $desc->currency; ?></p>
 							<?php
@@ -115,10 +115,10 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 							?>
 						</details>
 					</td>
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Created', 'wc-bna-gateway' ); ?>">
-						<?php echo date( 'Y-m-d H:i:s', strtotime( $s_val->created_time ) );?>
-					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
+						<button type="button" class="button btn-suspend-subscription" data-id="<?php echo $s_val->id; ?>" data-order-id="<?php echo $desc->invoiceInfo->invoiceId; ?>">
+							<?php _e( 'Pause', 'wc-bna-gateway' ); ?>
+						</button>
 						<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>" data-order-id="<?php echo $desc->invoiceInfo->invoiceId; ?>">
 							<img  class="bna-delete-img" src="<?php echo $this->plugin_url . 'assets/img/trash-solid.svg'; ?>" >
 						</button>
