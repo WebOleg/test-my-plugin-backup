@@ -121,7 +121,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
         curl_setopt( $ch, CURLOPT_POSTFIELDS,  json_encode( $params_post ) );
       } 
 
-      if ( is_array( $params_post ) || ! empty( $params_post ) || $custom_request === 'GET' || $custom_request === 'DELETE' ) {       
+      if ( is_array( $params_post ) || ! empty( $params_post ) || $custom_request === 'GET' || $custom_request === 'DELETE' || $custom_request === 'PATCH' ) {       
         curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, $custom_request );
       } 
 

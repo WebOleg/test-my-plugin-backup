@@ -83,7 +83,7 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		let totalTabOrderPay = jQuery('table.shop_table tfoot tr:nth-child(4)');
 		if (totalTabOrderPay.length > 0) {
 			feeTab.innerHTML = 
-				'<th  colspan="2">BNA Fee (Includes HST)	</th>'
+				'<th colspan="2">BNA Fee (Includes HST)	</th>'
 				+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
 				+ allFeeSum.toFixed(2).replace('.', ',')
 				+ '<span class="woocommerce-Price-currencySymbol">'
@@ -205,9 +205,9 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 			<!-- EFT -->
 			<div class="bna-payment-method__item">
 				<div class="bna-checkout-radio"  data-payment-type="eft"></div>
-				<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>
+				<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>
 				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_dc 3.png'; ?>" alt="<?php _e( 'Direct Payment  from your Bank Account', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_dc 3.png'; ?>" alt="<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>" />
 				</div>
 			</div>
 			<div class="bna-payment-method__content">
@@ -272,9 +272,9 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 			<!-- e-Transfer -->
 			<div class="bna-payment-method__item">
 				<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
-				<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>
+				<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>
 				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'Interac e-Transfer', 'wc-bna-gateway' ); ?>" />
+					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>" />
 				</div>
 			</div>			
 			<div class="bna-payment-method__content">		

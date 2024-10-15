@@ -78,7 +78,7 @@ add_filter(
 		$columns['order-date']    = __( 'Order Placed', 'wc-bna-gateway' );
 		$columns['order-status']  = __( 'Order Status', 'wc-bna-gateway' );
 		$columns['order-total']   = __( 'Order Total', 'wc-bna-gateway' );
-		$columns['order-actions'] = '';
+		$columns['order-actions'] = __( 'Manage', 'wc-bna-gateway' );
 		
 		return $columns;
 	}
@@ -159,7 +159,7 @@ add_action( 'woocommerce_checkout_process', 'bna_checkout_process_validation' );
 
 function bna_checkout_process_validation() {
 	if ( ! $_POST['billing_phone_code'] ) wc_add_notice( __( '<strong>Country Phone Code</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
-	if ( ! $_POST['payment-type'] ) wc_add_notice( __( "You needs to chose payment type: 'Credit Card', 'Direct Payment' or 'e-Transfer'.", 'wc-bna-gateway' ) , 'error' );
+	if ( ! $_POST['payment-type'] ) wc_add_notice( __( "You needs to chose payment type: 'Credit Card', 'Bank Transfer' or 'E-Transfer'.", 'wc-bna-gateway' ) , 'error' );
 
 	if ( ! empty( $_POST['payment-type'] ) && $_POST['payment-type'] === 'card' ) {
 		if ( ! isset( $_POST['paymentMethodCC'] ) || $_POST['paymentMethodCC'] === 'new-card' ) {
@@ -217,7 +217,15 @@ function bna_customer_meta_fields( $array ) {
 	return $array;
 }
 
+/**
+ * Added additional fields to form-edit-address.php
+ * 
+ * @param  $array
+ * @param  $string
+ * @return $array
+ */
 add_filter( 'woocommerce_address_to_edit', 'bna_address_to_edit', 10, 2 );
+
 function bna_address_to_edit( $address, $load_address ) {
 	$new_address = array();
 	foreach ( $address as $key => $value ) {
@@ -251,6 +259,44 @@ function bna_address_to_edit( $address, $load_address ) {
 		
 		$new_address[$key] = $value;
 	}
-	//$array['billing']['fields'] = $new_billing_fields;
+	
 	return $new_address;
 }
+
+/**
+ * Template redirects if payment method not allowed
+ * 
+ * @return redirect
+ */
+add_action( 'template_redirect', function() {
+	$bna_gateway_settings = get_option( 'woocommerce_bna_gateway_settings' );
+	$woo_currency = get_woocommerce_currency();
+	$bna_payment_methods = esc_url( wc_get_endpoint_url( 'bna-payment-methods' ) );
+	
+	if( is_wc_endpoint_url( 'bna-add-credit-card' ) ){
+		if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway_settings['bna-payment-method-card'] === 'yes' && in_array( $woo_currency, BNA_CARD_ALLOWED_CURRENCY ) ) {
+			// Ok
+		} else {		
+			wp_safe_redirect( $bna_payment_methods );
+			exit;
+		}
+	}
+	
+	if( is_wc_endpoint_url( 'bna-bank-account-info' ) ){
+		if ( ! empty( $bna_gateway_settings['bna-payment-method-eft'] ) && $bna_gateway_settings['bna-payment-method-eft'] === 'yes' && in_array( $woo_currency, BNA_EFT_ALLOWED_CURRENCY ) ) {
+			// Ok
+		} else {		
+			wp_safe_redirect( $bna_payment_methods );
+			exit;
+		}
+	}
+	
+	if( is_wc_endpoint_url( 'bna-e-transfer-info' ) ){
+		if ( ! empty( $bna_gateway_settings['bna-payment-method-e-transfer'] ) && $bna_gateway_settings['bna-payment-method-e-transfer'] === 'yes' && in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) {
+			// Ok
+		} else {		
+			wp_safe_redirect( $bna_payment_methods );
+			exit;
+		}
+	}	
+} );

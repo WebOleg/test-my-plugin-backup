@@ -48,6 +48,7 @@ if (!class_exists('BNAJsonMsgAnswer')) {
 
 			switch ($errNumber) {
 				case BNA_MSG_DELPAYMENT_ERRORID:
+				case BNA_MSG_SUSPENDPAYMENT_ERRORID:
 				case BNA_MSG_UPDATE_ACCOUNT_ERROR:
 				case BNA_MSG_ERRORPARAMS:
 				case BNA_MSG_ERRORPAYOR:
@@ -68,7 +69,20 @@ if (!class_exists('BNAJsonMsgAnswer')) {
 							'<li>'.__('Payment method successfully deleted.', 'wc-bna-gateway').'</li>' .
 						'</ul>';
 					$status = 'true';
-					break;	
+					break;				
+				case BNA_MSG_SUSPENDPAYMENT_ERROR:
+					$message =
+						'<ul class="woocommerce-error">' .
+							'<li>'.__('Sorry, this payment method cannot be suspended. Please contact your merchant about this issue.', 'wc-bna-gateway').'</li>' .
+						'</ul>';
+					break;
+				case BNA_MSG_SUSPENDPAYMENT_SUCCESS:
+					$message =
+						'<ul class="woocommerce-message">' .
+							'<li>'.__('Payment method successfully suspended.', 'wc-bna-gateway').'</li>' .
+						'</ul>';
+					$status = 'true';
+					break;					
 				case BNA_MSG_ENDPOINT_ACCOUNT_ERRUSER:
 					$message = __('Error user e-mail in endpoint "account".', 'wc-bna-gateway');
 					break;	

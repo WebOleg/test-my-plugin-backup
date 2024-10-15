@@ -7,9 +7,9 @@
  * @version     	1.0
  */
 
-if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
+require_once dirname( __FILE__ ) . "/bna_class_jsonmessage.php";
 
 /**
  * BNA plugin subscription class
@@ -19,16 +19,17 @@ require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
  * @version		1.0.0
  * @package		WooCommerce/Classes/Payment
  */
-if (!class_exists('BNASubscriptions')) {
+if ( ! class_exists( 'BNASubscriptions' ) ) {
 
 	class BNASubscriptions {
 	 
 		public function __construct ()
 		{		
-			$this->plugin_name = plugin_basename(dirname(dirname(__FILE__)));
-			$this->plugin_url = trailingslashit(plugin_dir_url(dirname(__FILE__)));
+			$this->plugin_name = plugin_basename( dirname (dirname( __FILE__ ) ) );
+			$this->plugin_url = trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) );
 
-            add_action('wp_ajax_delete_subscription', array(&$this, 'ajax_delete_subscription'));
+            add_action( 'wp_ajax_delete_subscription', array( $this, 'ajax_delete_subscription' ) );
+            add_action( 'wp_ajax_suspend_subscription', array( $this, 'ajax_suspend_subscription' ) );
         }
 
 		/**
@@ -279,7 +280,7 @@ if (!class_exists('BNASubscriptions')) {
 					'',
 					'DELETE'
 				);
-	
+
 				empty( $response['success'] ) ?
 						BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_SUCCESS ) :
 						BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_ERROR ) ;
@@ -287,5 +288,62 @@ if (!class_exists('BNASubscriptions')) {
 		
 			wp_die();
 		}
+		
+		/**
+		 * Suspend a subscription in my-account
+		 * @since		1.0.0
+		 */
+        public function ajax_suspend_subscription() 
+		{
+			global $wpdb;
+
+			if ( isset( $_POST['nonce'] ) ) {
+				if ( ! wp_verify_nonce( $_POST['nonce'], BNA_CONST_NONCE_NAME ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORNONCE );
+					wp_die();
+				}
+								
+				$subscription_id = $_POST['id'];
+				if ( empty( $subscription_id ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_ERRORID  );
+					wp_die();
+				}
+
+				$args = WC_BNA_Gateway::get_merchant_params();
+				if ( empty( $args ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
+					wp_die();
+				}
+
+				$api = new BNAExchanger($args);
+
+				$user_id = get_current_user_id();
+				$payorID = get_user_meta ( $user_id, 'payorID', true );
+				
+				$reccuringInfo =  $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_RECURRING . " WHERE id={$subscription_id}" );
+
+				if ( empty( $reccuringInfo ) || empty( $payorID ) ) {
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPAYOR );
+					wp_die();
+				}
+				
+				$data = array(
+					'suspend' => true
+				);
+				
+				$response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription/' . $reccuringInfo->recurringId . '/suspend',  
+					$data,
+					'PATCH'
+				);
+
+				empty( $response['id'] ) ?
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_ERROR ) :
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_SUCCESS );
+			}
+		
+			wp_die();
+		}
+		
     }//end of class
 }// end of class_exists

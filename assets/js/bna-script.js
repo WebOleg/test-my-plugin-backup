@@ -319,9 +319,52 @@ function input_test(input) {
                 message.get(0).scrollIntoView();
                 message.html(data.message);
 
-                setTimeout(()=>{
-                    window.location.reload();
-                }, 1000);
+                if( data.success === 'true' ){
+					setTimeout(()=>{
+						window.location.reload();
+					}, 1000);
+				}
+
+                self.prop('disabled', false);
+            },
+            error: function( data ){
+                //console.log(data);
+            }
+        });    
+    });
+    
+    $('.btn-suspend-subscription').on('click', function(event){
+        event.stopPropagation();
+        event.preventDefault(); 
+
+        //if ( confirm('Do you want to delete the order #' + $(this).data('order-id') + '?') == false) { return false; }
+
+        let self = $(this);
+        self.prop('disabled', true);
+
+        startLoadingAnimation();
+
+        $.ajax({
+            url         : bnaData.url,
+            type        : 'POST', 
+            dataType    : "json",
+            data        : {
+                action  : 'suspend_subscription',
+                nonce   : bnaData.nonce,
+                id      : self.data('id') 
+            },
+            success: function( data ) {
+
+                stopLoadingAnimation();
+                let message = $('.woocommerce-notices-wrapper');
+                message.get(0).scrollIntoView();
+                message.html(data.message);
+				
+				if( data.success === 'true' ){
+					setTimeout(()=>{
+						window.location.reload();
+					}, 1000);
+				}
 
                 self.prop('disabled', false);
             },

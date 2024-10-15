@@ -97,6 +97,12 @@ function wc_bna_gateway_init() {
 			add_action( 'wp_enqueue_scripts', array( &$this, 'site_load_styles' ) );
 			
 			add_action( 'woocommerce_email_actions', array( &$this, 'send_refund_email' ) );
+			
+			if ( is_admin() && isset( $_GET['section'] ) && $_GET['section'] === bna_gateway ) {
+				if ( ! in_array( get_woocommerce_currency(), BNA_CARD_ALLOWED_CURRENCY ) ) {
+					add_action( 'admin_notices', array( $this, 'bna_admin_notice' ) );
+				}
+			}
 		}
 
 		/**
@@ -120,6 +126,18 @@ function wc_bna_gateway_init() {
 			wp_register_style( 'bna-datepicker-css', $this->plugin_url . 'assets/lib/datepicker/css/datepicker.min.css' );
 			wp_register_script( 'bna-datepicker-js', $this->plugin_url.'assets/lib/datepicker/js/datepicker.min.js', array('jquery'), '1.0.0', true );													
 		}
+		
+		/**
+		 * Notice
+		 */
+		public function bna_admin_notice() {
+			echo
+			'<div class="notice notice-warning is-dismissible">
+			<p><strong>' . __( '', 'wc-bna-gateway' ) . 'Important!</strong></p>
+			<p>' . __( 'Your current currency is:', 'wc-bna-gateway' ) . ' <strong>' . get_woocommerce_currency() . '</strong>.</p>
+			<p>' . __( 'Allowed currency for this plugin only:', 'wc-bna-gateway' ) . ' <strong>' . implode( ", ", BNA_CARD_ALLOWED_CURRENCY ) . '</strong>.</p>
+			</div>'; 
+		}
 
 		/**
 		* Send refund email
@@ -140,14 +158,14 @@ function wc_bna_gateway_init() {
 		* @param float $flat
 		* @return $surcharge
 		*/
-		public static function add_payment_fee($order, $percent, $flat) 
+		public static function add_payment_fee( $order, $percent, $flat ) 
 		{
 			global $woocommerce;
 
 			$amount = $woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping();
 			$surcharge = $amount * $percent / 100 + $flat;
 			$hst = $surcharge * 13 / 100; //HST Ontario
-			$surcharge = round( round($surcharge, 2) + round($hst, 2), 2 );
+			$surcharge = round( round( $surcharge, 2 ) + round( $hst, 2 ), 2 );
 
 			$args = WC_BNA_Gateway::get_merchant_params();
 			if ( empty( $args ) ) {
@@ -192,9 +210,9 @@ function wc_bna_gateway_init() {
 		* @since		1.0.0
 		*/
 		public function init_form_fields() {
-	  
-			$this->form_fields = array( 
-		  
+			$woo_currency = get_woocommerce_currency();
+			
+			$this->form_fields = array(	  
 				'enabled' => array(
 					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
 					'type'    => 'checkbox',
@@ -227,7 +245,7 @@ function wc_bna_gateway_init() {
 					'type'    => 'checkbox',
 					'label'   => __( 'Apply BNA Payment Fee', 'wc-bna-gateway' ),
 					'default' => 'false'
-				),
+				),		
 				'environment' => array(
 					'title'   => __( 'Environment', 'wc-bna-gateway' ),
 					'type'    => 'select',
@@ -242,6 +260,37 @@ function wc_bna_gateway_init() {
 				'secretKey' => array(
 					'title'       => __( 'Secret key', 'wc-bna-gateway' ),
 					'type'        => 'password'
+				),
+				
+				'bna-payment-methods' => array(
+					'title' => __( 'Payment methods', 'wc-bna-gateway' ),
+					'type'  => 'title',
+					'description'  => __( 'Here you can change payment methods.', 'wc-bna-gateway' ),
+					'id' => 'bna-payment-methods'
+				),
+				'bna-payment-method-card' => array(
+					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
+					'type'    => 'checkbox',
+					'label'   => __( "Enable payment method 'Card'", 'wc-bna-gateway' ),
+					'description' => __( 'This payment method is available when paying in US and Canadian dollars', 'wc-bna-gateway' ),
+					'disabled'    => ( in_array( $woo_currency, BNA_CARD_ALLOWED_CURRENCY ) ) ? false : true,
+					'default' => 'false'
+				),
+				'bna-payment-method-eft' => array(
+					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
+					'type'    => 'checkbox',
+					'label'   => __( "Enable payment method 'EFT'", 'wc-bna-gateway' ),
+					'description' => __( 'This payment method is available when paying in Canadian dollars', 'wc-bna-gateway' ),
+					'disabled'    => ( in_array( $woo_currency, BNA_EFT_ALLOWED_CURRENCY ) ) ? false : true,
+					'default' => 'false'
+				),
+				'bna-payment-method-e-transfer' => array(
+					'title'   => __( 'Enable/Disable', 'wc-bna-gateway' ),
+					'type'    => 'checkbox',
+					'label'   => __( "Enable payment method 'E-transfer'", 'wc-bna-gateway' ),
+					'description' => __( 'This payment method is available when paying in Canadian dollars', 'wc-bna-gateway' ),
+					'disabled'    => ( in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) ? false : true,
+					'default' => 'false'
 				),
 				
 				'bna-colors-title' =>array(
@@ -406,23 +455,8 @@ function wc_bna_gateway_init() {
 			
 			// products
 			$items = [];
-			//foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) { 
-				//$item = array();
-				//$_woo_product = wc_get_product( $cart_item['product_id'] );
-
-				//$sku = $_woo_product->get_sku;
-				//$item['sku']= ! empty( $sku ) ? $sku : strval( $cart_item['product_id'] ); // if 'sku' not exist add 'product_id'
-				//$item['quantity'] = $cart_item['quantity']; 						
-				//$item['price'] = wc_get_price_including_tax( $_woo_product ); 		
-				//$item['amount'] = $item['price'] * $item['quantity'];				
-				//$item['description'] = $_woo_product->get_title(); 					
-
-				//$items[] = $item; 
-			//}
-
 			foreach( $order->get_items() as $id => $item ){
 				$prod = array();
-				//$_woo_product = wc_get_product( $item->get_product_id() );
 				$_woo_product = $item->get_product();
 
 				$sku = $_woo_product->get_sku();

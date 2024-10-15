@@ -60,6 +60,9 @@ define( 'BNA_SUBSCRIPTION_SETTING_REPEAT', 'monthly' );
 define( 'BNA_SUBSCRIPTION_SETTING_STARTDATE', 0 ); //date('Y-m-d'));
 define( 'BNA_SUBSCRIPTION_SETTING_NUMPAYMENT', 0 );
 
+define( 'BNA_CARD_ALLOWED_CURRENCY', array( 'USD', 'CAD' ) ) ;
+define( 'BNA_EFT_ALLOWED_CURRENCY', array( 'CAD' ) ) ;
+define( 'BNA_E_TRANSFER_ALLOWED_CURRENCY', array( 'CAD' ) ) ;
 
 /**
 * BNA plugin management class
