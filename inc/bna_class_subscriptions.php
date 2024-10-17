@@ -45,8 +45,6 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 			
 			if ( isset( $result['metadata']['invoiceId'] ) ) { $invoice_id = $result['metadata']['invoiceId']; }
 			
-			if ( empty( $invoice_id ) && isset( $result['invoiceInfo']['invoiceId'] ) ) { $invoice_id = $result['invoiceInfo']['invoiceId']; }
-
 			if ( empty( $invoice_id ) ) exit();
 			
 			$base_order = wc_get_order( $invoice_id );		
@@ -304,6 +302,7 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 				}
 								
 				$subscription_id = $_POST['id'];
+				
 				if ( empty( $subscription_id ) ) {
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_ERRORID  );
 					wp_die();
@@ -327,10 +326,15 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 					wp_die();
 				}
 				
+				if ( $_POST['suspend'] === 'yes' ) {
+					$suspend = true;
+				} elseif ( $_POST['suspend'] === 'no' ) {
+					$suspend = false;
+				}
 				$data = array(
-					'suspend' => true
+					'suspend' => $suspend
 				);
-				
+			
 				$response = $api->query(
 					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription/' . $reccuringInfo->recurringId . '/suspend',  
 					$data,
@@ -338,8 +342,8 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 				);
 
 				empty( $response['id'] ) ?
-					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_ERROR ) :
-					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_SUCCESS );
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_SUCCESS ) :
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_ERROR );
 			}
 		
 			wp_die();

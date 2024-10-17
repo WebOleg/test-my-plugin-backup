@@ -87,16 +87,16 @@ function wc_bna_gateway_init() {
 			$this->plugin_name = plugin_basename( dirname( dirname( __FILE__ ) ) );
 			$this->plugin_url = trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) );
 
-			add_action( 'woocommerce_thankyou_' . $this->id, array( &$this, 'thankyou_page' ) );
-			add_action( 'woocommerce_thankyou', array( &$this, 'thankyou_page' ));
+			add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
+			add_action( 'woocommerce_thankyou', array( $this, 'thankyou_page' ));
 
 			// Customer Emails
-			add_action( 'woocommerce_email_before_order_table', array( &$this, 'email_instructions' ), 10, 3 );
+			add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 3 );
 
-			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
-			add_action( 'wp_enqueue_scripts', array( &$this, 'site_load_styles' ) );
+			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'site_load_styles' ) );
 			
-			add_action( 'woocommerce_email_actions', array( &$this, 'send_refund_email' ) );
+			add_action( 'woocommerce_email_actions', array( $this, 'send_refund_email' ) );
 			
 			if ( is_admin() && isset( $_GET['section'] ) && $_GET['section'] === bna_gateway ) {
 				if ( ! in_array( get_woocommerce_currency(), BNA_CARD_ALLOWED_CURRENCY ) ) {
@@ -133,7 +133,7 @@ function wc_bna_gateway_init() {
 		public function bna_admin_notice() {
 			echo
 			'<div class="notice notice-warning is-dismissible">
-			<p><strong>' . __( '', 'wc-bna-gateway' ) . 'Important!</strong></p>
+			<p><strong>' . __( 'Important!', 'wc-bna-gateway' ) . '</strong></p>
 			<p>' . __( 'Your current currency is:', 'wc-bna-gateway' ) . ' <strong>' . get_woocommerce_currency() . '</strong>.</p>
 			<p>' . __( 'Allowed currency for this plugin only:', 'wc-bna-gateway' ) . ' <strong>' . implode( ", ", BNA_CARD_ALLOWED_CURRENCY ) . '</strong>.</p>
 			</div>'; 
@@ -303,8 +303,8 @@ function wc_bna_gateway_init() {
 					'type'      => 'color',
 					'default' => '#646464'
 				),
-				'bna-button-color' => array(
-					'title'       => __( 'Button color', 'wc-bna-gateway' ),
+				'bna-button-background-color' => array(
+					'title'       => __( 'Button background (and link) color', 'wc-bna-gateway' ),
 					'type'      => 'color',
 					'default' => '#00A0E3'
 				),
@@ -313,16 +313,26 @@ function wc_bna_gateway_init() {
 					'type'      => 'color',
 					'default' => '#FFF'
 				),
+				'bna-input-background-color' => array(
+					'title'       => __( 'Input background color', 'wc-bna-gateway' ),
+					'type'      => 'color',
+					'default' => '#FFF'
+				),
 				'bna-line-color' => array(
 					'title'       => __( 'Line color', 'wc-bna-gateway' ),
 					'type'      => 'color',
 					'default' => '#CCC'
-				),
-				'bna-background-color' => array(
-					'title'       => __( 'Background color', 'wc-bna-gateway' ),
+				),				
+				'bna-svg-first-color' => array(
+					'title'       => __( 'SVG first color', 'wc-bna-gateway' ),
 					'type'      => 'color',
-					'default' => '#FFF'
+					'default' => '#00A0E3'
 				),
+				'bna-svg-last-color' => array(
+					'title'       => __( 'SVG last color', 'wc-bna-gateway' ),
+					'type'      => 'color',
+					'default' => '#B0CB1F'
+				),			
 				'bna-privacy-policy-title' =>array(
 					'title' => __( 'Privacy policy.', 'wc-bna-gateway' ),
 					'type'  => 'title',
@@ -653,9 +663,6 @@ function wc_bna_gateway_init() {
 				$data_subscription['subtotal'] = $order->get_total();
 					//( $woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $order->get_total_shipping() );
 				$data_subscription['currency'] = get_woocommerce_currency();
-				$data_subscription['invoiceInfo'] = array(
-					'invoiceId' => strval( $order_id ),				
-				);
 				$data_subscription['metadata']	= array(
 					'invoiceId' => $order_id,				
 				);
@@ -681,16 +688,17 @@ function wc_bna_gateway_init() {
 				
 				// save payment if 'save-credit-card' exists				
 				if ( ! empty( $_POST['save-credit-card'] ) && $_POST['paymentMethodCC'] === 'new-card' ) {
-					sleep(3);
+					sleep(5);
 					$response_save_cc = $api->query(
 						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/card',  
 						$data['paymentDetails'], 
 						'POST'
 					);
+
 				}
 				// save payment if 'save-eft' exists				
 				if ( ! empty( $_POST['save-eft'] ) && $_POST[ 'paymentMethodDD' ] === 'new-method' ) {
-					sleep(3);
+					sleep(5);
 					$response_save_eft = $api->query(
 						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/eft',  
 						$data['paymentDetails'], 
@@ -764,7 +772,7 @@ function wc_bna_gateway_init() {
 				$endpoint = array_pop( $endpoint );
 
 				$data = file_get_contents( "php://input" );
-			
+	
 				if ( ! empty( $data) ) {
 
 					$args = WC_BNA_Gateway::get_merchant_params();
@@ -840,8 +848,6 @@ my_log($result);
 			
 			if ( isset( $result['metadata']['invoiceId'] ) ) { $invoice_id = $result['metadata']['invoiceId']; }
 			
-			if ( empty( $invoice_id ) && isset( $result['invoiceInfo']['invoiceId'] ) ) { $invoice_id = $result['invoiceInfo']['invoiceId']; }
-	
 			if ( empty( $invoice_id ) ) exit();
 
 			$check_transaction_id =  $wpdb->get_results(
@@ -855,7 +861,7 @@ my_log($result);
 
 			switch ( strtolower( $result['status'] ) ) {
 				case 'approved':
-					if ( isset( $result['subscriptionId'] ) && $order->get_status() === 'completed'  ) {					
+					if ( isset( $result['subscriptionId'] )  && $order->get_status() === 'completed'  ) {					
 						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );		
 						$new_order = wc_get_order( $new_order_id );		
 						$new_order->update_status( 'completed', __('Order completed.', 'wc-bna-gateway') );

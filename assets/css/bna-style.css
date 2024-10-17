@@ -26,7 +26,7 @@
 	--width-991-padding-left: 25px;
 }
 
-a { color: var(--bna-button-color); }
+a { color: var(--bna-button-background-color); }
 a:hover { opacity: 0.6; }
 
 /* Layout */
@@ -67,7 +67,7 @@ body.woocommerce-account .woocommerce input.bna-input,
 body.woocommerce-checkout .woocommerce input[type="text"],
 body.woocommerce-checkout .woocommerce input.bna-input {
 	color: var(--bna-font-color);
-	background: var(--bna-background-color);
+	background: var(--bna-input-background-color);
 	border: 1px solid var(--bna-line-color);
 	width: 100%;
 	border-radius: 2px;
@@ -82,8 +82,8 @@ body.woocommerce-checkout .woocommerce input.bna-input {
 	text-decoration: none;
 }
 body.woocommerce-account .woocommerce .bna-button {
-	background-color: var(--bna-button-color);
-	border: 1px solid var(--bna-button-color);
+	background-color: var(--bna-button-background-color);
+	border: 1px solid var(--bna-button-background-color);
 	color: var(--bna-button-text-color);
 	font-weight: 700;
 	font-size: 18px;
@@ -102,8 +102,8 @@ body.woocommerce-cart .woocommerce a.button,
 body.woocommerce-cart .woocommerce button.button,
 body.woocommerce-checkout .woocommerce a.button,
 body.woocommerce-checkout .woocommerce button.button {
-	background-color: var(--bna-button-color);
-	border: 1px solid var(--bna-button-color);
+	background-color: var(--bna-button-background-color);
+	border: 1px solid var(--bna-button-background-color);
 	box-shadow: none;
 }
 body.woocommerce-account .woocommerce a.button:hover,
@@ -112,8 +112,8 @@ body.woocommerce-cart .woocommerce a.button:hover,
 body.woocommerce-cart .woocommerce button.button:hover,
 body.woocommerce-checkout .woocommerce a.button:hover,
 body.woocommerce-checkout .woocommerce button.button:hover {
-	background-color: var(--bna-button-color);
-	border: 1px solid var(--bna-button-color);
+	background-color: var(--bna-button-background-color);
+	border: 1px solid var(--bna-button-background-color);
 	opacity: 0.8;
 	box-shadow: none;
 }
@@ -256,17 +256,17 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .checkmark {
 /* On mouse-over, add a grey background color */
 body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container:hover input ~ .checkmark,
 body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-container:hover input ~ .checkmark {
-	border: 2px solid var(--bna-button-color);
+	border: 2px solid var(--bna-button-background-color);
 }
 /* When the checkbox is checked, add a blue background */
 body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container input:checked ~ .checkmark,
 body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-container input:checked ~ .checkmark {
-	background-color: var(--bna-button-color);
+	background-color: var(--bna-button-background-color);
 	background-image: url('../img/check-mark.svg');
 	background-size: 12px 14px;
 	background-repeat: no-repeat;
 	background-position: left 6px top 5px;
-	border: 1px solid var(--bna-button-color);
+	border: 1px solid var(--bna-button-background-color);
 }
 
 /* Select2 */
@@ -274,7 +274,7 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 	height: 48px;
 	border: 1px solid var(--bna-line-color);
 	border-radius: 2px;
-	background-color: var(--bna-background-color);
+	background-color: var(--bna-input-background-color);
 	outline: none !important;
 	color: var(--bna-font-color);
 }
@@ -341,11 +341,11 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 	padding-top: 10px;
 }
 .woo-myaccount-customer-data-logout {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 	margin-top: auto;
 }
 .woo-myaccount-customer-data-logout a {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 }
 @media (max-width: 991.98px) {
 	.woo-myaccount-customer-photo-wrapper {
@@ -392,11 +392,11 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 	text-decoration: none;
 }
 .woocommerce-account .woocommerce-MyAccount-navigation ul li a:hover {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 	text-decoration: none;
 }
 .woocommerce-account .woocommerce-MyAccount-navigation li.is-active a {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 	text-decoration: none;
 	border: none;
 }
@@ -443,18 +443,18 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 
 /* Woocommerce Info */
 .woocommerce-info {
-	border-color: var(--bna-button-color);
+	border-color: var(--bna-button-background-color);
 }
 .woocommerce-info a.showcoupon,
 .woocommerce-info span,
 .woocommerce-info i {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 }
 .woocommerce-info a.showcoupon:hover {
 	opacity: 0.6;
 }
 .woocommerce form.checkout_coupon, .woocommerce form.login, .woocommerce form.register {
-  border-top-color: var(--bna-button-color);
+  border-top-color: var(--bna-button-background-color);
 }
 
 /* Dashboard */
@@ -529,8 +529,8 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 }
 .woocommerce-orders-table__filter:hover,
 .woocommerce-orders-table__filter.filter-active {
-	border: 1px solid var(--bna-button-color);
-	color: var(--bna-button-color);
+	border: 1px solid var(--bna-button-background-color);
+	color: var(--bna-button-background-color);
 }
 .woocommerce table.shop_table {
 	border: none;
@@ -547,8 +547,8 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 	border-bottom: 1px solid #CCC;
 }
 button.wp-element-button {
-	background-color: var(--bna-button-color);
-	border-color: var(--bna-button-color);
+	background-color: var(--bna-button-background-color);
+	border-color: var(--bna-button-background-color);
 	color: #FFF;
 	font-weight: 700;
 	font-size: 18px;
@@ -558,7 +558,7 @@ button.wp-element-button {
 }
 .woocommerce-orders-table a.wp-element-button {
 	background-color: unset;
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 	font-weight: 700;
 	font-size: 18px;
 	line-height: 21px;
@@ -566,7 +566,7 @@ button.wp-element-button {
 	margin-bottom: 0px !important;
 }
 .woocommerce table.my_account_orders .woocommerce-orders-table__row a.bna-orders-order-link {
-	color: var(--bna-button-color) !important;
+	color: var(--bna-button-background-color) !important;
 }
 .woocommerce table.my_account_orders .woocommerce-orders-table__row a.bna-orders-order-link:hover {
 	opacity: 0.6;
@@ -579,7 +579,7 @@ button.wp-element-button {
 	color: var(--bna-font-color);
 }
 .woocommerce-account .woocommerce  .woocommerce-Addresses a {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 	text-decoration: underline;
 	padding-top: 20px;
 	display: block;
@@ -625,7 +625,7 @@ body.woocommerce-account .woocommerce .bna-payment-method .method-img {
 	object-fit: cover;
 }
 body.woocommerce-account .woocommerce .bna-payment-method .btn-del-payment {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 	text-decoration: underline;
 	font-weight: 700;
 	background-color: transparent;
@@ -873,14 +873,14 @@ body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-three-inputs-wr
 	color: #CCC;
 }
 body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-three-inputs-wrapper .bna-input-wrapper .bna-radio-button + span:hover {
-	border: 1px solid var(--bna-button-color);
-	color: var(--bna-button-color);
+	border: 1px solid var(--bna-button-background-color);
+	color: var(--bna-button-background-color);
 	cursor: pointer;
 }
 body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-three-inputs-wrapper .bna-input-wrapper input:checked ~ span {
-	border: 1px solid var(--bna-button-color);
-	color: var(--bna-background-color);
-	background: var(--bna-button-color);
+	border: 1px solid var(--bna-button-background-color);
+	color: var(--bna-input-background-color);
+	background: var(--bna-button-background-color);
 }
 body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-three-inputs-wrapper .bna-input-wrapper #setting_number_of_payment {
 	text-align: center;
@@ -898,12 +898,12 @@ body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-three-inputs-wr
 body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-three-inputs-wrapper .bna-input-wrapper #qtyplus {
 	position: absolute;
 	top: 0px;
-	border: 1px solid var(--bna-button-color);
+	border: 1px solid var(--bna-button-background-color);
 	height: 100%;
 	width: 40px;
-	background: var(--bna-button-color);
+	background: var(--bna-button-background-color);
 	margin: 0px;
-	color: var(--bna-background-color);
+	color: var(--bna-input-background-color);
 }
 body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-three-inputs-wrapper .bna-input-wrapper #qtyplus {
 	right: 0px;
@@ -927,9 +927,9 @@ body.woocommerce-checkout .woocommerce #bank_name {
 	margin: 50px auto 30px;
 }
 .bna-address-copy_button {
-	border: 1px solid var(--bna-button-color);
-	background: var(--bna-background-color);
-	color: var(--bna-button-color) !important;
+	border: 1px solid var(--bna-button-background-color);
+	background: var(--bna-input-background-color);
+	color: var(--bna-button-background-color) !important;
 	box-shadow: unset;
 	font-size: 13px;
 	padding: 10px;
@@ -958,16 +958,25 @@ body.woocommerce-checkout .woocommerce #bank_name {
 	padding: 7px 18px 5px;
 	display: inline-block;
 }
-
+.btn-suspend-subscription {
+	background-color: transparent;
+	box-shadow: none;
+	padding: 7px 18px 5px;
+	display: inline-block;
+}
 @media (max-width: 767.98px) {
 	.btn-del-subscription {
 		margin-right: 0px;
 		margin-left: auto;
 	}
 }
+.bna-td-min-height {
+	height: 57px;
+}
+
  /* Privacy policy */
 a.woocommerce-privacy-policy-link {
-	color: var(--bna-button-color);
+	color: var(--bna-button-background-color);
 }
 a.woocommerce-privacy-policy-link:hover {
 	opacity: 0.6;
@@ -1048,3 +1057,67 @@ details[open] summary:before {
 	content: '\f146';
 }
 
+details.bna-details[open] summary::after {
+  content: 'less...';
+}
+
+details.bna-details:not([open]) summary::after {
+  content: 'more...';
+}
+
+/* Confirm Box */
+#confirm-wrapper {
+	width: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1000000;
+	background: rgba( 204, 204, 204, 0.6 );
+	display: none;
+	transition: opacity 1s ease-in;
+}
+#confirm-box {
+	width: 300px;
+	background: #fff;
+	min-height: 200px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -100px 0 0 -150px;
+}
+#confirm-buttons {
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	bottom: 0;
+	left: 0;
+	padding-bottom: 1em;
+}
+#confirm-buttons button {
+	display: inline-block;
+	background: transparent;
+	color: var(--bna-button-background-color) !important;
+	font-weight: bold;
+	cursor: pointer;
+	text-transform: uppercase;
+	border: 2px solid;
+	margin: 0 0.5em;
+	padding: 0.6em 0;
+	width: 120px;
+	box-shadow: none;
+}
+#confirm-header {
+	text-align: center;
+	font-size: 1em;
+	font-weight: bold;
+	text-transform: uppercase;
+	margin: 2.5em 0 1.5em 0;
+	line-height: 1.3em;
+}
+#confirm-header:after {
+	content: ' ';
+	display: block;
+	width: 1em;
+	border-top: 1px solid;
+	margin: 0.4em auto;
+}
