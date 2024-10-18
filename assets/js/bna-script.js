@@ -294,84 +294,105 @@ function input_test(input) {
 
     $('.btn-del-subscription').on('click', function(event){
         event.stopPropagation();
-        event.preventDefault(); 
-
-        if ( confirm('Do you want to delete the order #' + $(this).data('order-id') + '?') == false) { return false; }
-
+        event.preventDefault();
         let self = $(this);
-        self.prop('disabled', true);
 
-        startLoadingAnimation();
+        let winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        $('#confirm-header').text( $(this).data('order-question') + ' #' + $(this).data('order-id') + '?');
+        $('#confirm-wrapper').css({'display': 'block', 'opacity': '1', 'height': winHeight + 'px'});
+        $('#confirm-cancel').on('click', function() {
+			$('#confirm-wrapper').css({'display': 'none', 'opacity': '0'});
+			return false;
+		});
+		$('#confirm-ok').on('click', function() {
+			$('#confirm-wrapper').css({'display': 'none', 'opacity': '0'});
+        
+			self.prop('disabled', true);
 
-        $.ajax({
-            url         : bnaData.url,
-            type        : 'POST', 
-            dataType    : "json",
-            data        : {
-                action  : 'delete_subscription',
-                nonce   : bnaData.nonce,
-                id      : self.data('id') 
-            },
-            success: function( data ) {
+			startLoadingAnimation();
 
-                stopLoadingAnimation();
-                let message = $('.woocommerce-notices-wrapper');
-                message.get(0).scrollIntoView();
-                message.html(data.message);
+			$.ajax({
+				url         : bnaData.url,
+				type        : 'POST', 
+				dataType    : "json",
+				data        : {
+					action  : 'delete_subscription',
+					nonce   : bnaData.nonce,
+					id      : self.data('id') 
+				},
+				success: function( data ) {
 
-                if( data.success === 'true' ){
-					setTimeout(()=>{
-						window.location.reload();
-					}, 1000);
+					stopLoadingAnimation();
+					let message = $('.woocommerce-notices-wrapper');
+					message.get(0).scrollIntoView();
+					message.html(data.message);
+
+					if( data.success === 'true' ){
+						setTimeout(()=>{
+							window.location.reload();
+						}, 1000);
+					}
+
+					self.prop('disabled', false);
+				},
+				error: function( data ){
+					//console.log(data);
 				}
-
-                self.prop('disabled', false);
-            },
-            error: function( data ){
-                //console.log(data);
-            }
-        });    
+			});
+        });
+            
     });
     
     $('.btn-suspend-subscription').on('click', function(event){
         event.stopPropagation();
         event.preventDefault(); 
-
-        //if ( confirm('Do you want to delete the order #' + $(this).data('order-id') + '?') == false) { return false; }
-
         let self = $(this);
-        self.prop('disabled', true);
-
-        startLoadingAnimation();
-
-        $.ajax({
-            url         : bnaData.url,
-            type        : 'POST', 
-            dataType    : "json",
-            data        : {
-                action  : 'suspend_subscription',
-                nonce   : bnaData.nonce,
-                id      : self.data('id') 
-            },
-            success: function( data ) {
-
-                stopLoadingAnimation();
-                let message = $('.woocommerce-notices-wrapper');
-                message.get(0).scrollIntoView();
-                message.html(data.message);
+        
+        let winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        $('#confirm-header').text( $(this).data('order-question') + ' #' + $(this).data('order-id') + '?');
+        $('#confirm-wrapper').css({'display': 'block', 'opacity': '1', 'height': winHeight + 'px'});
+        $('#confirm-cancel').on('click', function() {
+			$('#confirm-wrapper').css({'display': 'none', 'opacity': '0'});
+			return false;
+		});
+        $('#confirm-ok').on('click', function() {
+			$('#confirm-wrapper').css({'display': 'none', 'opacity': '0'});
 				
-				if( data.success === 'true' ){
-					setTimeout(()=>{
-						window.location.reload();
-					}, 1000);
-				}
+			self.prop('disabled', true);
 
-                self.prop('disabled', false);
-            },
-            error: function( data ){
-                //console.log(data);
-            }
-        });    
+			startLoadingAnimation();
+
+			$.ajax({
+				url         : bnaData.url,
+				type        : 'POST', 
+				dataType    : "json",
+				data        : {
+					action  : 'suspend_subscription',
+					nonce   : bnaData.nonce,
+					id      : self.data('id'),
+					suspend : self.data('suspend') 
+				},
+				success: function( data ) {
+
+					stopLoadingAnimation();
+					let message = $('.woocommerce-notices-wrapper');
+					message.get(0).scrollIntoView();
+					message.html(data.message);
+					
+					if( data.success === 'true' ){
+						setTimeout(()=>{
+							window.location.reload();
+						}, 1000);
+					}
+
+					self.prop('disabled', false);
+				},
+				error: function( data ){
+					//console.log(data);
+				}
+			});
+		});
+		   
     });
 
 })(jQuery);

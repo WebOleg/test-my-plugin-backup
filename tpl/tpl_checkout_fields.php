@@ -426,7 +426,7 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		
 		// validation before send order
 		$('#place_order').on('click', function(event) {
-			$('.bna-input:visible, input.input-text:not(#billing_company, #billing_apartment)').each(function(i) {
+			$('.bna-input:visible:enabled, input.input-text:not(#billing_company, #billing_apartment)').each(function(i) {
 				if ( $(this).val() == 0 ) {
 					$(this).addClass('invalid');
 				} else {

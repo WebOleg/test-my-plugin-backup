@@ -141,10 +141,12 @@ function bna_variable_css() {
         <style>
             :root :where(body) {
 				--bna-font-color: <?php echo ! empty( $bna_gateway_settings['bna-font-color'] ) ? $bna_gateway_settings['bna-font-color'] : '#646464'; ?>;
-				--bna-button-color: <?php echo ! empty( $bna_gateway_settings['bna-button-color'] ) ? $bna_gateway_settings['bna-button-color'] : '#00A0E3'; ?>;
+				--bna-button-background-color: <?php echo ! empty( $bna_gateway_settings['bna-button-background-color'] ) ? $bna_gateway_settings['bna-button-background-color'] : '#00A0E3'; ?>;
 				--bna-button-text-color: <?php echo ! empty( $bna_gateway_settings['bna-button-text-color'] ) ? $bna_gateway_settings['bna-button-text-color'] : '#FFF'; ?>;
 				--bna-line-color: <?php echo ! empty( $bna_gateway_settings['bna-line-color'] ) ? $bna_gateway_settings['bna-line-color'] : '#CCC'; ?>;
-				--bna-background-color: <?php echo ! empty( $bna_gateway_settings['bna-background-color'] ) ? $bna_gateway_settings['bna-background-color'] : '#FFF'; ?>;
+				--bna-input-background-color: <?php echo ! empty( $bna_gateway_settings['bna-input-background-color'] ) ? $bna_gateway_settings['bna-input-background-color'] : '#FFF'; ?>;
+				--bna-svg-first-color: <?php echo ! empty( $bna_gateway_settings['bna-svg-first-color'] ) ? $bna_gateway_settings['bna-svg-first-color'] : '#00A0E3'; ?>;
+				--bna-svg-last-color: <?php echo ! empty( $bna_gateway_settings['bna-svg-last-color'] ) ? $bna_gateway_settings['bna-svg-last-color'] : '#B0CB1F'; ?>;
 			}
         </style>
     <?php

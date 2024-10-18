@@ -87,14 +87,14 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				
 			}, 99 );
 
-			add_action( 'wp_ajax_create_payor', array( &$this, 'ajax_create_payor' ) );
-			add_action( 'wp_ajax_update_payor', array( &$this, 'ajax_update_payor' ) );
+			add_action( 'wp_ajax_create_payor', array( $this, 'ajax_create_payor' ) );
+			add_action( 'wp_ajax_update_payor', array( $this, 'ajax_update_payor' ) );
 			//add_action( 'wp_ajax_delete_payor', array(&$this, 'ajax_delete_payor' ) );
-			add_action( 'wp_ajax_delete_payment', array( &$this, 'ajax_delete_payment' ) );
-			add_action( 'wp_ajax_add_payment', array( &$this, 'ajax_add_payment' ) );
+			add_action( 'wp_ajax_delete_payment', array( $this, 'ajax_delete_payment' ) );
+			add_action( 'wp_ajax_add_payment', array( $this, 'ajax_add_payment' ) );
 			add_action( 'wp_ajax_copy_billing_address_to_shipping', array( &$this, 'ajax_copy_billing_address_to_shipping' ) );
 
-			add_action( 'profile_update', array( &$this, 'check_user_profile_updated' ), 10, 2 );
+			add_action( 'profile_update', array( $this, 'check_user_profile_updated' ), 10, 2 );
 		}
 
 		/**
@@ -113,8 +113,10 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			wp_localize_script( 'bna-datepicker-js', 'bnaData',
 				array(
 					'url' 	=> admin_url('admin-ajax.php'),
-					'nonce' => wp_create_nonce(BNA_CONST_NONCE_NAME),
-					'paymentMethodsEndpointUrl' => esc_url( wc_get_account_endpoint_url( 'bna-payment-methods' ) )
+					'nonce' => wp_create_nonce( BNA_CONST_NONCE_NAME ),
+					'paymentMethodsEndpointUrl' => esc_url( wc_get_account_endpoint_url( 'bna-payment-methods' ) ),
+					'btnSuspendSubscriptionQuestion' => __( 'Do you want to suspend the subscription', 'wc-bna-gateway' ),
+					'btnDelSubscriptionQuestion' => __( 'Do you want to delete the subscription', 'wc-bna-gateway' )
 				)	
 			);
 		}

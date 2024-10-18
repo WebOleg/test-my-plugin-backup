@@ -8,6 +8,10 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+$icon_pause = '<svg viewBox="64 64 896 896" width="22px" height="22px" fill="var(--bna-button-background-color)" aria-hidden="true"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372zm-88-532h-48c-4.4 0-8 3.6-8 8v304c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V360c0-4.4-3.6-8-8-8zm224 0h-48c-4.4 0-8 3.6-8 8v304c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V360c0-4.4-3.6-8-8-8z"></path></svg>';
+$icon_play = '<svg viewBox="64 64 896 896" width="22px" height="22px" fill="var(--bna-button-background-color)" aria-hidden="true"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"></path><path d="M719.4 499.1l-296.1-215A15.9 15.9 0 00398 297v430c0 13.1 14.8 20.5 25.3 12.9l296.1-215a15.9 15.9 0 000-25.8zm-257.6 134V390.9L628.5 512 461.8 633.1z"></path></svg>';
+$icon_trash = '<svg role="img" xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 0 512 512" width="22px"><path fill="red" d="M432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16zM53.2 467a48 48 0 0 0 47.9 45h245.8a48 48 0 0 0 47.9-45L416 128H32z"></path></svg>';
 ?>
 
 <section class="section my-account-orders">
@@ -34,6 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			<tr>		
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Base Order', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Recurring', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Status', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Start', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Number of payments', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Desc.', 'wc-bna-gateway' ); ?></span></th>
@@ -67,21 +72,24 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				?>
 				<tr class="woocommerce-orders-table__row">
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Base Order', 'wc-bna-gateway' ); ?>">
-						<a class="bna-orders-order-link" href="/my-account/view-order/<?php echo $desc->invoiceInfo->invoiceId; ?>/">
-							<?php echo '#' . $desc->invoiceInfo->invoiceId; ?>
+						<a class="bna-orders-order-link" href="/my-account/view-order/<?php echo $desc->metadata->invoiceId; ?>/">
+							<?php echo '#' . $desc->metadata->invoiceId; ?>
 						</a>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Recurring', 'wc-bna-gateway' ); ?>">
 						<?php echo $s_val->recurring; ?>
 					</td>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
+						<?php echo $s_val->status; ?>
+					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Start', 'wc-bna-gateway' ); ?>">
-						<?php echo date( 'Y-m-d H:i:s', strtotime( $s_val->startDate ) ); ?>
+						<?php echo date( 'Y-m-d', strtotime( $s_val->startDate ) ); ?>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Number of payments', 'wc-bna-gateway' ); ?>">
 						<?php echo $s_val->numberOfPayments; ?>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Desc.', 'wc-bna-gateway' ); ?>">
-						<details><summary><?php _e( 'more...', 'wc-bna-gateway' ); ?></summary>
+						<details class="bna-details"><summary></summary>
 							<p><?php _e( 'ID:', 'wc-bna-gateway' ); ?> <?php echo $s_val->recurringId; ?></p>
 							<p><?php _e( 'Created:', 'wc-bna-gateway' ); ?> <?php echo date( 'Y-m-d H:i:s', strtotime( $s_val->created_time ) ); ?></p>
 							<p><?php _e( 'Status:', 'wc-bna-gateway' ); ?> <?php echo $s_val->status; ?></p>
@@ -115,13 +123,28 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 							?>
 						</details>
 					</td>
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
-						<button type="button" class="button btn-suspend-subscription" data-id="<?php echo $s_val->id; ?>" data-order-id="<?php echo $desc->invoiceInfo->invoiceId; ?>">
-							<?php _e( 'Pause', 'wc-bna-gateway' ); ?>
-						</button>
-						<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>" data-order-id="<?php echo $desc->invoiceInfo->invoiceId; ?>">
-							<img  class="bna-delete-img" src="<?php echo $this->plugin_url . 'assets/img/trash-solid.svg'; ?>" >
-						</button>
+					<td class="woocommerce-orders-table__cell bna-td-min-height" data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
+						<?php if ( strtolower( $s_val->status ) === 'new' || strtolower( $s_val->status ) === 'active' ) { ?>
+							<button type="button" class="btn-suspend-subscription" data-id="<?php echo $s_val->id; ?>" data-suspend="yes" 
+								data-order-id="<?php echo $desc->metadata->invoiceId; ?>"
+								data-order-question="<?php _e( 'Do you want to suspend the subscription', 'wc-bna-gateway' ) ?>" >
+								<?php echo $icon_pause; ?>
+							</button>
+						<?php } ?>
+						<?php if ( strtolower( $s_val->status ) === 'suspended' ) { ?>
+							<button type="button" class="btn-suspend-subscription" data-id="<?php echo $s_val->id; ?>" data-suspend="no" 
+								data-order-id="<?php echo $desc->metadata->invoiceId; ?>"
+								data-order-question="<?php _e( 'Do you want to run the subscription', 'wc-bna-gateway' ) ?>" >
+								<?php echo $icon_play; ?>
+							</button>
+						<?php } ?>
+						<?php if ( strtolower( $s_val->status ) !== 'deleted' ) { ?>
+							<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>" 
+								data-order-id="<?php echo $desc->metadata->invoiceId; ?>"
+								data-order-question="<?php _e( 'Do you want to delete the subscription', 'wc-bna-gateway' ) ?>" >
+								<?php echo $icon_trash; ?>
+							</button>
+						<?php } ?>	
 					</td>
 				</tr>
 			<?php
@@ -131,3 +154,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	</table>
 	
 </section>
+
+<div class="loading"></div>
+
+<div id="confirm-wrapper">
+	<div id="confirm-box">
+		<h2 id="confirm-header"><?php _e( 'Are you sure?', 'wc-bna-gateway' ) ?></h2>
+		<div id="confirm-buttons">
+			<button id="confirm-ok"><?php _e( 'OK', 'wc-bna-gateway' ) ?></button>
+			<button type="button" id="confirm-cancel"><?php _e( 'Cancel', 'wc-bna-gateway' ) ?></button>
+		</div>
+	</div>
+</div>

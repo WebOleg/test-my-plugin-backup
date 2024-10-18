@@ -85,7 +85,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 						<?php echo $t_val->transactionStatus; ?>				
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Description', 'wc-bna-gateway' ); ?>">
-						<details><summary><?php _e( 'more...', 'wc-bna-gateway' ); ?></summary>
+						<details class="bna-details"><summary></summary>
 							<p><?php _e( 'Currency:', 'wc-bna-gateway' ); ?> <?php echo $desc->currency;?></p>
 							<?php
 								if ( isset( $desc->total ) )
