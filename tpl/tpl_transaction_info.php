@@ -85,7 +85,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 						<?php echo $t_val->transactionStatus; ?>				
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Description', 'wc-bna-gateway' ); ?>">
-						<details class="bna-details"><summary></summary>
+						<h6 class="bna-details-title"></h6>
+						<div class="bna-details">
 							<p><?php _e( 'Currency:', 'wc-bna-gateway' ); ?> <?php echo $desc->currency;?></p>
 							<?php
 								if ( isset( $desc->total ) )
@@ -113,7 +114,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 										break;
 								} 
 							?>
-						</details>
+						</div>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Created', 'wc-bna-gateway' ); ?>">
 						<?php echo date( 'Y-m-d H:i:s', strtotime( $desc->transactionTime ) ); ?>
@@ -125,3 +126,29 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</tbody>
 	</table>
 </section>
+
+<script>
+jQuery("body").on('click', 'h6.bna-details-title:not(.open)', function(e){
+	jQuery('div.bna-details').hide();
+	jQuery('h6.bna-details-title.open').removeClass('open');
+	
+	jQuery(this).addClass('open');
+	jQuery(this).next().show();
+		
+	var fixed_offset = 70;
+	let position = jQuery(this).parent().offset();
+	jQuery('html,body').stop().animate({ scrollTop: position.top - fixed_offset }, 1000);
+	e.preventDefault();
+});
+	
+jQuery("body").on('click', 'h6.bna-details-title.open', function(e){
+	jQuery(this).removeClass('open');
+	jQuery(this).next().hide();
+	setTimeout(()=>{
+		var fixed_offset = 70;
+		let position = jQuery(this).parent().offset();
+		jQuery('html,body').stop().animate({ scrollTop: position.top - fixed_offset }, 1000);
+	}, 100);	
+	e.preventDefault();
+});
+</script>

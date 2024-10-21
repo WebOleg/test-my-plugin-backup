@@ -39,7 +39,7 @@ if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway
 					<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
 					<input class="bna-input" id="credit-card-number" type="text" name="cc_number" autocomplete="off" 
 						autocorrect="off" autocapitalize="none" spellcheck="false"
-						maxlength="22" placeholder="0000 0000 0000 0000" >
+						maxlength="19" placeholder="0000 0000 0000 0000" >
 				</div>
 				
 				<div class="bna-input-wrapper">

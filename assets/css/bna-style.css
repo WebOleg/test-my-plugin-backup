@@ -28,6 +28,7 @@
 
 a { color: var(--bna-button-background-color); }
 a:hover { opacity: 0.6; }
+button:hover { opacity: 0.6; }
 
 /* Layout */
 body.woocommerce-cart .woocommerce,
@@ -538,6 +539,8 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 .woocommerce table.shop_table tr.woocommerce-orders-table__row td {
 	padding-top: 10px;
 	padding-bottom: 10px;
+}
+.woocommerce table.shop_table tr.woocommerce-orders-table__row td:not(.woocommerce-orders-table__cell-order-actions) {
 	text-align: center;
 }
 .woocommerce table.shop_table td {
@@ -608,10 +611,22 @@ body.woocommerce-account .woocommerce .bna-payment-method .bna-few-buttons-wrapp
 	display: flex;
 	flex-direction: row;
 	gap: 30px;
+	justify-content: center;
 }
 body.woocommerce-account .woocommerce .bna-payment-method .bna-few-buttons-wrapper .bna-button.bna-button-flex {
-	flex: 0 1 calc(33% - 30px);
-	width: auto;
+	flex: 0 1 320px;
+	/*width: auto;*/
+}
+@media (max-width: 560.98px) {
+	body.woocommerce-account .woocommerce .bna-payment-method .bna-few-buttons-wrapper {
+		flex-direction: column;
+		flex-wrap: wrap;
+	}
+	body.woocommerce-account .woocommerce .bna-payment-method .bna-few-buttons-wrapper .bna-button.bna-button-flex {
+		flex: 0 1 100%;
+		align-self: center;
+		width: 320px;
+	}
 }
 body.woocommerce-account .woocommerce .bna-payment-method .bna-button-wrapper {
 	margin-bottom: 60px;
@@ -631,6 +646,12 @@ body.woocommerce-account .woocommerce .bna-payment-method .btn-del-payment {
 	background-color: transparent;
 	box-shadow: none;
 	padding: 7px 18px 5px;
+	margin: auto;
+}
+@media (max-width: 767.98px) {
+	body.woocommerce-account .woocommerce .bna-payment-method .btn-del-payment {
+		margin-right: 0px;
+	}
 }
 body.woocommerce-checkout .woocommerce .bna-payment-method-eft,
 body.woocommerce-checkout .woocommerce .bna-payment-method-cards  {
@@ -913,7 +934,8 @@ body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-input-wrapper #
 	visibility: visible;
 	width: 100%;
 }
-#checkmark_is_recurring {
+#checkmark_is_recurring,
+#checkmark_save_customer {
 	left: 20px;
 }
 body.woocommerce-checkout .woocommerce #bank_name {
@@ -952,26 +974,28 @@ body.woocommerce-checkout .woocommerce #bank_name {
 }
 
 /* Subsciption */
-.btn-del-subscription {
-	background-color: transparent;
-	box-shadow: none;
-	padding: 7px 18px 5px;
-	display: inline-block;
-}
+.btn-del-subscription,
 .btn-suspend-subscription {
 	background-color: transparent;
 	box-shadow: none;
 	padding: 7px 18px 5px;
 	display: inline-block;
 }
+.btn-subscription-deleted {
+	background-color: transparent;
+	box-shadow: none;
+	padding: 7px 18px 5px;
+	display: inline-block;
+	cursor: unset;
+}
+.btn-subscription-deleted:hover {
+	opacity: 1;
+}
 @media (max-width: 767.98px) {
 	.btn-del-subscription {
 		margin-right: 0px;
 		margin-left: auto;
 	}
-}
-.bna-td-min-height {
-	height: 57px;
 }
 
  /* Privacy policy */
@@ -1065,6 +1089,33 @@ details.bna-details:not([open]) summary::after {
   content: 'more...';
 }
 
+div.bna-details {
+	display: none
+}
+h6.bna-details-title {
+	list-style: none;
+	font-weight:bold;
+	cursor: pointer;
+	color: var(--bna-font-color);
+	text-align: center;
+}
+h6.bna-details-title:before {
+	content: '\f0fe';
+	font-family: "Font Awesome 5 free";
+	margin-right: 7px;
+}
+h6.bna-details-title.open:before {
+	content: '\f146';
+}
+
+h6.bna-details-title.open::after {
+  content: 'less...';
+}
+
+h6.bna-details-title::after {
+  content: 'more...';
+}
+
 /* Confirm Box */
 #confirm-wrapper {
 	width: 100%;
@@ -1079,7 +1130,7 @@ details.bna-details:not([open]) summary::after {
 #confirm-box {
 	width: 300px;
 	background: #fff;
-	min-height: 200px;
+	min-height: 220px;
 	position: absolute;
 	top: 50%;
 	left: 50%;

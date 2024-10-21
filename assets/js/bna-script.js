@@ -206,40 +206,50 @@ function input_test(input) {
     $('.btn-del-payment').on('click', function(event){
         event.stopPropagation();
         event.preventDefault(); 
+		let self = $(this);
+        
+        let winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        $('#confirm-header').text( $(this).data('order-question') + ' ' + $(this).data('current-method') + '?');
+        $('#confirm-wrapper').css({'display': 'block', 'opacity': '1', 'height': winHeight + 'px'});
+        $('#confirm-cancel').on('click', function() {
+			$('#confirm-wrapper').css({'display': 'none', 'opacity': '0'});
+			return false;
+		});
+        $('#confirm-ok').on('click', function() {
+			$('#confirm-wrapper').css({'display': 'none', 'opacity': '0'});
+        
+			self.prop('disabled', true);
 
-        if ( confirm("Do you want to delete the payment method \n" + $(this).data('current-method') + "?") == false) { return false; }
+			startLoadingAnimation();
 
-        let self = $(this);
-        self.prop('disabled', true);
+			$.ajax({
+				url         : bnaData.url,
+				type        : 'POST', 
+				dataType    : "json",
+				data        : {
+					action  : 'delete_payment',
+					nonce   : bnaData.nonce,
+					id      : self.data('id') 
+				},
+				success: function( data ) {
 
-        startLoadingAnimation();
+					stopLoadingAnimation();
+					let message = $('.woocommerce-notices-wrapper');
+					message.get(0).scrollIntoView();
+					message.html(data.message);
 
-        $.ajax({
-            url         : bnaData.url,
-            type        : 'POST', 
-            dataType    : "json",
-            data        : {
-                action  : 'delete_payment',
-                nonce   : bnaData.nonce,
-                id      : self.data('id') 
-            },
-            success: function( data ) {
+					setTimeout(()=>{
+						window.location.reload();
+					}, 3000);
 
-                stopLoadingAnimation();
-                let message = $('.woocommerce-notices-wrapper');
-                message.get(0).scrollIntoView();
-                message.html(data.message);
-
-                setTimeout(()=>{
-                    window.location.reload();
-                }, 3000);
-
-                self.prop('disabled', false);
-            },
-            error: function( data ){
-                //console.log(data);
-            }
-        });    
+					self.prop('disabled', false);
+				},
+				error: function( data ){
+					//console.log(data);
+				}
+			});
+		});
+           
     });
 	
     $('#save_payment').on('click', function(event){

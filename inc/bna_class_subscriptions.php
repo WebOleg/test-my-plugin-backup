@@ -56,7 +56,7 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
             unset( $result['customerInfo'] );
 			unset( $result['paymentMethods'] );
 
-            if ( empty( $subscription ) || count( $subscription ) < 1) {
+            if ( empty( $subscription ) || count( $subscription ) < 1 ) {
 				
 				$wpdb->insert( 
                     $wpdb->prefix . BNA_TABLE_RECURRING,  
