@@ -1,0 +1,11 @@
+stages:
+  - deploy
+
+variables:
+  WP_PATH_PLUGIN: "/root/wordpress/wp-content/plugins/woocommerce-bnasmartpayment-gateway"
+
+Deploy:
+  stage: deploy
+  tags: [ wp-demo ]
+  script:
+    - rsync -avC --delete . $WP_PATH_PLUGIN
