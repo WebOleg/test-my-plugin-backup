@@ -39,22 +39,24 @@ do_action( 'woocommerce_before_edit_account_address_form' ); ?>
 		<h3><?php echo apply_filters( 'woocommerce_my_account_edit_address_title', $page_title, $load_address ); ?></h3><?php // @codingStandardsIgnoreLine ?>
 		
 		<?php
-		if ( get_user_meta( $current_user_id, 'shipping_first_name', true ) &&
-			get_user_meta( $current_user_id, 'shipping_last_name', true ) &&
-			get_user_meta( $current_user_id, 'shipping_company', true ) &&
-			get_user_meta( $current_user_id, 'shipping_address_1', true ) &&
-			get_user_meta( $current_user_id, 'shipping_address_2', true ) &&
-			get_user_meta( $current_user_id, 'shipping_country', true ) &&
-			get_user_meta( $current_user_id, 'shipping_state', true ) &&
-			get_user_meta( $current_user_id, 'shipping_city', true ) &&
-			get_user_meta( $current_user_id, 'shipping_postcode', true ) ) {
-				$display = 'none';
-			} else { $display = 'block'; }
-		?>
-		<div class="bna-address-copy" style="display: <?php echo $display; ?>">
-			<button id="bna-address-copy_button" class="bna-address-copy_button"><?php _e( 'Copy', 'wc-bna-gateway' ); ?></button>
-			<span  class="bna-address-copy_span"><?php _e( 'Copy shipping address from billing address', 'wc-bna-gateway' ); ?></span>
-		</div>
+		if ( 'shipping' === $load_address ) {
+			if ( get_user_meta( $current_user_id, 'shipping_first_name', true ) &&
+				get_user_meta( $current_user_id, 'shipping_last_name', true ) &&
+				get_user_meta( $current_user_id, 'shipping_company', true ) &&
+				get_user_meta( $current_user_id, 'shipping_address_1', true ) &&
+				get_user_meta( $current_user_id, 'shipping_address_2', true ) &&
+				get_user_meta( $current_user_id, 'shipping_country', true ) &&
+				get_user_meta( $current_user_id, 'shipping_state', true ) &&
+				get_user_meta( $current_user_id, 'shipping_city', true ) &&
+				get_user_meta( $current_user_id, 'shipping_postcode', true ) ) {
+					$display = 'none';
+				} else { $display = 'block'; }
+			?>
+			<div class="bna-address-copy" style="display: <?php echo $display; ?>">
+				<button id="bna-address-copy_button" class="bna-address-copy_button"><?php _e( 'Copy', 'wc-bna-gateway' ); ?></button>
+				<span  class="bna-address-copy_span"><?php _e( 'Copy shipping address from billing address', 'wc-bna-gateway' ); ?></span>
+			</div>
+		<?php } ?>
 		
 		<div class="woocommerce-address-fields">
 			<?php do_action( "woocommerce_before_edit_address_form_{$load_address}" ); ?>

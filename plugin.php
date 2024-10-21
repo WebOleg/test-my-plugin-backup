@@ -269,8 +269,8 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				'input_class' => array( 'input-text' ),
 			);
 
-			$fields['billing']['billing_address_1']['required'] = false;
-			$fields['billing']['billing_address_2']['required'] = false;
+			unset( $fields['billing']['billing_address_1'] );
+			unset( $fields['billing']['billing_address_2'] );
 			$fields['billing']['billing_phone_code']['priority'] = 99;
 
 			$order_fields = array(
@@ -287,8 +287,8 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				"billing_email",
 				"billing_phone_code",
 				"billing_phone",
-				"billing_address_1",
-				"billing_address_2",
+				//"billing_address_1",
+				//"billing_address_2",
 			);
 		
 			$new = [];

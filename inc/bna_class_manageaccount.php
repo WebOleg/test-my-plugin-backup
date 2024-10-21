@@ -22,13 +22,11 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		 *
 		 * @var string
 		 */
-		//public static $endpoint_account_management = 'bna-account-management';
 		public static $endpoint_payment_methods = 'bna-payment-methods';
 		public static $endpoint_transaction_info = 'bna-transaction-info';
 		public static $endpoint_recurring_payments = 'bna-recurring-payments';
 		public static $endpoint_add_credit_card = 'bna-add-credit-card';
 		public static $endpoint_bank_account_info = 'bna-bank-account-info';
-		public static $endpoint_e_transfer_info = 'bna-e-transfer-info';
 
 		/**
 		 * Plugin actions.
@@ -48,13 +46,11 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			// Insering your new tab/page into the My Account page.
 			add_filter( 'woocommerce_account_menu_items', array( $this, 'new_menu_items' ) );
-			//add_action( 'woocommerce_account_' . self::$endpoint_account_management .  '_endpoint', array( $this, 'endpoint_content_account_management' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_payment_methods .  '_endpoint', array( $this, 'endpoint_content_payment_methods' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_transaction_info .  '_endpoint', array( $this, 'endpoint_content_transaction_info' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_recurring_payments .  '_endpoint', array( $this, 'endpoint_content_recurring_payments' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_add_credit_card .  '_endpoint', array( $this, 'endpoint_content_add_credit_card' ) );
 			add_action( 'woocommerce_account_' . self::$endpoint_bank_account_info .  '_endpoint', array( $this, 'endpoint_content_bank_account_info' ) );
-			add_action( 'woocommerce_account_' . self::$endpoint_e_transfer_info .  '_endpoint', array( $this, 'endpoint_content_e_transfer_info' ) );
 
 			add_action( 'wp_enqueue_scripts', array( &$this, 'site_load_styles') );
 			
@@ -92,9 +88,10 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			//add_action( 'wp_ajax_delete_payor', array(&$this, 'ajax_delete_payor' ) );
 			add_action( 'wp_ajax_delete_payment', array( $this, 'ajax_delete_payment' ) );
 			add_action( 'wp_ajax_add_payment', array( $this, 'ajax_add_payment' ) );
-			add_action( 'wp_ajax_copy_billing_address_to_shipping', array( &$this, 'ajax_copy_billing_address_to_shipping' ) );
+			add_action( 'wp_ajax_copy_billing_address_to_shipping', array( $this, 'ajax_copy_billing_address_to_shipping' ) );
 
 			add_action( 'profile_update', array( $this, 'check_user_profile_updated' ), 10, 2 );
+			
 		}
 
 		/**
@@ -134,7 +131,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			add_rewrite_endpoint( self::$endpoint_recurring_payments, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_add_credit_card, EP_ROOT | EP_PAGES );
 			add_rewrite_endpoint( self::$endpoint_bank_account_info, EP_ROOT | EP_PAGES );
-			add_rewrite_endpoint( self::$endpoint_e_transfer_info, EP_ROOT | EP_PAGES );
 			$wp_rewrite->flush_rules();
 		}
 
@@ -150,7 +146,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			$vars[ self::$endpoint_recurring_payments ] = self::$endpoint_recurring_payments;
 			$vars[ self::$endpoint_add_credit_card ] = self::$endpoint_add_credit_card;
 			$vars[ self::$endpoint_bank_account_info ] = self::$endpoint_bank_account_info;
-			$vars[ self::$endpoint_e_transfer_info ] = self::$endpoint_e_transfer_info;
 
 			return $vars;
 		}
@@ -188,11 +183,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			
 			if ( isset( $wp_query->query_vars[ self::$endpoint_bank_account_info ] ) ) {
 				$title = __( 'Add bank account info', 'wc-bna-gateway' );
-				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
-			}
-			
-			if ( isset( $wp_query->query_vars[ self::$endpoint_e_transfer_info ] ) ) {
-				$title = __( 'Add e-transfer info', 'wc-bna-gateway' );
 				remove_filter( 'the_title', array( $this, 'endpoint_title' ) );
 			}
 
@@ -242,7 +232,11 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 		public function check_user_profile_updated( $user_id, $old_user_data ) 
 		{
 			global $wpdb;
-
+			
+			// apply only to user profile
+			global $pagenow;
+			if ( $pagenow !== 'profile.php' ) { return; }
+			
 			$user = get_userdata( $user_id );
 
 			$args = WC_BNA_Gateway::get_merchant_params();
@@ -311,6 +305,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			empty( $response['id'] ) ? 
 				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
 				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS );
+			
 		}
 
 		/**
@@ -415,20 +410,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 			require_once dirname( __FILE__ ). "/../tpl/tpl_bank_account_info.php";
-		}
-		
-		/**
-		 * Managing endpoint content e-transfer info
-		 *
-		 * @return view
-		 */
-		public function endpoint_content_e_transfer_info() {
-			global $wpdb;
-
-			self::loading_scripts();
-
-			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-			require_once dirname( __FILE__ ). "/../tpl/tpl_e_transfer_info.php";
 		}
 
 		/**
@@ -1067,7 +1048,6 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				}
 			}
 
-			wp_die();
 		}	
 	}	//end of class
 } //class_exists

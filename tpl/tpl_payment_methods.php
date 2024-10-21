@@ -25,19 +25,14 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		?>
 		<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway_settings['bna-payment-method-card'] === 'yes' && in_array( $woo_currency, BNA_CARD_ALLOWED_CURRENCY ) ) { ?>
 			<a href="<?php echo wc_get_account_endpoint_url( 'bna-add-credit-card' ); ?>" class="bna-button bna-button-flex">
-				<?php _e( 'Add Card', 'wc-bna-gateway' ); ?>
+				<?php _e( 'Add Credit Card', 'wc-bna-gateway' ); ?>
 			</a>
 		<?php } ?>
 		<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-eft'] ) && $bna_gateway_settings['bna-payment-method-eft'] === 'yes' && in_array( $woo_currency, BNA_EFT_ALLOWED_CURRENCY ) ) { ?>
 			<a href="<?php echo wc_get_account_endpoint_url( 'bna-bank-account-info' ); ?>" class="bna-button bna-button-flex">
-				<?php _e( 'Add EFT', 'wc-bna-gateway' ); ?>
+				<?php _e( 'Add Bank Transfer', 'wc-bna-gateway' ); ?>
 			</a>
 		<?php } ?>
-		<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-e-transfer'] ) && $bna_gateway_settings['bna-payment-method-e-transfer'] === 'yes' && in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) { ?>	
-			<a href="<?php echo wc_get_account_endpoint_url( 'bna-e-transfer-info' ); ?>" class="bna-button bna-button-flex">
-				<?php _e( 'Add e-Transfer', 'wc-bna-gateway' ); ?>
-			</a>
-		<?php } ?>	
 	</div>
 	<div class="bna-desc"><?php _e( 'The following payment methods will be available on the checkout page.', 'wc-bna-gateway' ); ?></div>
 	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
@@ -67,9 +62,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 						case 'eft':
 							$imageName = 'directCredit.svg';
 							break;
-						case 'e-transfer':
-							$imageName = 'eTransfer.svg';
-							break;
 					}
 					if ( empty( $imageName ) ) continue;
 					?>
@@ -87,15 +79,14 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 									case 'eft':
 										$current_method = $data->accountNumber . '/' . $data->transitNumber . '<br>' . __( 'Institution: ', 'wc-bna-gateway' ) . $data->bankName; 
 										break;
-									case 'e-transfer':
-										$current_method = __( 'Email: ', 'wc-bna-gateway' ) . $data->interacEmail;
-										break;
 								}
 								echo $current_method;					
 							?>
 						</td>
 						<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
-							<button class="btn-del-payment" data-id="<?php echo $p_method->id; ?>" data-current-method="<?php echo str_replace( '<br>', ' ', $current_method ); ?>">
+							<button class="btn-del-payment" data-id="<?php echo $p_method->id; ?>" 
+								data-current-method="<?php echo str_replace( '<br>', ' ', $current_method ); ?>"
+								data-order-question="<?php _e( 'Do you want to delete the current method ', 'wc-bna-gateway' ) ?>">
 								<img class="bna-delete-img" src="<?php echo $this->plugin_url . 'assets/img/trash-solid.svg'; ?>" >
 							</button>
 						</td>
@@ -106,3 +97,16 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</tbody>
 	</table>
 </div>
+
+<div class="loading"></div>
+
+<div id="confirm-wrapper">
+	<div id="confirm-box">
+		<h2 id="confirm-header"><?php _e( 'Are you sure?', 'wc-bna-gateway' ) ?></h2>
+		<div id="confirm-buttons">
+			<button id="confirm-ok"><?php _e( 'OK', 'wc-bna-gateway' ) ?></button>
+			<button type="button" id="confirm-cancel"><?php _e( 'Cancel', 'wc-bna-gateway' ) ?></button>
+		</div>
+	</div>
+</div>
+

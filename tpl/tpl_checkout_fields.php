@@ -9,6 +9,10 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+$has_payment_method = false;
+$bna_gateway_settings = get_option( 'woocommerce_bna_gateway_settings' );
+$woo_currency = get_woocommerce_currency();
+
 $is_card_exists = false;
 $is_eft_exists = false;
 if ( is_array( $paymentMethods ) ) {
@@ -121,177 +125,193 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		<div class="bna-payment-methods">
 			
 			<!-- Card -->
-			<div class="bna-payment-method__item">
-				<div class="bna-checkout-radio" data-payment-type="card"></div>
-				<?php _e( 'Credit Card', 'wc-bna-gateway' ); ?>
-				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/VISA_Logo.png'; ?>" alt="<?php _e( 'VISA_Logo', 'wc-bna-gateway' ); ?>" />
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Mastercard_Logo.png'; ?>" alt="<?php _e( 'Mastercard_Logo', 'wc-bna-gateway' ); ?>" />
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/AMEX_Logo.png'; ?>" alt="<?php _e( 'AMEX_Logo', 'wc-bna-gateway' ); ?>" />
+			<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway_settings['bna-payment-method-card'] === 'yes' && in_array( $woo_currency, BNA_CARD_ALLOWED_CURRENCY ) ) { ?>
+			<?php $has_payment_method = true; ?>
+				<div class="bna-payment-method__item">
+					<div class="bna-checkout-radio" data-payment-type="card"></div>
+					<?php _e( 'Credit Card', 'wc-bna-gateway' ); ?>
+					<div class="bna-checkout-images">
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/VISA_Logo.png'; ?>" alt="<?php _e( 'VISA_Logo', 'wc-bna-gateway' ); ?>" />
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Mastercard_Logo.png'; ?>" alt="<?php _e( 'Mastercard_Logo', 'wc-bna-gateway' ); ?>" />
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/AMEX_Logo.png'; ?>" alt="<?php _e( 'AMEX_Logo', 'wc-bna-gateway' ); ?>" />
+					</div>
 				</div>
-			</div>
-			<div class="bna-payment-method__content">
-				<?php if ( is_user_logged_in() && $is_card_exists ) { ?>
-					<div class="bna-payment-method__content-title"><?php _e( 'Select Credit Card you want to pay', 'wc-bna-gateway' ); ?></div>
-					<select class="bna-checkout-select-card" id="paymentMethodCC" name="paymentMethodCC" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">			
-						<?php
-							if ( is_array( $paymentMethods ) ) {
-								foreach ( $paymentMethods as $pm_val ) {
-									$pm_desc = json_decode( $pm_val->paymentDescription );
-									if ( $pm_val->paymentType === 'card' ) {
-										echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
-													$pm_desc->cardBrand . ': ' . $pm_val->paymentInfo .
-												"</option>";
+				<div class="bna-payment-method__content">
+					<?php if ( is_user_logged_in() && $is_card_exists ) { ?>
+						<div class="bna-payment-method__content-title"><?php _e( 'Select Credit Card you want to pay', 'wc-bna-gateway' ); ?></div>
+						<select class="bna-checkout-select-card" id="paymentMethodCC" name="paymentMethodCC" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">			
+							<?php
+								if ( is_array( $paymentMethods ) ) {
+									foreach ( $paymentMethods as $pm_val ) {
+										$pm_desc = json_decode( $pm_val->paymentDescription );
+										if ( $pm_val->paymentType === 'card' ) {
+											echo 	"<option value=\"".$pm_val->paymentMethodId."\">" .
+														$pm_desc->cardBrand . ': ' . $pm_val->paymentInfo .
+													"</option>";
+										}
 									}
 								}
-							}
-						?>
-						<option value="new-card"><?php _e( 'Add New Card', 'wc-bna-gateway' ); ?></option>
-					</select>
-				<?php } ?>
-				
-				<div class="bna-payment-method-cards">
-					<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+							?>
+							<option value="new-card"><?php _e( 'Add New Card', 'wc-bna-gateway' ); ?></option>
+						</select>
+					<?php } ?>
 					
-					<div class="bna-input-wrapper">
-						<div class="bna-input-label"><?php _e( 'Cardholder Name', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
-						<span class="bna-font-italic"><?php _e( '(the exact name as it appears on the front of your credit card)', 'wc-bna-gateway' ); ?></span></div>
-						<input class="bna-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" >
-					</div>
-					
-					<div class="bna-two-inputs-wrapper">
-						<div class="bna-input-wrapper">
-							<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="bna-input" id="credit-card-number" type="text" name="cc_number" autocomplete="off" 
-								autocorrect="off" autocapitalize="none" spellcheck="false"
-								maxlength="22" placeholder="0000 0000 0000 0000" >
-						</div>
+					<div class="bna-payment-method-cards">
+						<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
 						
 						<div class="bna-input-wrapper">
-							<div class="bna-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="bna-input" id="expiration" type="text" name="cc_expire" autocomplete="off"
-								autocorrect="off" autocapitalize="none" spellcheck="false"
-								 placeholder="MM/YY" maxlength="7">
+							<div class="bna-input-label"><?php _e( 'Cardholder Name', 'wc-bna-gateway' ); ?> <span class="required">*</span><br>
+							<span class="bna-font-italic"><?php _e( '(the exact name as it appears on the front of your credit card)', 'wc-bna-gateway' ); ?></span></div>
+							<input class="bna-input" type="text" name="cc_holder" autocomplete="off" maxlength="100" placeholder="FIRSTNAME LASTNAME" >
 						</div>
-					</div>
 						
-					<div class="bna-three-inputs-wrapper">
-						<div class="bna-input-wrapper">
-							<div class="bna-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input  class="bna-input" id="cvv" type="text" name="cc_code" autocomplete="off" 
-								autocorrect="off" autocapitalize="none" spellcheck="false"
-								placeholder="CVC" maxlength="4" >
-						</div>
-						<div class="bna-CVC-text-wrapper">
-							<div class="bna-CVC-text">
-								<?php _e( 'CVC (CVV, CCV, SVC or CSC) is a card security verification code. Three or four digits printed, not embossed, on the back of the card. ', 'wc-bna-gateway' ); ?>
+						<div class="bna-two-inputs-wrapper">
+							<div class="bna-input-wrapper">
+								<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+								<input class="bna-input" id="credit-card-number" type="text" name="cc_number" autocomplete="off" 
+									autocorrect="off" autocapitalize="none" spellcheck="false"
+									maxlength="19" placeholder="0000 0000 0000 0000" >
+							</div>
+							
+							<div class="bna-input-wrapper">
+								<div class="bna-input-label"><?php _e( 'Expiry Date', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+								<input class="bna-input" id="expiration" type="text" name="cc_expire" autocomplete="off"
+									autocorrect="off" autocapitalize="none" spellcheck="false"
+									 placeholder="MM/YY" maxlength="7">
 							</div>
 						</div>
-						<div class="bna-CVC-img-wrapper">
-							<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Credit_Card_SVC.png'; ?>" />
+							
+						<div class="bna-three-inputs-wrapper">
+							<div class="bna-input-wrapper">
+								<div class="bna-input-label"><?php _e( 'CVC', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+								<input  class="bna-input" id="cvv" type="text" name="cc_code" autocomplete="off" 
+									autocorrect="off" autocapitalize="none" spellcheck="false"
+									placeholder="CVC" maxlength="4" >
+							</div>
+							<div class="bna-CVC-text-wrapper">
+								<div class="bna-CVC-text">
+									<?php _e( 'CVC (CVV, CCV, SVC or CSC) is a card security verification code. Three or four digits printed, not embossed, on the back of the card. ', 'wc-bna-gateway' ); ?>
+								</div>
+							</div>
+							<div class="bna-CVC-img-wrapper">
+								<img class="bna-CVC-img" src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Credit_Card_SVC.png'; ?>" />
+							</div>
 						</div>
-					</div>
-					
-					<?php if ( ! empty( $payorID ) ) { ?>
-						<label class="bna-checkbox-container">
-							<input type="checkbox" name="save-credit-card">
-							<span class="checkmark"></span>
-							<?php _e( 'Save Credit Card', 'wc-bna-gateway' ); ?>
-						</label>
-					<?php } ?>
-				</div>			
-			</div>
+						
+						<?php if ( ! empty( $payorID ) ) { ?>
+							<label class="bna-checkbox-container">
+								<input type="checkbox" name="save-credit-card">
+								<span class="checkmark"></span>
+								<?php _e( 'Save Credit Card', 'wc-bna-gateway' ); ?>
+							</label>
+						<?php } ?>
+					</div>			
+				</div>
+			<?php } ?>
 					
 			<!-- EFT -->
-			<div class="bna-payment-method__item">
-				<div class="bna-checkout-radio"  data-payment-type="eft"></div>
-				<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>
-				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_dc 3.png'; ?>" alt="<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>" />
+			<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-eft'] ) && $bna_gateway_settings['bna-payment-method-eft'] === 'yes' && in_array( $woo_currency, BNA_EFT_ALLOWED_CURRENCY ) ) { ?>
+			<?php $has_payment_method = true; ?>
+				<div class="bna-payment-method__item">
+					<div class="bna-checkout-radio"  data-payment-type="eft"></div>
+					<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>
+					<div class="bna-checkout-images">
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_dc 3.png'; ?>" alt="<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>" />
+					</div>
 				</div>
-			</div>
-			<div class="bna-payment-method__content">
-				<?php if ( is_user_logged_in() && $is_eft_exists ) { ?>
-					<div class="bna-payment-method__content-title"><?php _e( 'Saved payment methods', 'wc-bna-gateway' ); ?></div>
-					<select class="bna-checkout-select-card" id="paymentMethodDD" name="paymentMethodDD" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">					
-						<?php
-							if ( is_array( $paymentMethods ) ) {
-								foreach ( $paymentMethods as $pm_val ) {
-									$pm_desc = json_decode( $pm_val->paymentDescription );
-									if ( $pm_val->paymentType === 'eft' ) {
-										echo "<option value=\"".$pm_val->paymentMethodId."\">" .
-													$pm_val->paymentInfo . ' : ' . $pm_desc->bankName .
-												"</option>";
+				<div class="bna-payment-method__content">
+					<?php if ( is_user_logged_in() && $is_eft_exists ) { ?>
+						<div class="bna-payment-method__content-title"><?php _e( 'Saved payment methods', 'wc-bna-gateway' ); ?></div>
+						<select class="bna-checkout-select-card" id="paymentMethodDD" name="paymentMethodDD" aria-placeholder="<?php _e( 'Please choose...', 'wc-bna-gateway' ); ?>">					
+							<?php
+								if ( is_array( $paymentMethods ) ) {
+									foreach ( $paymentMethods as $pm_val ) {
+										$pm_desc = json_decode( $pm_val->paymentDescription );
+										if ( $pm_val->paymentType === 'eft' ) {
+											echo "<option value=\"".$pm_val->paymentMethodId."\">" .
+														$pm_val->paymentInfo . ' : ' . $pm_desc->bankName .
+													"</option>";
+										}
 									}
 								}
-							}
-						?>
-						<option value="new-method"><?php _e( 'Add New Method', 'wc-bna-gateway' ); ?></option>
-					</select>
-				<?php } ?>
-				
-				<div class="bna-payment-method-eft">
-					<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+							?>
+							<option value="new-method"><?php _e( 'Add New Method', 'wc-bna-gateway' ); ?></option>
+						</select>
+					<?php } ?>
 					
-					<div class="bna-input-wrapper">
-						<div class="bna-input-label"><?php _e( 'Bank Name', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-						<select id="bank_name" name="bank_name" class="input-text"></select>					
-					</div>
-					
-					<div class="bna-input-wrapper">
-						<div class="bna-input-label"><?php _e( 'Institution Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-						<input class="bna-input" type="text" id="bank_number" name="bank_number" 
-							autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="3" >
-					</div>
-					
-					<div class="bna-two-inputs-wrapper">
+					<div class="bna-payment-method-eft">
+						<div class="bna-text-required">* <?php _e( 'Required fields', 'wc-bna-gateway' ); ?></div>
+						
 						<div class="bna-input-wrapper">
-							<div class="bna-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input class="bna-input" type="text" name="account_number" 
-								autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="8" >
+							<div class="bna-input-label"><?php _e( 'Bank Name', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<select id="bank_name" name="bank_name" class="input-text"></select>					
 						</div>
 						
 						<div class="bna-input-wrapper">
-							<div class="bna-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-							<input  class="bna-input" type="text" name="transit_number" 
-								autocomplete="off" placeholder=""  onkeyup="return input_test(this);" maxlength="5" >
+							<div class="bna-input-label"><?php _e( 'Institution Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+							<input class="bna-input" type="text" id="bank_number" name="bank_number" 
+								autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="3" >
 						</div>
+						
+						<div class="bna-two-inputs-wrapper">
+							<div class="bna-input-wrapper">
+								<div class="bna-input-label"><?php _e( 'Account Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+								<input class="bna-input" type="text" name="account_number" 
+									autocomplete="off" placeholder="" onkeyup="return input_test(this);" maxlength="8" >
+							</div>
+							
+							<div class="bna-input-wrapper">
+								<div class="bna-input-label"><?php _e( 'Transit Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+								<input  class="bna-input" type="text" name="transit_number" 
+									autocomplete="off" placeholder=""  onkeyup="return input_test(this);" maxlength="5" >
+							</div>
+						</div>
+						
+						<?php if ( ! empty( $payorID ) ) { ?>
+							<label class="bna-checkbox-container">
+								<input type="checkbox" name="save-eft">
+								<span class="checkmark"></span>
+								<?php _e( 'Save EFT Method', 'wc-bna-gateway' ); ?>
+							</label>
+						<?php } ?>
 					</div>
 					
-					<?php if ( ! empty( $payorID ) ) { ?>
-						<label class="bna-checkbox-container">
-							<input type="checkbox" name="save-eft">
-							<span class="checkmark"></span>
-							<?php _e( 'Save EFT Method', 'wc-bna-gateway' ); ?>
-						</label>
-					<?php } ?>
 				</div>
-				
-			</div>
+			<?php } ?>
 			
 			<!-- e-Transfer -->
-			<div class="bna-payment-method__item">
-				<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
-				<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>
-				<div class="bna-checkout-images">
-					<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>" />
+			<?php if ( ! empty( $bna_gateway_settings['bna-payment-method-e-transfer'] ) && $bna_gateway_settings['bna-payment-method-e-transfer'] === 'yes' && in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) { ?>
+			<?php $has_payment_method = true; ?>
+				<div class="bna-payment-method__item">
+					<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
+					<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>
+					<div class="bna-checkout-images">
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>" />
+					</div>
+				</div>			
+				<div class="bna-payment-method__content">		
+					<div class="bna-input-wrapper">
+						<div class="bna-input-label"><?php _e( 'Interac Email', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
+						<input class="bna-input" type="text" placeholder="login@domain" name="email_transfer" value="<?php echo wp_get_current_user()->user_email; ?>" maxlength="100" <?php if ( is_user_logged_in() ) echo 'readonly'; ?>>
+					</div>
+					<div class="pm-et-block"></div>		
 				</div>
-			</div>			
-			<div class="bna-payment-method__content">		
-				<div class="bna-input-wrapper">
-					<div class="bna-input-label"><?php _e( 'Interac Email', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
-					<input class="bna-input" type="text" placeholder="login@domain" name="email_transfer" value="<?php echo wp_get_current_user()->user_email; ?>" maxlength="100" readonly>
-				</div>
-				<div class="pm-et-block"></div>		
-			</div>	
+			<?php } ?>	
 			
 			<input type="hidden" id="payment_type" name="payment-type" value="">
 			
 			<?php
-			if ( is_user_logged_in() ) {
-				include "tpl_checkout_subscription_fields.php";
+			if ( $has_payment_method === true ) {
+				if ( is_user_logged_in() ) { include "tpl_checkout_subscription_fields.php"; }
 			}	
 			?>
+			
+			<!--<label class="bna-checkbox-container">
+				<input type="checkbox" name="save_customer">
+				<span class="checkmark" id="checkmark_save_customer"></span>
+				<?php //_e( 'Save customer?', 'wc-bna-gateway' ); ?>
+			</label>-->
+			
 		</div>
 	</div>
 
@@ -299,8 +319,6 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 
 <script>
 (function() {
-	//jQuery('#billing_phone_code_field').data('priority', '99');
-	
 	let paymentMethod = document.querySelector(".wc_payment_methods");
 	paymentMethod.addEventListener('click', event => {
 		let bnaPayment = document.getElementById('payment_method_bna_gateway');
@@ -424,6 +442,8 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		  $('.select2-search__field').css('display', 'none');
 		});
 		
+		$('#billing_phone_code').val('+1');
+		
 		// validation before send order
 		$('#place_order').on('click', function(event) {
 			$('.bna-input:visible:enabled, input.input-text:not(#billing_company, #billing_apartment)').each(function(i) {
@@ -487,6 +507,10 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 			});
 			
 			addFees();
+			
+			let position = jQuery(this).parent().offset();	
+			var fixed_offset = 70;	
+			jQuery('html,body').stop().animate({ scrollTop: position.top - fixed_offset }, 1000);
 		});
 		
 		// select card or add new			
