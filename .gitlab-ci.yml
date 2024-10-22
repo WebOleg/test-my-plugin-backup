@@ -9,3 +9,4 @@ Deploy:
   tags: [ wp-demo ]
   script:
     - rsync -avC --delete . $WP_PATH_PLUGIN
+    - chown -R 82:82 $WP_PATH_PLUGIN
