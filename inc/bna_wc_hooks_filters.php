@@ -231,6 +231,11 @@ add_filter( 'woocommerce_address_to_edit', 'bna_address_to_edit', 10, 2 );
 function bna_address_to_edit( $address, $load_address ) {
 	$new_address = array();
 	foreach ( $address as $key => $value ) {
+		
+		if ( $key === 'billing_address_1' || $key === 'billing_address_2' ) {
+			continue;
+		}
+		
 		if ( $key === 'billing_company' ) {
 			$birthday = date( 'd.m.Y', strtotime( get_user_meta( get_current_user_id(), 'billing_birthday', true ) ) );
 			if ( empty( $birthday ) ) { $birthday = ''; }
@@ -256,6 +261,38 @@ function bna_address_to_edit( $address, $load_address ) {
 				'class' => array( 'form-row', 'form-row-wide' ),
 				'input_class' => array( 'input-text' ),
 				'value' => $billing_phone_code,
+			);
+		}
+		
+		if ( $key === 'billing_postcode' ) {
+			$billing_street_name = get_user_meta( get_current_user_id(), 'billing_street_name', true );
+			if ( empty( $billing_street_name ) ) { $billing_street_name = ''; }
+			$new_address['billing_street_name'] = array(
+				'type' => 'text', 
+				'label' => __('Street name', 'wc-bna-gateway'),
+				'required' => true,
+				'class' => array('form-row-wide'),
+				'value' => $billing_street_name
+			);
+			
+			$billing_street_number = get_user_meta( get_current_user_id(), 'billing_street_number', true );
+			if ( empty( $billing_street_number ) ) { $billing_street_number = ''; }
+			$new_address['billing_street_number'] = array(
+				'type' => 'text', 
+				'label' => __('Street number', 'wc-bna-gateway'),
+				'required' => true,
+				'class' => array('form-row-wide'),
+				'value' => $billing_street_number
+			);
+			
+			$billing_apartment = get_user_meta( get_current_user_id(), 'billing_apartment', true );
+			if ( empty( $billing_apartment ) ) { $billing_apartment = ''; }
+			$new_address['billing_apartment'] = array(
+				'type' => 'text', 
+				'label' => __('Apartment', 'wc-bna-gateway'),
+				'required' => false,
+				'class' => array('form-row-wide'),
+				'value' => $billing_apartment
 			);
 		}
 		
@@ -293,12 +330,12 @@ add_action( 'template_redirect', function() {
 		}
 	}
 	
-	if( is_wc_endpoint_url( 'bna-e-transfer-info' ) ){
-		if ( ! empty( $bna_gateway_settings['bna-payment-method-e-transfer'] ) && $bna_gateway_settings['bna-payment-method-e-transfer'] === 'yes' && in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) {
-			// Ok
-		} else {		
-			wp_safe_redirect( $bna_payment_methods );
-			exit;
-		}
-	}	
+	//if( is_wc_endpoint_url( 'bna-e-transfer-info' ) ){
+		//if ( ! empty( $bna_gateway_settings['bna-payment-method-e-transfer'] ) && $bna_gateway_settings['bna-payment-method-e-transfer'] === 'yes' && in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) {
+			//// Ok
+		//} else {		
+			//wp_safe_redirect( $bna_payment_methods );
+			//exit;
+		//}
+	//}	
 } );

@@ -53,20 +53,20 @@ $icon_trash_deleted = '<svg role="img" xmlns="http://www.w3.org/2000/svg" height
 				$desc = json_decode( $s_val->recurringDescription );
 
 				$imageName = '';
-				switch ( strtolower( $desc->paymentMethod ) ) {
-					case 'card':
-						if ( strtolower( $desc->paymentDetails->cardBrand ) === 'visa' ) {
+				switch ( $desc->paymentMethod ) {
+					case 'CARD':
+						if ( $desc->paymentDetails->cardBrand === 'visa' ) {
 							$imageName = 'visa.svg';
-						} elseif ( strtolower( $desc->paymentDetails->cardBrand ) === 'mastercard' ) {
+						} elseif ( $desc->paymentDetails->cardBrand === 'mastercard' ) {
 							$imageName = 'masterCard.svg';
-						} elseif ( strtolower( $desc->paymentDetails->cardBrand ) === 'amex' ) {
+						} elseif ( $desc->paymentDetails->cardBrand === 'amex' ) {
 							$imageName = 'americanExpress.svg';
 						}
 						break;
-					case 'eft':
+					case 'EFT':
 						$imageName = 'directCredit.svg';
 						break;
-					case 'e-transfer':
+					case 'E-TRANSFER':
 						$imageName = 'eTransfer.svg';
 						break;
 				}
@@ -110,16 +110,16 @@ $icon_trash_deleted = '<svg role="img" xmlns="http://www.w3.org/2000/svg" height
 							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo ! empty( $desc->fee ) ? $desc->fee : 'No'; ?></p>                                          
 							<p><?php _e( 'Payment Method:', 'wc-bna-gateway' ); ?> <?php echo $desc->paymentMethod; ?></p>
 							<?php
-								switch ( strtolower( $desc->paymentMethod ) ) {
-									case 'card':
+								switch ( $desc->paymentMethod ) {
+									case 'CARD':
 										echo "<p>" . ucfirst( $desc->paymentDetails->cardBrand ) . ':  ' . " {$desc->paymentDetails->cardNumber}</p>";
 										break;
-									case 'eft':
+									case 'EFT':
 										echo "<p>" . __( 'Account #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->accountNumber}</p>";
 										echo "<p>" . __( 'Transit #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->transitNumber}</p>";
 										echo "<p>" . __( 'Institution #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->bankNumber}</p>";
 										break;
-									case 'e-transfer':
+									case 'E-TRANSFER':
 										echo "<p>" . __( 'Email:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->emailAddress}</p>";
 										break;
 								} 
@@ -127,28 +127,28 @@ $icon_trash_deleted = '<svg role="img" xmlns="http://www.w3.org/2000/svg" height
 						</div>
 					</td>
 					<td class="woocommerce-orders-table__cell" data-title="<?php _e( 'Manage', 'wc-bna-gateway' ); ?>">
-						<?php if ( strtolower( $s_val->status ) === 'new' || strtolower( $s_val->status ) === 'active' ) { ?>
+						<?php if ( $s_val->status === 'NEW' || $s_val->status === 'ACTIVE' ) { ?>
 							<button type="button" class="btn-suspend-subscription" data-id="<?php echo $s_val->id; ?>" data-suspend="yes" 
 								data-order-id="<?php echo $desc->metadata->invoiceId; ?>"
 								data-order-question="<?php _e( 'Do you want to suspend the subscription', 'wc-bna-gateway' ) ?>" >
 								<?php echo $icon_pause; ?>
 							</button>
 						<?php } ?>
-						<?php if ( strtolower( $s_val->status ) === 'suspended' ) { ?>
+						<?php if ( $s_val->status === 'SUSPENDED' ) { ?>
 							<button type="button" class="btn-suspend-subscription" data-id="<?php echo $s_val->id; ?>" data-suspend="no" 
 								data-order-id="<?php echo $desc->metadata->invoiceId; ?>"
 								data-order-question="<?php _e( 'Do you want to run the subscription', 'wc-bna-gateway' ) ?>" >
 								<?php echo $icon_play; ?>
 							</button>
 						<?php } ?>
-						<?php if ( strtolower( $s_val->status ) !== 'deleted' ) { ?>
+						<?php if ( $s_val->status !== 'DELETED' ) { ?>
 							<button type="button" class="btn-del-subscription" data-id="<?php echo $s_val->id; ?>" 
 								data-order-id="<?php echo $desc->metadata->invoiceId; ?>"
 								data-order-question="<?php _e( 'Do you want to delete the subscription', 'wc-bna-gateway' ) ?>" >
 								<?php echo $icon_trash; ?>
 							</button>
 						<?php } ?>
-						<?php if ( strtolower( $s_val->status ) === 'deleted' ) { ?>
+						<?php if ( $s_val->status === 'DELETED' ) { ?>
 							<button type="button" class="btn-subscription-deleted" >
 								<?php echo $icon_play_deleted; ?>
 							</button>

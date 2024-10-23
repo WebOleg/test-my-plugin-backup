@@ -165,43 +165,6 @@ function input_test(input) {
             //}
         //});    
     //});
-    
-    // delete payor
-    //$('#delete_payor').on('click', function(event){
-        //event.stopPropagation();
-        //event.preventDefault(); 
-
-        //let self = $(this);
-        //self.prop('disabled', true);
-
-        //startLoadingAnimation();
-
-        //$.ajax({
-            //url         : bnaData.url,
-            //type        : 'POST', 
-            //dataType    : "json",
-            //data        : {
-                //action    : 'delete_payor',
-                //nonce     : bnaData.nonce,
-            //},
-            //success: function( data ) {
-                //stopLoadingAnimation();
-                //let message = $('.woocommerce-notices-wrapper');
-                //message.get(0).scrollIntoView();
-                //message.html(data.message);
-                //self.prop('disabled', false);
-                
-                //if( data.success === 'true' ){
-					//setTimeout(()=>{
-						//window.location.reload();
-					//}, 1000);
-				//}
-            //},
-            //error: function( data ){
-                ////console.log(data);
-            //}
-        //});    
-    //});
 
     $('.btn-del-payment').on('click', function(event){
         event.stopPropagation();

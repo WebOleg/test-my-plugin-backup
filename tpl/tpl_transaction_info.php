@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Type', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Status', 'wc-bna-gateway' ); ?></span></th>
 				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Description', 'wc-bna-gateway' ); ?></span></th>
-				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Created', 'wc-bna-gateway' ); ?></span></th>
+				<th class="woocommerce-orders-table__header"><span class="nobr"><?php _e( 'Action', 'wc-bna-gateway' ); ?></span></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -46,20 +46,20 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				$desc = json_decode( $t_val->transactionDescription );
 
 				$imageName = '';
-				switch ( strtolower( $desc->paymentMethod ) ) {
-					case 'card':
-						if ( strtolower( $desc->paymentDetails->cardBrand ) === 'visa' ) {
+				switch ( $desc->paymentMethod ) {
+					case 'CARD':
+						if ( $desc->paymentDetails->cardBrand === 'visa' ) {
 							$imageName = 'visa.svg';
-						} elseif ( strtolower( $desc->paymentDetails->cardBrand ) === 'mastercard' ) {
+						} elseif ( $desc->paymentDetails->cardBrand === 'mastercard' ) {
 							$imageName = 'masterCard.svg';
-						} elseif ( strtolower( $desc->paymentDetails->cardBrand ) === 'amex' ) {
+						} elseif ( $desc->paymentDetails->cardBrand === 'amex' ) {
 							$imageName = 'americanExpress.svg';
 						}
 						break;
-					case 'eft':
+					case 'EFT':
 						$imageName = 'directCredit.svg';
 						break;
-					case 'e-transfer':
+					case 'E-TRANSFER':
 						$imageName = 'eTransfer.svg';
 						break;
 				}
@@ -87,7 +87,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Description', 'wc-bna-gateway' ); ?>">
 						<h6 class="bna-details-title"></h6>
 						<div class="bna-details">
-							<p><?php _e( 'Currency:', 'wc-bna-gateway' ); ?> <?php echo $desc->currency;?></p>
+							<p><?php _e( 'Created:', 'wc-bna-gateway' ); ?> <?php echo date( 'Y-m-d H:i:s', strtotime( $desc->transactionTime ) ); ?></p>
+							<p><?php _e( 'Currency:', 'wc-bna-gateway' ); ?> <?php echo $desc->currency; ?></p>
 							<?php
 								if ( isset( $desc->total ) )
 									echo "<p>" . __( 'Total amount:', 'wc-bna-gateway' ) . " {$desc->total}</p>";
@@ -97,27 +98,30 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 									
 								if ( isset( $desc->amount ) )
 									echo "<p>" . __( 'Amount:', 'wc-bna-gateway' ) . " {$desc->amount}</p>";
+									
+								if ( isset( $desc->balance ) )
+									echo "<p>" . __( 'Balance:', 'wc-bna-gateway' ) . " {$desc->balance}</p>";
 							?>
 							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo $desc->fee;?></p> 
 							<?php
-								switch ( strtolower( $desc->paymentMethod ) ) {
-									case 'card':
+								switch ( $desc->paymentMethod ) {
+									case 'CARD':
 										echo "<p>" . __( 'Card #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->cardNumber}</p>";
 										break;
-									case 'eft':
+									case 'EFT':
 										echo "<p>" . __( 'Account #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->accountNumber}</p>";
 										echo "<p>" . __( 'Transit #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->transitNumber}</p>";
 										echo "<p>" . __( 'Institution #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->bankNumber}</p>";
 										break;
-									case 'e-transfer':
+									case 'E-TRANSFER':
 										echo "<p>" . __( 'Email:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->emailAddress}</p>";
 										break;
 								} 
 							?>
 						</div>
 					</td>
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Created', 'wc-bna-gateway' ); ?>">
-						<?php echo date( 'Y-m-d H:i:s', strtotime( $desc->transactionTime ) ); ?>
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Action', 'wc-bna-gateway' ); ?>">
+						<?php echo $desc->action; ?>
 					</td>
 				</tr>            
         <?php

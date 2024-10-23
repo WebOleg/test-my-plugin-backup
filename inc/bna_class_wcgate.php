@@ -491,7 +491,8 @@ function wc_bna_gateway_init() {
 				'firstName'		=> $_POST['billing_first_name'],
 				'lastName'		=> $_POST['billing_last_name'],
 				'phoneCode'		=> $_POST['billing_phone_code'],
-				'phoneNumber'	=> $_POST['billing_phone'], // "phone"
+				'phoneNumber'	=> $_POST['billing_phone'],
+				'birthDate' => '01.01.1980',
 				'address' => array(
 					'streetNumber'	=> $_POST['billing_street_number'],
 					'streetName'		=> $_POST['billing_street_name'],
@@ -501,6 +502,8 @@ function wc_bna_gateway_init() {
 					'postalCode'		=> $_POST['billing_postcode'],
 				),
 			);
+			if ( ! empty( $_POST['billing_company'] ) ) { $customerInfo['companyName'] = $_POST['billing_company']; }
+			if ( ! empty( $_POST['billing_birthday'] ) ) { $customerInfo['birthDate'] = $_POST['billing_birthday']; }
 			if ( ! empty( $_POST['billing_apartment'] ) ) { $customerInfo['address']['apartment'] = $_POST['billing_apartment']; }
 			
 			// data
@@ -516,6 +519,20 @@ function wc_bna_gateway_init() {
 				),					
 			);
 
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );			
+			// if payor not exist - create payor
+			if ( empty( $payorID ) ) {
+				$customers_response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/customers',  
+					$customerInfo,
+					'POST'
+				);
+			
+				if ( ! empty( $customers_response['id'] ) ) {
+					update_user_meta( get_current_user_id(), 'payorID', $customers_response['id'] );
+				}
+			}
+			
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 			// if payor not exist - add customer info
 			if ( ! empty( $payorID ) ) {
@@ -683,35 +700,33 @@ function wc_bna_gateway_init() {
 			}
 
 			$response = json_decode( $response, true );
-my_log($response);
+
 			if ( ! empty( $response['id'] ) ) {
 				
 				// save payment if 'save-credit-card' exists				
 				if ( ! empty( $_POST['save-credit-card'] ) && $_POST['paymentMethodCC'] === 'new-card' ) {
-					sleep(3);
+					//sleep(3);
 					$response_save_cc = $api->query(
 						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/card',  
 						$data['paymentDetails'], 
 						'POST'
 					);
-my_log('save_cc ' . $response_save_cc);
 				}
 				// save payment if 'save-eft' exists				
 				if ( ! empty( $_POST['save-eft'] ) && $_POST[ 'paymentMethodDD' ] === 'new-method' ) {
-					sleep(3);
+					//sleep(3);
 					$response_save_eft = $api->query(
 						$args['serverUrl'] . '/' . $args['protocol'] . '/customers/' . $payorID . '/eft',  
 						$data['paymentDetails'], 
 						'POST'
-					);
-my_log('save_eft ' . $response_save_eft);					
+					);		
 				}			
 					
 				$status = $order->get_status();
 				if ( ! in_array( $status, ['pending', 'completed', 'cancelled', 'processing'] ) ) {
 					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
 				}
-				sleep(5);
+				//sleep(5);
 				return array(
 					'result' 	=> 'success',
 					'redirect'  => $this->get_return_url( $order )
