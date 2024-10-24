@@ -318,9 +318,9 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			self::loading_scripts();
 
-			$payorID = get_user_meta (get_current_user_id(), 'payorID', true);
-			$paymentMethods =  $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS);
-			require_once dirname( __FILE__ ). "/../tpl/tpl_payment_methods.php";
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
+			$paymentMethods =  $wpdb->get_results( "SELECT * FROM " . $wpdb->prefix.BNA_TABLE_SETTINGS . " WHERE payorID='{$payorID}'" );
+			require_once dirname( __FILE__ ) . "/../tpl/tpl_payment_methods.php";
 		}
 
 		/**

@@ -98,7 +98,7 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 		 * @since		1.0.0
 		 * @param int original_order_id
 		 */
-		public static function create_subscription_order($original_order_id) 
+		public static function create_subscription_order( $original_order_id ) 
 		{
 			global $wpdb, $woocommerce;
 		
@@ -109,11 +109,11 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 			//$order = new WC_Order($order_id);		
 			$order = wc_create_order();
 			$order_id = $order->get_id();							
-			$order->set_parent_id($original_order_id);
+			$order->set_parent_id( $original_order_id );
 			$order->set_customer_id( $currentUser );
 
 			if ( is_wp_error( $order_id ) ) {
-				error_log("Unable to create order:" . $order_id->get_error_message());
+				error_log( "Unable to create order:" . $order_id->get_error_message() );
 				wp_die();
 			} else {
 						

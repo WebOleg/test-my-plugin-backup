@@ -52,15 +52,19 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					switch ( $p_method->paymentType ) {
 						case 'card':
 							if ( $data->cardBrand === 'VISA' ) {
-								$imageName = 'visa.svg';
+								$imageName = 'visaCard.svg';
 							} elseif ( $data->cardBrand === 'MASTERCARD' ) {
 								$imageName = 'masterCard.svg';
 							} elseif ( $data->cardBrand === 'AMEX' ) {
 								$imageName = 'americanExpress.svg';
+							} elseif ( $data->cardBrand === 'DISCOVER' ) {
+								$imageName = 'discoverCard.svg';
+							} else {
+								$imageName = 'visaCard.svg';
 							}
 							break;
 						case 'eft':
-							$imageName = 'directCredit.svg';
+							$imageName = 'eft.svg';
 							break;
 					}
 					if ( empty( $imageName ) ) continue;

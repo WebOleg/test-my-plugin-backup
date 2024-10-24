@@ -79,13 +79,13 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			register_deactivation_hook( $this->plugin_name, array( 'BNAPluginManager', 'deactivate' ) );
 			//register_uninstall_hook( $this->plugin_name, array( 'BNAPluginManager', 'uninstall' ) );
 
-			add_filter( 'woocommerce_checkout_fields' , array( &$this, 'custom_override_checkout_fields') );
+			add_filter( 'woocommerce_checkout_fields' , array( $this, 'custom_override_checkout_fields') );
 
 			if ( is_admin() ) {
-				add_action( 'woocommerce_admin_order_data_after_order_details', array( &$this, 'show_order_itemmeta' ) );
+				add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'show_order_itemmeta' ) );
 			}
-			add_filter( 'woocommerce_states', array( &$this, 'custom_woocommerce_states' ) );
-			add_filter( 'woocommerce_countries', array( &$this, 'custom_woocommerce_countries' ) );
+			add_filter( 'woocommerce_states', array( $this, 'custom_woocommerce_states' ) );
+			add_filter( 'woocommerce_countries', array( $this, 'custom_woocommerce_countries' ) );
 		}
 
 		/**
@@ -271,24 +271,31 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 
 			unset( $fields['billing']['billing_address_1'] );
 			unset( $fields['billing']['billing_address_2'] );
-			$fields['billing']['billing_phone_code']['priority'] = 99;
+			$fields['billing']['billing_email']['priority'] = 32;
+			$fields['billing']['billing_phone_code']['priority'] = 34;
+			$fields['billing']['billing_phone']['priority'] = 36;
+			$fields['billing']['billing_apartment']['priority'] = 42;
+			$fields['billing']['billing_street_number']['priority'] = 44;
+			$fields['billing']['billing_street_name']['priority'] = 46;		
+			$fields['billing']['billing_city']['priority'] = 72;
+			$fields['billing']['billing_state']['priority'] = 74;
+			$fields['billing']['billing_country']['priority'] = 76;
+			$fields['billing']['billing_postcode']['priority'] = 88;
 
 			$order_fields = array(
 				"billing_first_name", 
 				"billing_last_name", 
-				"billing_company", 
-				"billing_country", 
-				"billing_state", 
-				'billing_city',
-				"billing_postcode",
-				"billing_street_name", 
-				"billing_street_number", 
-				"billing_apartment", 
+				"billing_company",
 				"billing_email",
 				"billing_phone_code",
 				"billing_phone",
-				//"billing_address_1",
-				//"billing_address_2",
+				"billing_apartment",
+				"billing_street_number",
+				"billing_street_name",
+				"billing_city",
+				"billing_state",
+				"billing_country", 
+				"billing_postcode",
 			);
 		
 			$new = [];
@@ -296,7 +303,6 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				$new [$o_field] = $fields["billing"][$o_field];
 			}
 			$fields["billing"] = $new;
-
 		
 			return $fields;
 		}
@@ -318,7 +324,7 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			foreach ( $paymentInfo as $pi_key => $pi_val ) {
 				$data = json_decode( $pi_val->transactionDescription );
 				?>
-					<p class="form-field form-field-wide"><strong><?php _e( 'Transaction number', 'wc-bna-gateway' ); ?>: <?php echo $data->id; ?></strong></p>
+					<p class="form-field form-field-wide"><strong><?php _e( 'Transaction number', 'wc-bna-gateway' ); ?>: <?php echo $pi_val->transactionToken; ?></strong></p>
 					<p class="form-field form-field-wide"><?php _e( 'Reference number', 'wc-bna-gateway' ); ?>: <?php echo $pi_val->referenceNumber;?></p>
 					<p class="form-field form-field-wide"><?php _e( 'Payment method', 'wc-bna-gateway' );?>: <?php echo $data->paymentMethod;?></p>
 					<p class="form-field form-field-wide"><?php _e( 'Status', 'wc-bna-gateway' );?>: <?php echo $pi_val->transactionStatus;?></p>
