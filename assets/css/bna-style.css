@@ -965,12 +965,26 @@ body.woocommerce-checkout .woocommerce #bank_name {
 
 /* Transaction */
 .img-transaction-type {
-	margin: 0px 4px
+	margin: 0px 4px;
+}
+.img-transaction-type img {
+	width: 40px;
 }
 @media (max-width: 767.98px) {
 	.img-transaction-type {
 		margin-left: auto;
 	}
+}
+.bna-status-approved {
+	color: #61b505 !important;
+}
+.bna-status-error,
+.bna-status-declined {
+	color: #de5474 !important;
+}
+.bna-status-pending,
+.bna-status-canceled {
+	color: #feb827 !important;
 }
 
 /* Subsciption */
@@ -996,6 +1010,15 @@ body.woocommerce-checkout .woocommerce #bank_name {
 		margin-right: 0px;
 		margin-left: auto;
 	}
+}
+.bna-status-suspended,
+.bna-status-deleted,
+.bna-status-expired {
+	color: #de5474 !important;
+}
+.bna-status-new,
+.bna-status-active {
+	color: #61b505 !important;
 }
 
  /* Privacy policy */

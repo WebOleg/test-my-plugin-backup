@@ -51,26 +51,7 @@ $icon_trash_deleted = '<svg role="img" xmlns="http://www.w3.org/2000/svg" height
 			<?php                  
 			foreach ( $subscriptions as $s_val ) {
 				$desc = json_decode( $s_val->recurringDescription );
-
-				$imageName = '';
-				switch ( $desc->paymentMethod ) {
-					case 'CARD':
-						if ( $desc->paymentDetails->cardBrand === 'visa' ) {
-							$imageName = 'visa.svg';
-						} elseif ( $desc->paymentDetails->cardBrand === 'mastercard' ) {
-							$imageName = 'masterCard.svg';
-						} elseif ( $desc->paymentDetails->cardBrand === 'amex' ) {
-							$imageName = 'americanExpress.svg';
-						}
-						break;
-					case 'EFT':
-						$imageName = 'directCredit.svg';
-						break;
-					case 'E-TRANSFER':
-						$imageName = 'eTransfer.svg';
-						break;
-				}
-				if ( empty( $imageName ) ) continue;
+				$status_color = 'bna-status-' . strtolower( $s_val->status );
 				?>
 				<tr class="woocommerce-orders-table__row">
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Base Order', 'wc-bna-gateway' ); ?>">
@@ -81,7 +62,7 @@ $icon_trash_deleted = '<svg role="img" xmlns="http://www.w3.org/2000/svg" height
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Recurring', 'wc-bna-gateway' ); ?>">
 						<?php echo $s_val->recurring; ?>
 					</td>
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
+					<td class="woocommerce-orders-table__cell <?php echo $status_color; ?>" data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
 						<?php echo $s_val->status; ?>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Start', 'wc-bna-gateway' ); ?>">

@@ -44,23 +44,28 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			<?php
 			foreach ( $transactions as $t_val ) {
 				$desc = json_decode( $t_val->transactionDescription );
+				$status_color = 'bna-status-' . strtolower( $t_val->transactionStatus );
 
 				$imageName = '';
 				switch ( $desc->paymentMethod ) {
 					case 'CARD':
 						if ( $desc->paymentDetails->cardBrand === 'visa' ) {
-							$imageName = 'visa.svg';
+							$imageName = 'visaCard.svg';
 						} elseif ( $desc->paymentDetails->cardBrand === 'mastercard' ) {
 							$imageName = 'masterCard.svg';
 						} elseif ( $desc->paymentDetails->cardBrand === 'amex' ) {
 							$imageName = 'americanExpress.svg';
+						} elseif ( $desc->paymentDetails->cardBrand === 'discover' ) {
+							$imageName = 'discoverCard.svg';
+						} else {
+							$imageName = 'visaCard.svg';
 						}
 						break;
 					case 'EFT':
-						$imageName = 'directCredit.svg';
+						$imageName = 'eft.svg';
 						break;
 					case 'E-TRANSFER':
-						$imageName = 'eTransfer.svg';
+						$imageName = 'etransfer.svg';
 						break;
 				}
 				if ( empty( $imageName ) ) continue;
@@ -74,14 +79,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Transaction', 'wc-bna-gateway' ); ?>">
 						<?php echo $t_val->transactionToken;?>					
 					</td>
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Type', 'wc-bna-gateway' ); ?>">
-						<div style="display: flex;">
-							<div class="img-transaction-type">
-								<img src="<?php echo $this->plugin_url.'assets/img/' . $imageName; ?>" alt="<?php echo $desc->paymentMethod;?>" style="height: 25px;">
-							</div>
-						</div>					
+					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Type', 'wc-bna-gateway' ); ?>">					
+						<div class="img-transaction-type">
+							<img src="<?php echo $this->plugin_url.'assets/img/' . $imageName; ?>" alt="<?php echo $desc->paymentMethod;?>">
+						</div>									
 					</td>
-					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
+					<td class="woocommerce-orders-table__cell <?php echo $status_color; ?>" data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
 						<?php echo $t_val->transactionStatus; ?>				
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Description', 'wc-bna-gateway' ); ?>">
