@@ -267,18 +267,21 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				'maxlength' => 6,
 				'class' => array( 'form-row', 'form-row-wide' ),
 				'input_class' => array( 'input-text' ),
+				'default' => '+1'
 			);
-
+			
 			unset( $fields['billing']['billing_address_1'] );
 			unset( $fields['billing']['billing_address_2'] );
 			$fields['billing']['billing_email']['priority'] = 32;
 			$fields['billing']['billing_phone_code']['priority'] = 34;
 			$fields['billing']['billing_phone']['priority'] = 36;
+			$fields['billing']['billing_phone']['custom_attributes'] = array( 'minlength' => '8', 'maxlength' => '12' );
 			$fields['billing']['billing_apartment']['priority'] = 42;
 			$fields['billing']['billing_street_number']['priority'] = 44;
 			$fields['billing']['billing_street_name']['priority'] = 46;		
 			$fields['billing']['billing_city']['priority'] = 72;
 			$fields['billing']['billing_state']['priority'] = 74;
+			$fields['billing']['billing_state']['default'] = '';
 			$fields['billing']['billing_country']['priority'] = 76;
 			$fields['billing']['billing_postcode']['priority'] = 88;
 

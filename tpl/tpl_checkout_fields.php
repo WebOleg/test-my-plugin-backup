@@ -21,14 +21,12 @@ if ( is_array( $paymentMethods ) ) {
 		if ( $pm_val->paymentType === 'eft' ) { $is_eft_exists = true; }
 	}
 }
-if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variable
-	?>
-	<script>var globalTotal = "<?php echo  WC()->cart->total; ?>";</script>	
-	<?php
-}
 ?>
+
 <script>
+	var globalTotal = "<?php echo  WC()->cart->total; ?>";
 	var curSymbol = "<?php echo get_woocommerce_currency_symbol(); ?>";
+	var isFeeEnabled = false;
 	
 	function input_test(input) { 
 		input.value = input.value.replace(/[^\d,]/g, "");
@@ -37,7 +35,14 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 	function roundAccurately (number, decimalPlaces) {
   		return Number(`${Math.round(`${number}e${decimalPlaces}`)}e-${decimalPlaces}`);
 	}
-	
+</script>
+
+<?php
+if ( $bna_gateway_settings['applyFee'] === 'yes' ) {
+	?>
+	<script>
+	isFeeEnabled = true;	
+		
 	function addFees() 
 	{
 		let feeTab = document.querySelector('.fee-total');
@@ -84,25 +89,6 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 				+ curSymbol
 				+ '</span></bdi></span></strong></td>';			
 		}
-		let totalTabOrderPay = jQuery('table.shop_table tfoot tr:nth-child(4)');
-		if (totalTabOrderPay.length > 0) {
-			feeTab.innerHTML = 
-				'<th colspan="2">BNA Fee (Includes HST)	</th>'
-				+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
-				+ allFeeSum.toFixed(2).replace('.', ',')
-				+ '<span class="woocommerce-Price-currencySymbol">'
-				+ curSymbol
-				+ '</span></bdi></span></strong></td>';
-			
-			totalTabOrderPay[0].innerHTML = 
-				'<th colspan="2">Total</th>'
-					+ '<td><strong><span class="woocommerce-Price-amount amount"><bdi>'
-					+ parseFloat(parseFloat(globalTotal) + allFeeSum).toFixed(2).replace('.', ',')
-					+ '<span class="woocommerce-Price-currencySymbol">'
-					+ curSymbol
-					+ '</span></bdi></span></strong></td>';
-		}
-		
 	} 
 
 	function removeFees() 
@@ -119,7 +105,11 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 			+ curSymbol
 			+ '</span></bdi></span></strong></td>';
 	}
-</script>
+	</script>
+	<?php
+}
+?>
+
 <fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" >
 	<div>
 		<div class="bna-payment-methods">
@@ -131,9 +121,9 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 					<div class="bna-checkout-radio" data-payment-type="card"></div>
 					<?php _e( 'Credit Card', 'wc-bna-gateway' ); ?>
 					<div class="bna-checkout-images">
-						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/VISA_Logo.png'; ?>" alt="<?php _e( 'VISA_Logo', 'wc-bna-gateway' ); ?>" />
-						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/Mastercard_Logo.png'; ?>" alt="<?php _e( 'Mastercard_Logo', 'wc-bna-gateway' ); ?>" />
-						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/AMEX_Logo.png'; ?>" alt="<?php _e( 'AMEX_Logo', 'wc-bna-gateway' ); ?>" />
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/visaCard.svg'; ?>" alt="<?php _e( 'VISA', 'wc-bna-gateway' ); ?>" />
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/masterCard.svg'; ?>" alt="<?php _e( 'Mastercard', 'wc-bna-gateway' ); ?>" />
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/americanExpress.svg'; ?>" alt="<?php _e( 'AMEX', 'wc-bna-gateway' ); ?>" />
 					</div>
 				</div>
 				<div class="bna-payment-method__content">
@@ -198,11 +188,11 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 							</div>
 						</div>
 						
-						<?php if ( ! empty( $payorID ) ) { ?>
+						<?php if ( is_user_logged_in() ) { ?>
 							<label class="bna-checkbox-container">
 								<input type="checkbox" name="save-credit-card">
 								<span class="checkmark"></span>
-								<?php _e( 'Save Credit Card', 'wc-bna-gateway' ); ?>
+								<?php _e( 'Save this payment method for your next purchases.', 'wc-bna-gateway' ); ?>
 							</label>
 						<?php } ?>
 					</div>			
@@ -216,7 +206,7 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 					<div class="bna-checkout-radio"  data-payment-type="eft"></div>
 					<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>
 					<div class="bna-checkout-images">
-						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_dc 3.png'; ?>" alt="<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>" />
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/eft.svg'; ?>" alt="<?php _e( 'Bank Transfer', 'wc-bna-gateway' ); ?>" />
 					</div>
 				</div>
 				<div class="bna-payment-method__content">
@@ -267,11 +257,11 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 							</div>
 						</div>
 						
-						<?php if ( ! empty( $payorID ) ) { ?>
+						<?php if ( is_user_logged_in() ) { ?>
 							<label class="bna-checkbox-container">
 								<input type="checkbox" name="save-eft">
 								<span class="checkmark"></span>
-								<?php _e( 'Save EFT Method', 'wc-bna-gateway' ); ?>
+								<?php _e( 'Save this payment method for your next purchases.', 'wc-bna-gateway' ); ?>
 							</label>
 						<?php } ?>
 					</div>
@@ -286,7 +276,7 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 					<div class="bna-checkout-radio" data-payment-type="e-transfer"></div>
 					<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>
 					<div class="bna-checkout-images">
-						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/pm_interac_etransfer 3.png'; ?>" alt="<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>" />
+						<img src="<?php echo BNA_PLUGIN_DIR_URL . 'assets/img/etransfer.svg'; ?>" alt="<?php _e( 'E-Transfer', 'wc-bna-gateway' ); ?>" />
 					</div>
 				</div>			
 				<div class="bna-payment-method__content">		
@@ -317,15 +307,27 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 
 </fieldset>
 
+<?php
+if ( $bna_gateway_settings['applyFee'] === 'yes' ) {
+	?>
+	<script>
+	(function() {
+		let paymentMethod = document.querySelector(".wc_payment_methods");
+		paymentMethod.addEventListener('click', event => {
+			let bnaPayment = document.getElementById('payment_method_bna_gateway');
+			bnaPayment.checked ? addFees() : removeFees();
+			return false;
+		});
+		
+		paymentMethod.click();
+	})();	
+	</script>
+	<?php
+}
+?>
+
 <script>
 (function() {
-	let paymentMethod = document.querySelector(".wc_payment_methods");
-	paymentMethod.addEventListener('click', event => {
-		let bnaPayment = document.getElementById('payment_method_bna_gateway');
-		bnaPayment.checked ? addFees() : removeFees();
-		return false;
-	});
-
 	let select_bankName = document.querySelector('#bank_name');
 	let interval = setInterval(() => {
 		if ( typeof window.bankName !== 'undefined' ) {
@@ -379,10 +381,6 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 	});
 
 	var first_payment_date = document.getElementById('setting_first_payment_date');
-	first_payment_date.addEventListener('change', event => {
-		document.getElementById('startDate').value = first_payment_date.value;
-	});
-
 	let btn_immediately = document.getElementById('btn_immediately');
 	btn_immediately.addEventListener('click', event => {
 		first_payment_date.disabled=true;
@@ -419,7 +417,8 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		number_of_payment.disabled=false;
 		number_of_payment.classList.add('activate_input');
 		document.getElementById('qtyminus').disabled=false;
-		document.getElementById('qtyplus').disabled=false;		
+		document.getElementById('qtyplus').disabled=false;
+		document.getElementById('numberOfPayments').value = number_of_payment.value;
 	});
 
 	let billing_duration = document.getElementById('btn_noLimit');
@@ -427,7 +426,7 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		document.getElementById('numberOfPayments').value = 0;
 	});
 	
-	paymentMethod.click();
+	//paymentMethod.click();
 
 })();	
 </script>
@@ -441,8 +440,6 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 		$('#paymentMethodCC, #ssRepeat, #paymentMethodDD').on("select2:open", function(e) {
 		  $('.select2-search__field').css('display', 'none');
 		});
-		
-		$('#billing_phone_code').val('+1');
 		
 		// validation before send order
 		$('#place_order').on('click', function(event) {
@@ -465,6 +462,9 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 			dateFormat: 'yyyy-mm-dd',
 			autoClose: true,
 			minDate: new Date(),
+			onSelect: function(dateText) {
+				$('#startDate').val(dateText);
+			}
 		});
 		
 		// select payment method (cc, i-transfer, eft, google pay, apple pay)
@@ -506,7 +506,7 @@ if ( ! is_wc_endpoint_url( 'order-pay' ) ) { // rewrite the 'globalTotal' variab
 				$(this).removeClass('invalid');
 			});
 			
-			addFees();
+			if (isFeeEnabled) { addFees(); }
 			
 			let position = jQuery(this).parent().offset();	
 			var fixed_offset = 70;	

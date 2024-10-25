@@ -252,7 +252,7 @@ function bna_address_to_edit( $address, $load_address ) {
 		
 		if ( $key === 'billing_phone' ) {
 			$billing_phone_code = get_user_meta( get_current_user_id(), 'billing_phone_code', true );
-			if ( empty( $billing_phone_code ) ) { $billing_phone_code = ''; }
+			if ( empty( $billing_phone_code ) ) { $billing_phone_code = '+1'; }
 			$new_address['billing_phone_code'] = array(
 				'label' => __( 'Country Phone Code', 'wc-bna-gateway' ),
 				'placeholder' => __( '+1', 'wc-bna-gateway' ),
@@ -350,3 +350,6 @@ add_action( 'template_redirect', function() {
 		//}
 	//}	
 } );
+
+add_filter( 'default_checkout_billing_state', '__return_null' );
+

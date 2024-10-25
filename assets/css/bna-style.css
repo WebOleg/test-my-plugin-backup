@@ -233,6 +233,7 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 	user-select: none;
 	text-transform: none;
 	color: var(--bna-font-color);
+	font-size: 16px;
 }
 /* Hide the browser's default checkbox */
 body.woocommerce-checkout .woocommerce form.checkout .bna-checkbox-container input,
@@ -822,6 +823,10 @@ body.woocommerce-checkout .woocommerce form#order_review #payment .bna-checkout-
 	display: inline-block;
 	position: absolute;
 	right: 20px;
+}
+body.woocommerce-checkout .woocommerce form.checkout .bna-order-review .bna-checkout-images img {
+	width: auto;
+	height: 44px;
 }
 body.woocommerce-checkout .woocommerce form.checkout .bna-order-review .bna-payment-method__content,
 body.woocommerce-checkout .woocommerce form#order_review #payment .bna-payment-method__content {
