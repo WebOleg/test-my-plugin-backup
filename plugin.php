@@ -270,8 +270,11 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				'default' => '+1'
 			);
 			
-			unset( $fields['billing']['billing_address_1'] );
-			unset( $fields['billing']['billing_address_2'] );
+			$fields['billing']['billing_address_1']['type'] = 'hidden';
+			$fields['billing']['billing_address_1']['class'] = array('hidden');
+			$fields['billing']['billing_address_2']['type'] = 'hidden';
+			$fields['billing']['billing_address_2']['class'] = array('hidden');
+			
 			$fields['billing']['billing_email']['priority'] = 32;
 			$fields['billing']['billing_phone_code']['priority'] = 34;
 			$fields['billing']['billing_phone']['priority'] = 36;
@@ -285,27 +288,27 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			$fields['billing']['billing_country']['priority'] = 76;
 			$fields['billing']['billing_postcode']['priority'] = 88;
 
-			$order_fields = array(
-				"billing_first_name", 
-				"billing_last_name", 
-				"billing_company",
-				"billing_email",
-				"billing_phone_code",
-				"billing_phone",
-				"billing_apartment",
-				"billing_street_number",
-				"billing_street_name",
-				"billing_city",
-				"billing_state",
-				"billing_country", 
-				"billing_postcode",
-			);
+			//$order_fields = array(
+				//"billing_first_name", 
+				//"billing_last_name", 
+				//"billing_company",
+				//"billing_email",
+				//"billing_phone_code",
+				//"billing_phone",
+				//"billing_apartment",
+				//"billing_street_number",
+				//"billing_street_name",
+				//"billing_city",
+				//"billing_state",
+				//"billing_country", 
+				//"billing_postcode",
+			//);
 		
-			$new = [];
-			foreach ( $order_fields as $key => $o_field ) {
-				$new [$o_field] = $fields["billing"][$o_field];
-			}
-			$fields["billing"] = $new;
+			//$new = [];
+			//foreach ( $order_fields as $key => $o_field ) {
+				//$new [$o_field] = $fields["billing"][$o_field];
+			//}
+			//$fields["billing"] = $new;
 		
 			return $fields;
 		}

@@ -42,6 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		</thead>
 		<tbody>
 			<?php
+			var_dump($orderIDs);
 			foreach ( $transactions as $t_val ) {
 				$desc = json_decode( $t_val->transactionDescription );
 				$status_color = 'bna-status-' . strtolower( $t_val->transactionStatus );

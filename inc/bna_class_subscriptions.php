@@ -103,14 +103,55 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 			global $wpdb, $woocommerce;
 		
 			$original_order = new WC_Order( $original_order_id );
-			$currentUser = $original_order->get_user_id(); 
+			$original_data = $original_order->get_data();
 
-			//1 Create Order
-			//$order = new WC_Order($order_id);		
+			// Create Order	
 			$order = wc_create_order();
 			$order_id = $order->get_id();							
 			$order->set_parent_id( $original_order_id );
-			$order->set_customer_id( $currentUser );
+						
+			$order->set_currency( $original_data['currency'] );
+			$order->set_prices_include_tax( $original_data['prices_include_tax'] );
+			$order->set_discount_total( $original_data['discount_total'] );
+			$order->set_discount_tax( $original_data['discount_tax'] );
+			$order->set_shipping_total( $original_data['shipping_total'] );
+			$order->set_shipping_tax( $original_data['shipping_tax'] );
+			$order->set_cart_tax( $original_data['cart_tax'] );
+			$order->set_total( $original_data['total'] );
+			//$order->set_total_tax( $original_data['total_tax'] );
+			$order->set_customer_id( $original_data['customer_id'] );
+			
+			$address_billing = array(
+				'first_name' => $original_data['billing']['first_name'],
+				'last_name'  => $original_data['billing']['last_name'],
+				'company'    => $original_data['billing']['company'],
+				'email'      => $original_data['billing']['email'],
+				'phone'      => $original_data['billing']['phone'],
+				'address_1'  => $original_data['billing']['address_1'],
+				'address_2'  => $original_data['billing']['address_2'],
+				'city'       => $original_data['billing']['city'],
+				'state'      => $original_data['billing']['state'],
+				'postcode'   => $original_data['billing']['postcode'],
+				'country'    => $original_data['billing']['country']
+			);
+			$order->set_address( $address_billing, 'billing' );
+			
+			$address_shipping = array(
+				'first_name' => $original_data['shipping']['first_name'],
+				'last_name'  => $original_data['shipping']['last_name'],
+				'company'    => $original_data['shipping']['company'],
+				'phone'      => $original_data['shipping']['phone'],
+				'address_1'  => $original_data['shipping']['address_1'],
+				'address_2'  => $original_data['shipping']['address_2'],
+				'city'       => $original_data['shipping']['city'],
+				'state'      => $original_data['shipping']['state'],
+				'postcode'   => $original_data['shipping']['postcode'],
+				'country'    => $original_data['shipping']['country']
+			);
+			$order->set_address( $address_shipping, 'shipping' );
+			
+			$order->set_payment_method( $original_data['payment_method'] );
+			$order->set_payment_method_title( $original_data['payment_method_title'] );
 
 			if ( is_wp_error( $order_id ) ) {
 				error_log( "Unable to create order:" . $order_id->get_error_message() );
@@ -129,46 +170,7 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 				);			
 				$order_id = wp_insert_post( $order_data, true );				
 				
-				//2 Update Order Header		
-				update_post_meta( $order_id, '_order_shipping',         get_post_meta($original_order_id, '_order_shipping', true) );
-				update_post_meta( $order_id, '_order_discount',         get_post_meta($original_order_id, '_order_discount', true) );
-				update_post_meta( $order_id, '_cart_discount',          get_post_meta($original_order_id, '_cart_discount', true) );
-				update_post_meta( $order_id, '_order_tax',              get_post_meta($original_order_id, '_order_tax', true) );
-				update_post_meta( $order_id, '_order_shipping_tax',     get_post_meta($original_order_id, '_order_shipping_tax', true) );
-				update_post_meta( $order_id, '_order_total',            get_post_meta($original_order_id, '_order_total', true) );
-		
-				update_post_meta( $order_id, '_order_key',              'wc_' . apply_filters('woocommerce_generate_order_key', uniqid('order_') ) );
-				update_post_meta( $order_id, '_customer_user',          get_post_meta($original_order_id, '_customer_user', true) );
-				update_post_meta( $order_id, '_order_currency',         get_post_meta($original_order_id, '_order_currency', true) );
-				update_post_meta( $order_id, '_prices_include_tax',     get_post_meta($original_order_id, '_prices_include_tax', true) );
-				update_post_meta( $order_id, '_customer_ip_address',    get_post_meta($original_order_id, '_customer_ip_address', true) );
-				update_post_meta( $order_id, '_customer_user_agent',    get_post_meta($original_order_id, '_customer_user_agent', true) );
-		
-				//3 Add Billing Fields
-				update_post_meta( $order_id, '_billing_city',           get_post_meta($original_order_id, '_billing_city', true));
-				update_post_meta( $order_id, '_billing_state',          get_post_meta($original_order_id, '_billing_state', true));
-				update_post_meta( $order_id, '_billing_postcode',       get_post_meta($original_order_id, '_billing_postcode', true));
-				update_post_meta( $order_id, '_billing_email',          get_post_meta($original_order_id, '_billing_email', true));
-				update_post_meta( $order_id, '_billing_phone',          get_post_meta($original_order_id, '_billing_phone', true));
-				update_post_meta( $order_id, '_billing_address_1',      get_post_meta($original_order_id, '_billing_address_1', true));
-				update_post_meta( $order_id, '_billing_address_2',      get_post_meta($original_order_id, '_billing_address_2', true));
-				update_post_meta( $order_id, '_billing_country',        get_post_meta($original_order_id, '_billing_country', true));
-				update_post_meta( $order_id, '_billing_first_name',     get_post_meta($original_order_id, '_billing_first_name', true));
-				update_post_meta( $order_id, '_billing_last_name',      get_post_meta($original_order_id, '_billing_last_name', true));
-				update_post_meta( $order_id, '_billing_company',        get_post_meta($original_order_id, '_billing_company', true));
-		
-				//4 Add Shipping Fields
-				update_post_meta( $order_id, '_shipping_country',       get_post_meta($original_order_id, '_shipping_country', true));
-				update_post_meta( $order_id, '_shipping_first_name',    get_post_meta($original_order_id, '_shipping_first_name', true));
-				update_post_meta( $order_id, '_shipping_last_name',     get_post_meta($original_order_id, '_shipping_last_name', true));
-				update_post_meta( $order_id, '_shipping_company',       get_post_meta($original_order_id, '_shipping_company', true));
-				update_post_meta( $order_id, '_shipping_address_1',     get_post_meta($original_order_id, '_shipping_address_1', true));
-				update_post_meta( $order_id, '_shipping_address_2',     get_post_meta($original_order_id, '_shipping_address_2', true));
-				update_post_meta( $order_id, '_shipping_city',          get_post_meta($original_order_id, '_shipping_city', true));
-				update_post_meta( $order_id, '_shipping_state',         get_post_meta($original_order_id, '_shipping_state', true));
-				update_post_meta( $order_id, '_shipping_postcode',      get_post_meta($original_order_id, '_shipping_postcode', true));
-		
-				//5 Add Line Items		
+				// Add Line Items		
 				foreach($original_order->get_items() as $originalOrderItem){
 		
 					$itemName 	= $originalOrderItem['name'];
@@ -193,7 +195,7 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 		
 				}
 
-				//6 Copy shipping items and shipping item meta from original order
+				// Copy shipping items and shipping item meta from original order
 				$original_order_shipping_items = $original_order->get_items('shipping');
 				foreach ( $original_order_shipping_items as $original_order_shipping_item ) {
 		
@@ -223,8 +225,6 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 				}
 		
 				//Payment Info
-				update_post_meta( $order_id, '_payment_method',         get_post_meta($original_order_id, '_payment_method', true) );
-				update_post_meta( $order_id, '_payment_method_title',   get_post_meta($original_order_id, '_payment_method_title', true) );
 				$order->payment_complete();
 		
 				//6 Set Order Status to processing to trigger initial emails to end user and vendor

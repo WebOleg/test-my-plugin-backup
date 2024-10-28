@@ -685,22 +685,22 @@ function wc_bna_gateway_init() {
 			}
 
 			if ( isset( $_POST['create_subscription'] ) ) {
-				//$response = $api->query(
-					//$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
-					//$data_subscription,
-					//'POST'
-				//);
+				$response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
+					$data_subscription,
+					'POST'
+				);
 			} else {
-				//$response = $api->query(
-					//$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
-					//$data,
-					//'POST'
-				//);							
+				$response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
+					$data,
+					'POST'
+				);							
 			}
 
 			$response = json_decode( $response, true );
 
-			if ( ! empty( $response['id'] ) ) {
+			if ( true ) { // ! empty( $response['id'] )
 				
 				// save payment if 'save-credit-card' exists				
 				if ( ! empty( $_POST['save-credit-card'] ) && ( ! isset( $_POST['paymentMethodCC'] ) || $_POST['paymentMethodCC'] === 'new-card' ) ) {
