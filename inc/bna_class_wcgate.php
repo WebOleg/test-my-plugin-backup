@@ -520,13 +520,13 @@ function wc_bna_gateway_init() {
 
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );			
 			// if payor not exist - create payor
-			if ( empty( $payorID ) ) {
+			if ( empty( $payorID ) && is_user_logged_in() ) {
 				$customers_response = $api->query(
 					$args['serverUrl'] . '/' . $args['protocol'] . '/customers',  
 					$customerInfo,
 					'POST'
 				);
-			$customers_response = json_decode( $customers_response, true );
+				$customers_response = json_decode( $customers_response, true );
 				if ( ! empty( $customers_response['id'] ) ) {
 					add_user_meta( get_current_user_id(), 'payorID', $customers_response['id'] );
 				}
@@ -685,17 +685,17 @@ function wc_bna_gateway_init() {
 			}
 
 			if ( isset( $_POST['create_subscription'] ) ) {
-				$response = $api->query(
-					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
-					$data_subscription,
-					'POST'
-				);
+				//$response = $api->query(
+					//$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
+					//$data_subscription,
+					//'POST'
+				//);
 			} else {
-				$response = $api->query(
-					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
-					$data,
-					'POST'
-				);							
+				//$response = $api->query(
+					//$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
+					//$data,
+					//'POST'
+				//);							
 			}
 
 			$response = json_decode( $response, true );
@@ -729,7 +729,7 @@ function wc_bna_gateway_init() {
 					'redirect'  => $this->get_return_url( $order )
 				);
 			} else {
-				//$order->update_status( 'on-hold', __( 'Pending.', 'wc-bna-gateway' ) );
+				$order->update_status( 'on-hold', __( 'Pending.', 'wc-bna-gateway' ) );
 			}
 			
 			throw new Exception(
@@ -896,8 +896,7 @@ my_log($result);
 							}
 						} else {
 							error_log( __( 'Refund requested exceeds remaining order balance of ' . $order->get_total(), 'wc-bna-gateway' ) );
-						}
-												
+						}											
 					} else if ( $result['action'] === 'SALE' ) {
 						$order->update_status( 'completed', __( 'Order completed.', 'wc-bna-gateway' ) );
 						$order->payment_complete();
@@ -909,7 +908,9 @@ my_log($result);
 					break;
 				case 'ERROR':
 				case 'DECLINED':
-					if ( ! isset( $result['subscriptionId'] ) && $order->get_status() !== 'completed' ) {
+					if ( $result['action'] === 'VOID' ) {
+						$order->update_status( 'cancelled', __( 'Order void.', 'wc-bna-gateway' ) );
+					} else if ( ! isset( $result['subscriptionId'] ) && $order->get_status() !== 'completed' ) {
 						$order->update_status( 'on-hold', __( 'Waiting for payment.', 'wc-bna-gateway' ) );
 					}
 					break;				

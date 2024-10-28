@@ -36,22 +36,6 @@ defined( 'ABSPATH' ) || exit;
 		$fields = $checkout->get_checkout_fields( 'billing' );
 	
 		foreach ( $fields as $key => $field ) {
-			// show billing_phone_code
-			//if ( $key === 'billing_phone' ) {
-				//$billing_phone_code = get_user_meta( get_current_user_id(), 'billing_phone_code', true );
-				//if ( empty( $billing_phone_code ) ) { $billing_phone_code = ''; }
-				//woocommerce_form_field( 'billing_phone_code', array(
-					//'type' => 'text',
-					//'id' => 'billing_phone_code',
-					//'label' => __( 'Country Phone Code', 'wc-bna-gateway' ),
-					//'placeholder' => __( '+1', 'wc-bna-gateway' ),
-					//'required' => true,
-					//'maxlength' => 6,
-					//'class' => array( 'form-row', 'form-row-wide' ),
-					//'input_class' => array( 'input-text' ),
-				//), $billing_phone_code );
-			//}
-			
 			woocommerce_form_field( $key, $field, $checkout->get_value( $key ) );
 		}
 				
