@@ -685,17 +685,17 @@ function wc_bna_gateway_init() {
 			}
 
 			if ( isset( $_POST['create_subscription'] ) ) {
-				//$response = $api->query(
-					//$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
-					//$data_subscription,
-					//'POST'
-				//);
+				$response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
+					$data_subscription,
+					'POST'
+				);
 			} else {
-				//$response = $api->query(
-					//$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
-					//$data,
-					//'POST'
-				//);							
+				$response = $api->query(
+					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
+					$data,
+					'POST'
+				);							
 			}
 
 			$response = json_decode( $response, true );
@@ -719,9 +719,27 @@ function wc_bna_gateway_init() {
 					);		
 				}			
 					
-				$status = $order->get_status();
-				if ( ! in_array( $status, ['pending', 'completed', 'cancelled', 'processing'] ) ) {
-					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
+				// Set title for the payment method
+				if (  ! empty( $response['paymentMethod'] ) ) {
+					switch ( $response['paymentMethod'] ) {
+						case 'CARD':
+							$paymentDetails = __( 'Card #:', 'wc-bna-gateway' ) . esc_html( $response['paymentDetails']['cardNumber'] );
+							$order->update_status( 'completed', __( 'Completed.', 'wc-bna-gateway' ) );
+							break;
+						case 'EFT':
+							$paymentDetails = __( 'Account #:', 'wc-bna-gateway' ) . esc_html( $response['paymentDetails']['accountNumber'] ) . '<br>';
+							$paymentDetails .= __( 'Transit #:', 'wc-bna-gateway' ) . esc_html( $response['paymentDetails']['transitNumber'] ) . '<br>';
+							$paymentDetails .= __( 'Institution #:', 'wc-bna-gateway' ) . esc_html( $response['paymentDetails']['bankNumber'] );
+							$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
+							break;
+						case 'E-TRANSFER':
+							$paymentDetails = __( 'Email: ', 'wc-bna-gateway' ) . wp_get_current_user()->user_email;
+							$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
+							break;
+					} 
+					
+					$order->set_payment_method_title( $paymentDetails );
+					$order->save();
 				}
 				
 				return array(
@@ -875,7 +893,7 @@ my_log($result);
 					if ( isset( $result['subscriptionId'] ) && $order->get_status() === 'completed'  ) {					
 						$new_order_id = $BNASubscriptions::create_subscription_order ( $order->get_id() );		
 						$new_order = wc_get_order( $new_order_id );		
-						$new_order->update_status( 'completed', __('Order completed.', 'wc-bna-gateway') );
+						$new_order->update_status( 'completed', __( 'Order completed.', 'wc-bna-gateway' ) );
 						$new_order->payment_complete();
 						wc_reduce_stock_levels( $new_order->get_id() );
 					} else if ( $result['action'] === 'REFUND' ) {
@@ -884,15 +902,16 @@ my_log($result);
 							$refund = wc_create_refund(
 								array(
 									'amount' => $amount,
-									'reason' => __( "Order Cancelled", 'wc-bna-gateway' ),
+									'reason' => esc_html( $result['transactionComment'] ),
 									'order_id' => $order->get_id(),
-									'refund_payment' => true
+									'refund_payment' => false
 								)
 							);
 							if ( is_wp_error( $refund ) ) {
 								error_log( $refund->get_error_message() );
 							} else {
-								$order->update_status( 'refunded', __( 'Order Cancelled And Completely Refunded', 'wc-bna-gateway' ) );
+								//$order->set_status( 'wc-refunded', __( 'Order Cancelled And Completely Refunded', 'wc-bna-gateway' ) );
+								//$order->save();
 							}
 						} else {
 							error_log( __( 'Refund requested exceeds remaining order balance of ' . $order->get_total(), 'wc-bna-gateway' ) );

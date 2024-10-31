@@ -63,6 +63,10 @@ function bna_wc_template( $template, $template_name, $template_path ) {
 		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/checkout/form-pay.php';
 	}
 	
+	// order
+	if ( 'order-details.php' === basename( $template ) ) {
+		$template = BNA_PLUGIN_DIR_PATH . 'woocommerce/templates/order/order-details.php';
+	}
 
 	return $template;
 }
@@ -340,15 +344,6 @@ add_action( 'template_redirect', function() {
 			exit;
 		}
 	}
-	
-	//if( is_wc_endpoint_url( 'bna-e-transfer-info' ) ){
-		//if ( ! empty( $bna_gateway_settings['bna-payment-method-e-transfer'] ) && $bna_gateway_settings['bna-payment-method-e-transfer'] === 'yes' && in_array( $woo_currency, BNA_E_TRANSFER_ALLOWED_CURRENCY ) ) {
-			//// Ok
-		//} else {		
-			//wp_safe_redirect( $bna_payment_methods );
-			//exit;
-		//}
-	//}	
 } );
 
 add_filter( 'default_checkout_billing_state', '__return_null' );

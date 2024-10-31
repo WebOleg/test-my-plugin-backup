@@ -8,6 +8,15 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+$icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" >
+<g><path d="M256,122.5C116.9,122.5,9.9,245.1,9.9,245.1L0,256l9.9,10.9c0,0,97.6,111.3,227.3,121.5c6.2,0.8,12.4,1,18.8,1
+		c6.4,0,12.6-0.3,18.8-1c129.8-10.2,227.3-121.5,227.3-121.5L512,256l-9.9-10.9C502.1,245.1,395.1,122.5,256,122.5z M256,155.9
+		c36.8,0,70.6,10,100.1,23.5c10.6,17.6,16.7,37.9,16.7,60c0,60.3-45.2,109.8-103.8,116.3h-1c-4,0.2-8,0.5-12,0.5
+		c-4.4,0-8.7-0.3-13-0.5c-58.5-6.5-103.8-56-103.8-116.3c0-21.8,5.9-42,16.2-59.4h-0.5C184.6,166.2,218.9,155.9,256,155.9z
+		 M256,189.3c-27.6,0-50.1,22.4-50.1,50.1s22.4,50.1,50.1,50.1s50.1-22.4,50.1-50.1S283.6,189.3,256,189.3z M110,204.9
+		c-2.6,11.2-4.2,22.5-4.2,34.4c0,29.3,8.3,56.6,22.9,79.8c-42-24.3-71.2-53.3-80.8-63.1C56,247.8,78.3,226,110,204.9z M402,204.9
+		c31.7,21.1,54,42.9,62,51.1c-9.6,9.8-38.8,38.8-80.8,63.1c14.6-23.1,22.9-50.5,22.9-79.8C406.2,227.4,404.6,216,402,204.9z"/>
+</g></svg>';
 ?>
 
 <section class="section my-account-orders">
@@ -44,7 +53,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			<?php
 			foreach ( $transactions as $t_val ) {
 				$desc = json_decode( $t_val->transactionDescription );
-				$status_color = 'bna-status-' . strtolower( $t_val->transactionStatus );
+				$status_color = 'bna-status-' . strtolower( esc_html( $t_val->transactionStatus ) );
+				$order_id = esc_html( $t_val->order_id );
 
 				$imageName = '';
 				switch ( $desc->paymentMethod ) {
@@ -72,59 +82,57 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                 ?>
 				<tr class="woocommerce-orders-table__row">
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Order', 'wc-bna-gateway' ); ?>">
-						<a class="bna-orders-order-link" href="/my-account/view-order/<?php echo $t_val->order_id; ?>/">
-							<?php echo '#' . $t_val->order_id; ?>
+						<a class="bna-orders-order-link" href="/my-account/view-order/<?php echo $order_id; ?>/">
+							<?php echo '#' . $order_id; ?>
 						</a>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Transaction', 'wc-bna-gateway' ); ?>">
-						<?php echo $t_val->transactionToken;?>					
+						<?php echo esc_html( $t_val->transactionToken );?>					
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Type', 'wc-bna-gateway' ); ?>">					
 						<div class="img-transaction-type">
-							<img src="<?php echo $this->plugin_url.'assets/img/' . $imageName; ?>" alt="<?php echo $desc->paymentMethod;?>">
+							<img src="<?php echo $this->plugin_url.'assets/img/' . $imageName; ?>" alt="<?php echo esc_html( $desc->paymentMethod );?>">
 						</div>									
 					</td>
 					<td class="woocommerce-orders-table__cell <?php echo $status_color; ?>" data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
-						<?php echo $t_val->transactionStatus; ?>				
+						<?php echo esc_html( $t_val->transactionStatus ); ?>				
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Description', 'wc-bna-gateway' ); ?>">
-						<h6 class="bna-details-title"></h6>
-						<div class="bna-details">
-							<p><?php _e( 'Created:', 'wc-bna-gateway' ); ?> <?php echo date( 'Y-m-d H:i:s', strtotime( $desc->transactionTime ) ); ?></p>
-							<p><?php _e( 'Currency:', 'wc-bna-gateway' ); ?> <?php echo $desc->currency; ?></p>
-							<?php
-								if ( isset( $desc->total ) )
-									echo "<p>" . __( 'Total amount:', 'wc-bna-gateway' ) . " {$desc->total}</p>";
-
-								if ( isset( $desc->subtotal ) )
-									echo "<p>" . __( 'Subtotal:', 'wc-bna-gateway' ) . " {$desc->subtotal}</p>";
-									
-								if ( isset( $desc->amount ) )
-									echo "<p>" . __( 'Amount:', 'wc-bna-gateway' ) . " {$desc->amount}</p>";
-									
-								if ( isset( $desc->balance ) )
-									echo "<p>" . __( 'Balance:', 'wc-bna-gateway' ) . " {$desc->balance}</p>";
-							?>
-							<p><?php _e( 'BNA fee:', 'wc-bna-gateway' ); ?> <?php echo $desc->fee;?></p> 
-							<?php
-								switch ( $desc->paymentMethod ) {
-									case 'CARD':
-										echo "<p>" . __( 'Card #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->cardNumber}</p>";
-										break;
-									case 'EFT':
-										echo "<p>" . __( 'Account #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->accountNumber}</p>";
-										echo "<p>" . __( 'Transit #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->transitNumber}</p>";
-										echo "<p>" . __( 'Institution #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->bankNumber}</p>";
-										break;
-									case 'E-TRANSFER':
-										echo "<p>" . __( 'Email:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->emailAddress}</p>";
-										break;
-								} 
-							?>
-						</div>
+						<?php
+						switch ( $desc->paymentMethod ) {
+							case 'CARD':
+								$paymentDetails = ucfirst( $desc->paymentDetails->cardBrand ) . ':  ' . " {$desc->paymentDetails->cardNumber}";
+								break;
+							case 'EFT':
+								$paymentDetails = __( 'Account #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->accountNumber}<br>";
+								$paymentDetails .= __( 'Transit #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->transitNumber}<br>";
+								$paymentDetails .= __( 'Institution #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->bankNumber}";
+								break;
+								break;
+							case 'E-TRANSFER':
+								if ( isset( $desc->paymentDetails->emailAddress ) ) {
+									$paymentDetails = __( 'Email:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->emailAddress}";
+								} else { $paymentDetails = ''; }
+								break;
+						} 
+						?>
+						<button type="button" class="btn-show-desc"
+							data-order-id="<?php echo $order_id; ?>"
+							data-order-question="<?php _e( 'Description of the order', 'wc-bna-gateway' ) ?>"
+							data-created="<?php echo date( 'Y-m-d H:i:s', strtotime( $desc->transactionTime ) ); ?>" 
+							data-currency="<?php echo esc_html( $desc->currency ); ?>" 
+							data-total="<?php if ( isset( $desc->total ) ) { echo esc_html( $desc->total ); } ?>" 
+							data-subtotal="<?php if ( isset( $desc->subtotal ) ) { echo esc_html( $desc->subtotal ); } ?>" 
+							data-amount="<?php if ( isset( $desc->amount ) ) { echo esc_html( $desc->amount ); } ?>" 
+							data-balance="<?php if ( isset( $desc->balance ) ) { echo esc_html( $desc->balance ); } ?>" 
+							data-fee="<?php  if ( isset( $desc->fee ) ) { echo esc_html( $desc->fee ); }  ?>" 
+							data-payment-method="<?php echo esc_html( $desc->paymentMethod ); ?>" 
+							data-payment-details="<?php if ( isset( $paymentDetails ) ) { echo esc_html( $paymentDetails ); } ?>" >
+							<?php echo $icon_eye; ?>
+						</button>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Action', 'wc-bna-gateway' ); ?>">
-						<?php echo $desc->action; ?>
+						<?php echo esc_html( $desc->action ); ?>
 					</td>
 				</tr>            
         <?php
@@ -134,28 +142,30 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 	</table>
 </section>
 
-<script>
-jQuery("body").on('click', 'h6.bna-details-title:not(.open)', function(e){
-	jQuery('div.bna-details').hide();
-	jQuery('h6.bna-details-title.open').removeClass('open');
-	
-	jQuery(this).addClass('open');
-	jQuery(this).next().show();
-		
-	var fixed_offset = 70;
-	let position = jQuery(this).parent().offset();
-	jQuery('html,body').stop().animate({ scrollTop: position.top - fixed_offset }, 1000);
-	e.preventDefault();
-});
-	
-jQuery("body").on('click', 'h6.bna-details-title.open', function(e){
-	jQuery(this).removeClass('open');
-	jQuery(this).next().hide();
-	setTimeout(()=>{
-		var fixed_offset = 70;
-		let position = jQuery(this).parent().offset();
-		jQuery('html,body').stop().animate({ scrollTop: position.top - fixed_offset }, 1000);
-	}, 100);	
-	e.preventDefault();
-});
-</script>
+<div id="confirm-wrapper">
+	<div id="confirm-box">
+		<h2 id="confirm-header"><?php _e( 'Are you sure?', 'wc-bna-gateway' ) ?></h2>
+		<div id="confirm-buttons">
+			<button id="confirm-ok"><?php _e( 'OK', 'wc-bna-gateway' ) ?></button>
+			<button type="button" id="confirm-cancel"><?php _e( 'Cancel', 'wc-bna-gateway' ) ?></button>
+		</div>
+	</div>
+</div>
+
+<div id="bna-desc-wrapper">	
+	<div id="bna-desc-box">
+		<h2 id="bna-desc-header"><?php _e( 'Description', 'wc-bna-gateway' ) ?></h2>
+		<button type="button" id="bna-desc-cancel">+</button>
+		<div id="bna-desc-body">
+			<p id="bna-desc-created"><span class="bna-desc-p-name"><?php _e( 'Created:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-currency"><span class="bna-desc-p-name"><?php _e( 'Currency:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-total"><span class="bna-desc-p-name"><?php _e( 'Total amount:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-subtotal"><span class="bna-desc-p-name"><?php _e( 'Subtotal:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-amount"><span class="bna-desc-p-name"><?php _e( 'Amount:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-balance"><span class="bna-desc-p-name"><?php _e( 'Balance:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-fee"><span class="bna-desc-p-name"><?php _e( 'Fee:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-payment-method"><span class="bna-desc-p-name"><?php _e( 'Payment method:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-payment-details"><span class="bna-desc-p-name"><?php _e( 'Payment details:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>			
+		</div>
+	</div>
+</div>

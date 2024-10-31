@@ -544,6 +544,9 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 .woocommerce table.shop_table tr.woocommerce-orders-table__row td:not(.woocommerce-orders-table__cell-order-actions) {
 	text-align: center;
 }
+.woocommerce table.shop_table tr.woocommerce-orders-table__row td[data-title="Manage"]:not(.woocommerce-orders-table__cell-order-actions) {
+	text-align: right;
+}
 .woocommerce table.shop_table td {
 	border-top: 1px solid #CCC;
 }
@@ -731,6 +734,16 @@ body.woocommerce-account .woocommerce .bna-payment-method-cards .bna-two-inputs-
 	body.woocommerce-account .woocommerce .bna-payment-method-cards .bna-two-inputs-wrapper .bna-number-img-wrapper {
 		flex: 0 1 100%;
 	}
+}
+.bna-card-number-img {
+	position: absolute;
+	right: 10px;
+	bottom: 13px;
+}
+.bna-card-number-img > img {
+	width: auto;
+	height: 20px;
+	margin: 0px;
 }
 
 /* Cart */
@@ -1000,6 +1013,12 @@ body.woocommerce-checkout .woocommerce #bank_name {
 	padding: 7px 18px 5px;
 	display: inline-block;
 }
+.btn-show-desc {
+	background-color: transparent;
+	box-shadow: none;
+	padding: 7px 18px 5px;
+	display: inline-block;
+}
 .btn-subscription-deleted {
 	background-color: transparent;
 	box-shadow: none;
@@ -1089,6 +1108,9 @@ a.woocommerce-privacy-policy-link:hover {
 }
 .bna-mb-10 {
 	margin-bottom: 10px;
+}
+.bna-pos-relative {
+	position: relative;
 }
 
 /* Old */
@@ -1199,4 +1221,84 @@ h6.bna-details-title::after {
 	width: 1em;
 	border-top: 1px solid;
 	margin: 0.4em auto;
+}
+
+/* Desc Box */
+#bna-desc-wrapper {
+	width: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1000000;
+	background: rgba( 204, 204, 204, 0.6 );
+	display: none;
+	transition: opacity 1s ease-in;
+}
+#bna-desc-box {
+	width: 520px;
+	background: #fff;
+	min-height: 420px;
+	position: absolute;
+	top: calc( (100% - 420px) / 2);
+	left: calc( (100% - 520px) / 2);
+}
+#bna-desc-body {
+	position: absolute;
+	width: 100%;
+	bottom: 0;
+	left: 0;
+	padding: 20px;
+}
+#bna-desc-box button {
+	display: inline-block;
+	background: transparent;
+	color: var(--bna-button-background-color) !important;
+	font-weight: normal;
+	font-size: 30px;
+	cursor: pointer;
+	text-transform: uppercase;
+	border: none;
+	margin: 0px;
+	padding: 0px;
+	box-shadow: none;	
+	rotate: -46deg;
+	position: absolute;
+	right: 15px;
+	top: 15px;
+}
+#bna-desc-header {
+	text-align: center;
+	font-size: 1em;
+	font-weight: bold;
+	text-transform: uppercase;
+	margin: 2.5em 0 1.5em 0;
+	line-height: 1.3em;
+}
+#bna-desc-header:after {
+	content: ' ';
+	display: block;
+	width: 1em;
+	border-top: 1px solid;
+	margin: 0.4em auto;
+}
+#bna-desc-body > p {
+	display: flex;
+}
+#bna-desc-body .bna-desc-p-name {
+	flex: 0 1 150px;
+}
+#bna-desc-body .bna-desc-p-value {
+	flex: 0 1 330px;
+	font-style: italic;
+}
+@media (max-width: 540.98px) {
+	#bna-desc-box {
+		max-width: 320px;
+		min-height: 520px;
+		top: calc( (100% - 520px) / 2);
+		left: calc( (100% - 320px) / 2);
+	}
+	#bna-desc-body > p {
+		flex-wrap: wrap;
+	}
 }
