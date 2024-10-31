@@ -35,11 +35,12 @@ if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway
 			</div>
 			
 			<div class="bna-two-inputs-wrapper">
-				<div class="bna-input-wrapper">
+				<div class="bna-input-wrapper bna-pos-relative">
 					<div class="bna-input-label"><?php _e( 'Card Number', 'wc-bna-gateway' ); ?> <span class="required">*</span></div>
 					<input class="bna-input" id="credit-card-number" type="text" name="cc_number" autocomplete="off" 
 						autocorrect="off" autocapitalize="none" spellcheck="false"
 						maxlength="19" placeholder="0000 0000 0000 0000" >
+					<div class="bna-card-number-img"></div>
 				</div>
 				
 				<div class="bna-input-wrapper">
@@ -76,7 +77,7 @@ if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway
 
 	<script type="module">
 		(function($) {
-			// validation field
+			// validation fields cc
 			$('form.form_save_payment input[name="cc_holder"]').on('blur keyup', function() {
 				if ( $(this).val().length >= 3 ) {
 					$(this).removeClass('invalid');
@@ -84,18 +85,40 @@ if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway
 					$(this).addClass('invalid');
 				}
 			});
+			
+			const credit=document.getElementById('credit-card-number');
+			if ( credit !== null ) { make_credit_card_input(credit); }			
+			const cvv=document.getElementById('cvv');
+			if ( cvv !== null ) { make_cvv_input(cvv); }		   
+			const expiration=document.getElementById('expiration');
+			if ( expiration !== null ) { make_expiration_input(expiration); }
+			
+			$('input[name="cc_number"]').on('blur keyup', function() {
+				let cc = $(this).val();
+				cc = cc.replace(/[^0-9]+/g,'');
+				let typeArray=checkType(cc);
+				//console.log(typeArray.length);
+				if (typeArray.length==1) {			
+					if (typeArray[0].type !== undefined && typeArray[0].type) {
+						console.log(typeArray[0].type);
+						if (typeArray[0].type != $(this).next().data('img')) {
+							let cardName = 'credit_card';
+							if (typeArray[0].type == 'visa') {
+								cardName = 'visaCard';
+							} else if (typeArray[0].type == 'master-card') {
+								cardName = 'masterCard';
+							} else if (typeArray[0].type == 'american-express') {
+								cardName = 'americanExpress';
+							} else if (typeArray[0].type == 'discover') {
+								cardName = 'discoverCard';
+							}
+											
+							$(this).next().html('<img data-img="' + typeArray[0].type + '" src="<?php echo BNA_PLUGIN_DIR_URL ?>assets/img/' + cardName + '.svg">');
+						}
+					} else { $(this).next().html(''); }
+				} else { $(this).next().html(''); }
+			});
 		})(jQuery);
-		
-		
-		// validation fields
-		const credit=document.getElementById('credit-card-number');
-		if ( credit !== null ) { make_credit_card_input(credit); }
-		
-		const cvv=document.getElementById('cvv');
-		if ( cvv !== null ) { make_cvv_input(cvv); }
-		   
-		const expiration=document.getElementById('expiration');
-		if ( expiration !== null ) { make_expiration_input(expiration); }
 	</script>
 	<?php
 } 
