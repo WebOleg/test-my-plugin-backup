@@ -61,34 +61,40 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 				$wpdb->insert( 
                     $wpdb->prefix . BNA_TABLE_RECURRING,  
                     array( 
-                        'user_id'				=> $base_order->get_user_id(),
-                        'order_id'		        => $invoice_id,
-                        'recurringId'		    => $result['id'],
-                        'recurring'		        => $result['recurrence'],
-                        'status'		        	=> $result['status'],
-                        'startDate'		        => $result['startPaymentDate'],
-                        'nextChargeDate'	=> $result['remainingPayments'],
-                        'expire'		        	=> empty( $result['expire'] ) ? "" : $result['expire'],
-                        'numberOfPayments'   => isset( $result['remainingPayments'] ) ? $result['remainingPayments'] : -1,
-                        'recurringDescription' => json_encode( $result ),
+                        'user_id'				=> esc_html( $base_order->get_user_id() ),
+                        'order_id'		        => esc_html( $invoice_id ),
+                        'recurringId'		    => esc_html( $result['id'] ),
+                        'recurring'		        => esc_html( $result['recurrence'] ),
+                        'status'		        	=> esc_html( $result['status'] ),
+                        'startDate'		        => esc_html( $result['startPaymentDate'] ),
+                        'nextChargeDate'	=> esc_html( $result['remainingPayments'] ),
+                        'expire'		        	=> empty( $result['expire'] ) ? "" : esc_html( $result['expire'] ),
+                        'numberOfPayments'   => isset( $result['remainingPayments'] ) ? esc_html( $result['remainingPayments'] ) : -1,
+                        'recurringDescription' => json_encode( esc_html( $result ) ),
                     ),
                     array( 
                         '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
                     )
                 );
             } else {
-				$json = json_encode( $result );
+				$json = json_encode( esc_html( $result ) );
+				$result_status = esc_html( $result['status'] );
+				$result_startPaymentDate = isset( $result['startPaymentDate'] ) ? esc_html( $result['startPaymentDate'] ) : '';
+				$result_recurrence = esc_html( $result['recurrence'] );
+				$result_remainingPayments = esc_html( $result['remainingPayments'] );
+				$result_id = esc_html( $result['id'] );
+				
                 $wpdb->query("UPDATE " . $wpdb->prefix . BNA_TABLE_RECURRING
                     ." SET "
-                        ."status='{$result['status']}', "
+                        ."status='{$result_status}', "
                         .( isset( $result['startPaymentDate'] ) 
-                            ? "startDate='{$result['startPaymentDate']}', "
+                            ? "startDate='{$result_startPaymentDate}', "
                             : ""
                         )
-                        ."recurring='{$result['recurrence']}', "
-                        ."numberOfPayments='{$result['remainingPayments']}', "
+                        ."recurring='{$result_recurrence}', "
+                        ."numberOfPayments='{$result_remainingPayments}', "
                         ."recurringDescription='{$json}' "
-                    ." WHERE recurringId='{$result['id']}'"
+                    ." WHERE recurringId='{$result_id}'"
                 );
             }
 		}
@@ -341,7 +347,7 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 					'PATCH'
 				);
 
-				empty( $response['id'] ) ?
+				! empty( $response['id'] ) ?
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_SUCCESS ) :
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_ERROR );
 			}

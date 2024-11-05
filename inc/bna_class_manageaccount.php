@@ -109,7 +109,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			wp_localize_script( 'bna-datepicker-js', 'bnaData',
 				array(
-					'url' 	=> admin_url('admin-ajax.php'),
+					'url' 	=> admin_url( 'admin-ajax.php' ),
 					'nonce' => wp_create_nonce( BNA_CONST_NONCE_NAME ),
 					'paymentMethodsEndpointUrl' => esc_url( wc_get_account_endpoint_url( 'bna-payment-methods' ) ),
 					'btnSuspendSubscriptionQuestion' => __( 'Do you want to suspend the subscription', 'wc-bna-gateway' ),
@@ -960,14 +960,14 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 						break;
 				}
 
-				if ( ! empty( $field ) ) update_user_meta ( $user->ID, $field, $rval );
+				if ( ! empty( $field ) ) update_user_meta ( $user->ID, $field, esc_html( $rval ) );
 			}
 
 			$country = $result['address']['country'];
 			foreach ( WC()->countries->countries as $c_key => $c_val ) {
 				if ( strripos( $c_val, $country) !== false ) { 
 					$country = $c_key;
-					update_user_meta ( $user->ID, 'billing_country', $country );
+					update_user_meta ( $user->ID, 'billing_country', esc_html( $country ) );
 					break;
 				}
 			}
@@ -976,7 +976,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 			foreach ( WC()->countries->get_states( $country ) as $p_key => $p_val ) {
 				if ( strripos( $p_val, $province ) !== false ) {
 					$province = $p_key;
-					update_user_meta ( $user->ID, 'billing_state', $province );
+					update_user_meta ( $user->ID, 'billing_state', esc_html( $province ) );
 					break;
 				}
 			}
@@ -991,16 +991,16 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					case 'city':				$field = 'billing_city'; break;
 				}
 
-				if ( !empty( $field) ) update_user_meta ( $user->ID, $field, $rval );
+				if ( !empty( $field) ) update_user_meta ( $user->ID, $field, esc_html( $rval ) );
 			}
 
-			update_user_meta ( $user->ID, 'billing_address_1', $result['address']['streetName'] );
+			update_user_meta ( $user->ID, 'billing_address_1', esc_html( $result['address']['streetName'] ) );
 			update_user_meta ( $user->ID, 'billing_address_2', 
-				'street #'.$result['address']['streetNumber'] .
+				'street #' . esc_html( $result['address']['streetNumber'] ) .
 					( 
 						empty( $result['address']['apartment'] ) ? 
 						'' : 
-						', apt. '.$result['address']['apartment'] 
+						', apt. ' . esc_html( $result['address']['apartment'] )
 					)
 			);
 			
@@ -1029,13 +1029,13 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 							$stmt = $wpdb->insert( 
 								$wpdb->prefix . BNA_TABLE_SETTINGS,  
 								array( 
-									'user_id' 			=> 	$user->ID, 
-									'payorId' 			=> 	$payorID,
+									'user_id' 			=> 	esc_html( $user->ID ), 
+									'payorId' 			=> 	esc_html( $payorID ),
 									'paymentMethodId' => ! empty( $rval['id'] ) ? esc_html( $rval['id'] ) : '',
-									'paymentType' 		=>  $paymentType,
+									'paymentType' 		=>  esc_html( $paymentType ),
 									'paymentInfo' 		=>	esc_html( $paymentInfo ),
 									'paymentsRecurrings'=>  0,
-									'paymentDescription'=> json_encode( $rval )
+									'paymentDescription'=> json_encode( esc_html( $rval ) )
 								),
 								array( 
 									'%d','%s','%s','%s','%s','%s','%s'

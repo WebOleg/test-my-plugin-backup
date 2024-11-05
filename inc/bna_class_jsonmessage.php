@@ -22,6 +22,8 @@ define ('BNA_MSG_ERRORNONCE',  3);
 define ('BNA_MSG_DELPAYMENT_ERRORID', 10);
 define ('BNA_MSG_DELPAYMENT_ERROR', 11);
 define ('BNA_MSG_DELPAYMENT_SUCCESS', 12);
+define ('BNA_MSG_SUSPENDPAYMENT_ERRORID', 13);
+define ('BNA_MSG_SUSPENDPAYMENT_ERROR', 14);
 
 define ('BNA_MSG_ADDPAYMENT_ERRPAYMENTTYPE', 201);
 define ('BNA_MSG_ADDPAYMENT_ERROR', 202);
@@ -116,7 +118,7 @@ if (!class_exists('BNAJsonMsgAnswer')) {
 					break;
 			}
 			
-			echo ( json_encode( array('success'=> $status, 'message' => $message)) );
+			echo ( json_encode( array('success'=> $status, 'message' => $message) ) );
 		} 
     } // end of class
 } 
