@@ -97,10 +97,9 @@ if ( ! empty( $bna_gateway_settings['bna-payment-method-card'] ) && $bna_gateway
 				let cc = $(this).val();
 				cc = cc.replace(/[^0-9]+/g,'');
 				let typeArray=checkType(cc);
-				//console.log(typeArray.length);
+				
 				if (typeArray.length==1) {			
 					if (typeArray[0].type !== undefined && typeArray[0].type) {
-						console.log(typeArray[0].type);
 						if (typeArray[0].type != $(this).next().data('img')) {
 							let cardName = 'credit_card';
 							if (typeArray[0].type == 'visa') {

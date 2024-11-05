@@ -83,7 +83,7 @@ $icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width=
 				<tr class="woocommerce-orders-table__row">
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Order', 'wc-bna-gateway' ); ?>">
 						<a class="bna-orders-order-link" href="/my-account/view-order/<?php echo $order_id; ?>/">
-							<?php echo '#' . $order_id; ?>
+							<?php echo '#' . esc_html( $order_id ); ?>
 						</a>
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Transaction', 'wc-bna-gateway' ); ?>">
@@ -91,7 +91,7 @@ $icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width=
 					</td>
 					<td class="woocommerce-orders-table__cell " data-title="<?php _e( 'Type', 'wc-bna-gateway' ); ?>">					
 						<div class="img-transaction-type">
-							<img src="<?php echo $this->plugin_url.'assets/img/' . $imageName; ?>" alt="<?php echo esc_html( $desc->paymentMethod );?>">
+							<img src="<?php echo $this->plugin_url.'assets/img/' . $imageName; ?>" alt="<?php echo esc_html( $desc->paymentMethod ); ?>">
 						</div>									
 					</td>
 					<td class="woocommerce-orders-table__cell <?php echo $status_color; ?>" data-title="<?php _e( 'Status', 'wc-bna-gateway' ); ?>">
@@ -101,17 +101,17 @@ $icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width=
 						<?php
 						switch ( $desc->paymentMethod ) {
 							case 'CARD':
-								$paymentDetails = ucfirst( $desc->paymentDetails->cardBrand ) . ':  ' . " {$desc->paymentDetails->cardNumber}";
+								$paymentDetails = ucfirst( esc_html( $desc->paymentDetails->cardBrand ) ) . ':  ' .  esc_html( $desc->paymentDetails->cardNumber );
 								break;
 							case 'EFT':
-								$paymentDetails = __( 'Account #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->accountNumber}<br>";
-								$paymentDetails .= __( 'Transit #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->transitNumber}<br>";
-								$paymentDetails .= __( 'Institution #:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->bankNumber}";
+								$paymentDetails = __( 'Account #:', 'wc-bna-gateway' ) . esc_html( $desc->paymentDetails->accountNumber ) . '<br>';
+								$paymentDetails .= __( 'Transit #:', 'wc-bna-gateway' ) . esc_html( $desc->paymentDetails->transitNumber ) . '<br>';
+								$paymentDetails .= __( 'Institution #:', 'wc-bna-gateway' ) . esc_html( $desc->paymentDetails->bankNumber );
 								break;
 								break;
 							case 'E-TRANSFER':
 								if ( isset( $desc->paymentDetails->emailAddress ) ) {
-									$paymentDetails = __( 'Email:', 'wc-bna-gateway' ) . " {$desc->paymentDetails->emailAddress}";
+									$paymentDetails = __( 'Email:', 'wc-bna-gateway' ) . esc_html( $desc->paymentDetails->emailAddress );
 								} else { $paymentDetails = ''; }
 								break;
 						} 

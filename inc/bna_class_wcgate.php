@@ -747,7 +747,7 @@ function wc_bna_gateway_init() {
 					'redirect'  => $this->get_return_url( $order )
 				);
 			} else {
-				$order->update_status( 'on-hold', __( 'Pending.', 'wc-bna-gateway' ) );
+				//$order->update_status( 'on-hold', __( 'Pending.', 'wc-bna-gateway' ) );
 			}
 			
 			throw new Exception(
@@ -842,14 +842,14 @@ my_log($result);
 			$updatetime = get_option( 'wc_bna_gateway_fees_updatetime' );
 			if ( ! empty( $updatetime ) ) {
 				if ( date( 'Y-m-d', strtotime( $updatetime) ) === date( 'Y-m-d' ) ) {
-					return null;
+					return false;
 				}
 			} 
 
 			$args = WC_BNA_Gateway::get_merchant_params();
 			if ( empty( $args ) ) {
 				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
-				wp_die();
+				return false;
 			}
 
 			$api = new BNAExchanger( $args );
@@ -877,14 +877,18 @@ my_log($result);
 			
 			$invoice_id = '';
 			
-			if ( isset( $result['metadata']['invoiceId'] ) ) { $invoice_id = $result['metadata']['invoiceId']; }
-			
-			if ( empty( $invoice_id ) ) exit();
-
 			$check_transaction_id =  $wpdb->get_results(
                 "SELECT * FROM " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS . " WHERE transactionToken='{$result['id']}'"
-            );           
-    
+            );
+            
+            if ( ! empty( $check_transaction_id[0]->order_id ) ) {
+				$invoice_id = $check_transaction_id[0]->order_id;
+			} elseif ( isset( $result['metadata']['invoiceId'] ) ) {
+				$invoice_id = $result['metadata']['invoiceId'];
+			} else {
+				exit();
+			}
+               
             $order = wc_get_order( $invoice_id );
 			$new_order = null;
 			
@@ -904,14 +908,13 @@ my_log($result);
 									'amount' => $amount,
 									'reason' => esc_html( $result['transactionComment'] ),
 									'order_id' => $order->get_id(),
-									'refund_payment' => false
+									'refund_payment' => true
 								)
 							);
 							if ( is_wp_error( $refund ) ) {
 								error_log( $refund->get_error_message() );
 							} else {
 								//$order->set_status( 'wc-refunded', __( 'Order Cancelled And Completely Refunded', 'wc-bna-gateway' ) );
-								//$order->save();
 							}
 						} else {
 							error_log( __( 'Refund requested exceeds remaining order balance of ' . $order->get_total(), 'wc-bna-gateway' ) );
@@ -926,11 +929,15 @@ my_log($result);
 					}					
 					break;
 				case 'ERROR':
+				case 'CANCELLED':
+				case 'EXPIRED':
 				case 'DECLINED':
 					if ( $result['action'] === 'VOID' ) {
 						$order->update_status( 'cancelled', __( 'Order void.', 'wc-bna-gateway' ) );
 					} else if ( ! isset( $result['subscriptionId'] ) && $order->get_status() !== 'completed' ) {
 						$order->update_status( 'on-hold', __( 'Waiting for payment.', 'wc-bna-gateway' ) );
+					} else {
+						$order->update_status( 'cancelled', __( 'Order void.', 'wc-bna-gateway' ) );
 					}
 					break;				
 				case 'REFUNDED':
@@ -941,7 +948,7 @@ my_log($result);
 						$refund = wc_create_refund(
 							array(
 								'amount' => $amount,
-								'reason' => __( "Order Cancelled", 'wc-bna-gateway' ),
+								'reason' => esc_html( $result['transactionComment'] ),
 								'order_id' => $order->get_id(),
 								'refund_payment' => true
 							)
@@ -949,7 +956,7 @@ my_log($result);
 						if ( is_wp_error( $refund ) ) {
 							error_log( $refund->get_error_message() );
 						} else {
-							$order->update_status( 'refunded', __( 'Order Cancelled And Completely Refunded', 'wc-bna-gateway' ) );
+							//$order->update_status( 'refunded', __( 'Order Cancelled And Completely Refunded', 'wc-bna-gateway' ) );
 						}
 					} else {
 						error_log( __( 'Refund requested exceeds remaining order balance of ' . $order->get_total(), 'wc-bna-gateway' ) );
@@ -957,6 +964,8 @@ my_log($result);
 					break;
 				case 'BATCHED':
 				case 'PENDING':
+				case 'OVERPAID':
+				case 'UNDERPAID':
 				default:
 					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
 			}
@@ -977,23 +986,26 @@ my_log($result);
 				$wpdb->insert( 
 					$wpdb->prefix . BNA_TABLE_TRANSACTIONS,  
 					array( 
-						'order_id'				=> empty( $new_order ) ? $order->get_id() : $new_order->get_id(),
-						'transactionToken'		=> $result['id'],
-						'referenceNumber'		=> $result['referenceUUID'],
-						'transactionStatus'		=> $result['status'],
-						'transactionDescription'=> json_encode( $result )
+						'order_id'				=>  empty( $new_order ) ? esc_html( $order->get_id() ) : esc_html( $new_order->get_id() ),
+						'transactionToken'		=> esc_html( $result['id'] ),
+						'referenceNumber'		=> esc_html( $result['referenceUUID'] ),
+						'transactionStatus'		=> esc_html( $result['status'] ),
+						'transactionDescription'=> json_encode( esc_html( $result ) )
 					),
 					array( 
 						'%d','%s','%s','%s','%s'
 					)
 				);
-			} else { // $check_transaction_id[0]->transactionStatus !== $result['status']
-				$transactionDescription = json_encode( $result );
+			} else {
+				$transactionDescription = json_encode( esc_html( $result ) );
+				$result_status = esc_html( $result['status'] );
+				$result_id = esc_html( $result['id'] );
+				
 				$wpdb->query("UPDATE " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS
 					." SET "
-						."transactionStatus='{$result['status']}', "
+						."transactionStatus='{$result_status}', "
 						."transactionDescription='{$transactionDescription}' "
-					." WHERE transactionToken='{$result['id']}'"
+					." WHERE transactionToken='{$result_id}'"
 				);
 			}
 					

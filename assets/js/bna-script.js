@@ -172,7 +172,7 @@ function input_test(input) {
 		let self = $(this);
         
         let winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-        $('#confirm-header').text( $(this).data('order-question') + ' ' + $(this).data('current-method') + '?');
+        $('#confirm-header').html( $(this).data('order-question') + ' ' + $(this).data('current-method') + '?');
         $('#confirm-wrapper').css({'display': 'block', 'opacity': '1', 'height': winHeight + 'px'});
         $('#confirm-cancel').on('click', function() {
 			$('#confirm-wrapper').css({'display': 'none', 'opacity': '0'});

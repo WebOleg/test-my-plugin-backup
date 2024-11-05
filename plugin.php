@@ -78,6 +78,7 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			register_activation_hook( $this->plugin_name, array( 'BNAPluginManager', 'activate' ) );
 			register_deactivation_hook( $this->plugin_name, array( 'BNAPluginManager', 'deactivate' ) );
 			//register_uninstall_hook( $this->plugin_name, array( 'BNAPluginManager', 'uninstall' ) );
+			add_filter( 'plugin_action_links', array( $this, 'plugin_action_links' ) );
 
 			add_filter( 'woocommerce_checkout_fields' , array( $this, 'custom_override_checkout_fields') );
 
@@ -184,6 +185,22 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			global $wpdb;
 			$wpdb->query( "DROP TABLE IF EXISTS " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS );
 			$wpdb->query( "DROP TABLE IF EXISTS " . $wpdb->prefix . BNA_TABLE_SETTINGS );
+		}
+		
+		/**
+		* Show action links on the plugin screen.
+		*
+		* @param mixed $links Plugin Action links.
+		*
+		* @return array
+		*/
+		public function plugin_action_links( $links ) 
+		{
+			$action_links = array(
+				'settings' => '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=bna_gateway' ) . '" aria-label="' . esc_attr__( 'View settings', 'woocommerce' ) . '">' . esc_html__( 'Settings', 'woocommerce' ) . '</a>',
+			);
+
+			return array_merge( $action_links, $links );
 		}
 
 		/**
