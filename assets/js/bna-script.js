@@ -377,43 +377,43 @@ function input_test(input) {
 		let winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 		$('#bna-desc-header').text( self.data('order-question') + ' #' + self.data('order-id') + '.');
 		
-		if( self.data('id') ){ $('#bna-desc-id .bna-desc-p-value').text( self.data('id') + '.'); }
-		if( self.data('created') ){ $('#bna-desc-created .bna-desc-p-value').text( self.data('created') + '.'); }
-		if( self.data('status') ){ $('#bna-desc-status .bna-desc-p-value').text( self.data('status') + '.'); }
-		if( self.data('currency') ){ $('#bna-desc-currency .bna-desc-p-value').text( self.data('currency') + '.'); }
+		if( self.data('id') ){ $('#bna-desc-id .bna-desc-p-value').text( self.data('id') ); }
+		if( self.data('created') ){ $('#bna-desc-created .bna-desc-p-value').text( self.data('created') ); }
+		if( self.data('status') ){ $('#bna-desc-status .bna-desc-p-value').text( self.data('status') ); }
+		if( self.data('currency') ){ $('#bna-desc-currency .bna-desc-p-value').text( self.data('currency') ); }
 		if( self.data('total') ){ 
-			$('#bna-desc-total .bna-desc-p-value').text( self.data('total') + '.');
+			$('#bna-desc-total .bna-desc-p-value').text( self.data('total') );
 			$('#bna-desc-total').css({'display': 'flex', 'opacity': '1'});
 		} else {
 			$('#bna-desc-total').css({'display': 'none', 'opacity': '0'});
 		}
 		if( self.data('subtotal') ){ 
-			$('#bna-desc-subtotal .bna-desc-p-value').text( self.data('subtotal') + '.');
+			$('#bna-desc-subtotal .bna-desc-p-value').text( self.data('subtotal') );
 			$('#bna-desc-subtotal').css({'display': 'flex', 'opacity': '1'});
 		} else {
 			$('#bna-desc-subtotal').css({'display': 'none', 'opacity': '0'});
 		}
 		if( self.data('amount') ){ 
-			$('#bna-desc-amount .bna-desc-p-value').text( self.data('amount') + '.');
+			$('#bna-desc-amount .bna-desc-p-value').text( self.data('amount') );
 			$('#bna-desc-amount').css({'display': 'flex', 'opacity': '1'});
 		} else {
 			$('#bna-desc-amount').css({'display': 'none', 'opacity': '0'});
 		}
 		if( self.data('balance') ){ 
-			$('#bna-desc-balance .bna-desc-p-value').text( self.data('balance') + '.');
+			$('#bna-desc-balance .bna-desc-p-value').text( self.data('balance') );
 			$('#bna-desc-balance').css({'display': 'flex', 'opacity': '1'});
 		} else {
 			$('#bna-desc-balance').css({'display': 'none', 'opacity': '0'});
 		}
 		if( self.data('fee') ){ 
-			$('#bna-desc-fee .bna-desc-p-value').text( self.data('fee') + '.');
+			$('#bna-desc-fee .bna-desc-p-value').text( self.data('fee') );
 			$('#bna-desc-fee').css({'display': 'flex', 'opacity': '1'});
 		} else {
 			$('#bna-desc-fee').css({'display': 'none', 'opacity': '0'});
 		}
-		if( self.data('payment-method') ){ $('#bna-desc-payment-method .bna-desc-p-value').text( self.data('payment-method') + '.'); }
+		if( self.data('payment-method') ){ $('#bna-desc-payment-method .bna-desc-p-value').text( self.data('payment-method') ); }
 		if( self.data('payment-details') ){ 
-			$('#bna-desc-payment-details .bna-desc-p-value').html( self.data('payment-details') + '.');
+			$('#bna-desc-payment-details .bna-desc-p-value').html( self.data('payment-details') );
 			$('#bna-desc-payment-details').css({'display': 'flex', 'opacity': '1'});
 		} else {
 			$('#bna-desc-payment-details').css({'display': 'none', 'opacity': '0'});

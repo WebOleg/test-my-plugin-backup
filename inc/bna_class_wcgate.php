@@ -990,14 +990,14 @@ my_log($result);
 						'transactionToken'		=> esc_html( $result['id'] ),
 						'referenceNumber'		=> esc_html( $result['referenceUUID'] ),
 						'transactionStatus'		=> esc_html( $result['status'] ),
-						'transactionDescription'=> json_encode( esc_html( $result ) )
+						'transactionDescription'=> json_encode( $result )
 					),
 					array( 
 						'%d','%s','%s','%s','%s'
 					)
 				);
 			} else {
-				$transactionDescription = json_encode( esc_html( $result ) );
+				$transactionDescription = json_encode( $result );
 				$result_status = esc_html( $result['status'] );
 				$result_id = esc_html( $result['id'] );
 				

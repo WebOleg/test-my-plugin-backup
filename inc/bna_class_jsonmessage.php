@@ -22,7 +22,7 @@ define ('BNA_MSG_ERRORNONCE',  3);
 define ('BNA_MSG_DELPAYMENT_ERRORID', 10);
 define ('BNA_MSG_DELPAYMENT_ERROR', 11);
 define ('BNA_MSG_DELPAYMENT_SUCCESS', 12);
-define ('BNA_MSG_SUSPENDPAYMENT_ERRORID', 13);
+define ('BNA_MSG_SUSPENDPAYMENT_SUCCESS', 13);
 define ('BNA_MSG_SUSPENDPAYMENT_ERROR', 14);
 
 define ('BNA_MSG_ADDPAYMENT_ERRPAYMENTTYPE', 201);
@@ -36,24 +36,24 @@ define ('BNA_MSG_ENDPOINT_ACCOUNT_ERRUSER', 101);
 
 
 
-if (!class_exists('BNAJsonMsgAnswer')) {
+if ( ! class_exists( 'BNAJsonMsgAnswer' ) ) {
 
 	class BNAJsonMsgAnswer {
 
         public function __construct() {}
 
 
-        public static function send_json_answer($errNumber)
+        public static function send_json_answer( $errNumber )
 		{
-			$message = $status = '';
+			$message = '';
 			$status = 'false';
 
 			switch ($errNumber) {
 				case BNA_MSG_DELPAYMENT_ERRORID:
-				case BNA_MSG_SUSPENDPAYMENT_ERRORID:
 				case BNA_MSG_UPDATE_ACCOUNT_ERROR:
 				case BNA_MSG_ERRORPARAMS:
 				case BNA_MSG_ERRORPAYOR:
+				case BNA_MSG_ERRORNONCE:
 					$message =
 						'<ul class="woocommerce-error">' .
 							'<li>'.__('Error. Please contact your merchant about this issue.', 'wc-bna-gateway').'</li>' .
@@ -117,7 +117,7 @@ if (!class_exists('BNAJsonMsgAnswer')) {
 				default:
 					break;
 			}
-			
+		
 			echo ( json_encode( array('success'=> $status, 'message' => $message) ) );
 		} 
     } // end of class
