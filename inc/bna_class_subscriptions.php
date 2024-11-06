@@ -70,14 +70,14 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
                         'nextChargeDate'	=> esc_html( $result['remainingPayments'] ),
                         'expire'		        	=> empty( $result['expire'] ) ? "" : esc_html( $result['expire'] ),
                         'numberOfPayments'   => isset( $result['remainingPayments'] ) ? esc_html( $result['remainingPayments'] ) : -1,
-                        'recurringDescription' => json_encode( esc_html( $result ) ),
+                        'recurringDescription' => json_encode( $result ),
                     ),
                     array( 
                         '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s'
                     )
                 );
             } else {
-				$json = json_encode( esc_html( $result ) );
+				$json = json_encode( $result );
 				$result_status = esc_html( $result['status'] );
 				$result_startPaymentDate = isset( $result['startPaymentDate'] ) ? esc_html( $result['startPaymentDate'] ) : '';
 				$result_recurrence = esc_html( $result['recurrence'] );
@@ -285,7 +285,7 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 					'DELETE'
 				);
 
-				empty( $response['success'] ) ?
+				empty( $response ) ?
 						BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_SUCCESS ) :
 						BNAJsonMsgAnswer::send_json_answer( BNA_MSG_DELPAYMENT_ERROR ) ;
 			}
@@ -346,6 +346,8 @@ if ( ! class_exists( 'BNASubscriptions' ) ) {
 					$data,
 					'PATCH'
 				);
+				
+				$response = json_decode( $response, true );
 
 				! empty( $response['id'] ) ?
 					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_SUSPENDPAYMENT_SUCCESS ) :

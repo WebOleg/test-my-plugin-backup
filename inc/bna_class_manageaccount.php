@@ -302,9 +302,9 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 
 			$response = json_decode( $response, true );
 		
-			empty( $response['id'] ) ? 
-				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
-				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS );
+			! empty( $response['id'] ) ? 
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS ) : 
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR );
 			
 		}
 
@@ -588,10 +588,10 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 				);
 
 				$response = json_decode( $response, true );
-			
-				empty( $response['id'] ) ? 
-					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
-					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS );
+		
+				! empty( $response['id'] ) ? 
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS ) : 
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR );
 			}
 		
 			wp_die();
@@ -633,18 +633,15 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					'DELETE'
 				);
 				
-				// remove fields from the database
-				$response = json_decode( $response, true );
-				
 				if ( empty( $response ) ) {
 					delete_user_meta( $user_id, 'payorID' );	
 									
 					$wpdb->query( "DELETE FROM ".$wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'" );			
 				}
 				
-				! empty( $response ) ? 
-					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR ) : 
-					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS );
+				empty( $response ) ? 
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_SUCCESS ) : 
+					BNAJsonMsgAnswer::send_json_answer( BNA_MSG_UPDATE_ACCOUNT_ERROR );
 			}
 		
 			wp_die();
@@ -800,10 +797,10 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 					'',
 					'DELETE'
 				);
-
-				empty( $response['success'] ) ? 
-						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_SUCCESS) :
-						BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERROR);
+				
+				empty( $response ) ? 
+					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_SUCCESS) :
+					BNAJsonMsgAnswer::send_json_answer(BNA_MSG_DELPAYMENT_ERROR);
 			}
 		
 			wp_die();
@@ -1035,7 +1032,7 @@ if ( ! class_exists( 'BNAAccountManager' ) ) {
 									'paymentType' 		=>  esc_html( $paymentType ),
 									'paymentInfo' 		=>	esc_html( $paymentInfo ),
 									'paymentsRecurrings'=>  0,
-									'paymentDescription'=> json_encode( esc_html( $rval ) )
+									'paymentDescription'=> json_encode( $rval )
 								),
 								array( 
 									'%d','%s','%s','%s','%s','%s','%s'

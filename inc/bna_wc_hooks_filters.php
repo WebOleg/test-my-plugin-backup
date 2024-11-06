@@ -303,16 +303,16 @@ function bna_address_to_edit( $address, $load_address ) {
 		$new_address[$key] = $value;
 	}
 	
-	$new_address['billing_email']['priority'] = 32;
-	$new_address['billing_phone_code']['priority'] = 34;
-	$new_address['billing_phone']['priority'] = 36;
-	$new_address['billing_apartment']['priority'] = 42;
-	$new_address['billing_street_number']['priority'] = 44;
-	$new_address['billing_street_name']['priority'] = 46;		
-	$new_address['billing_city']['priority'] = 72;
-	$new_address['billing_state']['priority'] = 74;
-	$new_address['billing_country']['priority'] = 76;
-	$new_address['billing_postcode']['priority'] = 88;
+	//$new_address['billing_email']['priority'] = 32;
+	//$new_address['billing_phone_code']['priority'] = 34;
+	//$new_address['billing_phone']['priority'] = 36;
+	//$new_address['billing_apartment']['priority'] = 42;
+	//$new_address['billing_street_number']['priority'] = 44;
+	//$new_address['billing_street_name']['priority'] = 46;		
+	//$new_address['billing_city']['priority'] = 72;
+	//$new_address['billing_state']['priority'] = 74;
+	//$new_address['billing_country']['priority'] = 76;
+	//$new_address['billing_postcode']['priority'] = 88;
 	
 	return $new_address;
 }

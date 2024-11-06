@@ -106,11 +106,11 @@ $icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width=
 							data-created="<?php echo date( 'Y-m-d H:i:s', strtotime( $s_val->created_time ) ); ?>" 
 							data-status="<?php echo esc_html( $s_val->status ); ?>" 
 							data-currency="<?php echo esc_html( $desc->currency ); ?>" 
-							data-total="<?php if ( isset( $desc->total ) ) { echo esc_html( $desc->total ); } ?>" 
-							data-subtotal="<?php if ( isset( $desc->subtotal ) ) { echo esc_html( $desc->subtotal ); } ?>" 
-							data-amount="<?php if ( isset( $desc->amount ) ) { echo esc_html( $desc->amount ); } ?>" 
-							data-balance="<?php if ( isset( $desc->balance ) ) { echo esc_html( $desc->balance ); } ?>" 
-							data-fee="<?php  if ( isset( $desc->fee ) ) { echo esc_html( $desc->fee ); }  ?>" 
+							data-total="<?php if ( ! empty( $desc->total ) ) { echo number_format( $desc->total, 2 ); } ?>" 
+							data-subtotal="<?php if ( ! empty( $desc->subtotal ) ) { echo number_format( $desc->subtotal, 2 ); } ?>" 
+							data-amount="<?php if ( ! empty( $desc->amount ) ) { echo number_format( $desc->amount, 2 ); } ?>" 
+							data-balance="<?php if ( ! empty( $desc->balance ) ) { echo number_format( $desc->balance, 2 ); } ?>" 
+							data-fee="<?php  if ( ! empty( $desc->fee ) ) { echo number_format( $desc->fee, 2 ); }  ?>" 
 							data-payment-method="<?php echo esc_html( $desc->paymentMethod ); ?>" 
 							data-payment-details="<?php if ( isset( $paymentDetails ) ) { echo esc_html( $paymentDetails ); } ?>" >
 							<?php echo $icon_eye; ?>
