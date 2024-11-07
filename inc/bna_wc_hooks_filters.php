@@ -183,6 +183,9 @@ function bna_checkout_process_validation() {
 	} elseif ( ! empty( $_POST['payment-type'] ) && $_POST['payment-type'] === 'e-transfer' ) {
 		if ( ! $_POST['email_transfer'] ) wc_add_notice( __( '<strong>Interac Email</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
 	}
+	
+	if ( ! $_POST['i-agree'] ) wc_add_notice( __( '<strong>Recurring Payment Agreement</strong> is a Required Checkbox.', 'wc-bna-gateway' ) , 'error' );
+	
 }
 
 /**
@@ -346,5 +349,57 @@ add_action( 'template_redirect', function() {
 	}
 } );
 
+/**
+ * Default checkout billing state
+ * 
+ * @return null
+ */
 add_filter( 'default_checkout_billing_state', '__return_null' );
 
+/**
+ * Show subscription order details in tankyou page
+ * 
+ * @return string
+ */
+add_action( 'woocommerce_after_order_details', function( $order ) {
+	$info = $order->get_meta( 'bna_subscription_order_info' );
+	if ( ! empty( $info ) ) {
+		?>
+		<header><h4><?php _e( 'Recurring Details', 'wc-bna-gateway' ); ?></h4></header>
+		<table class="shop_table shop_table_responsive customer_details">
+			<tbody>
+				<?php if ( ! empty( $info['recurrence'] ) ) { ?>
+					<tr>
+						<th><?php _e( 'Recurrence:', 'wc-bna-gateway' ); ?></th>
+						<td data-title="<?php _e( 'Recurrence', 'wc-bna-gateway' ); ?>"><?php echo $info['recurrence']; ?></td>
+					</tr>
+				<?php } ?>
+				<?php if ( ! empty( $info['startPaymentDate'] ) ) { ?>
+					<tr>
+						<th><?php _e( 'Start payment date:', 'wc-bna-gateway' ); ?></th>
+						<td data-title="<?php _e( 'Start payment date', 'wc-bna-gateway' ); ?>"><?php echo date( 'Y-m-d H:i:s', strtotime( $info['startPaymentDate'] ) ); ?></td>
+					</tr>
+				<?php } ?>
+				<?php if ( ! empty( $info['nextPaymentDate'] ) ) { ?>
+					<tr>
+						<th><?php _e( 'Next payment date:', 'wc-bna-gateway' ); ?></th>
+						<td data-title="<?php _e( 'Next payment date', 'wc-bna-gateway' ); ?>"><?php echo date( 'Y-m-d H:i:s', strtotime( $info['nextPaymentDate'] ) ); ?></td>
+					</tr>
+				<?php } ?>
+				<?php if ( ! empty( $info['lastPaymentDate'] ) ) { ?>
+					<tr>
+						<th><?php _e( 'Last payment date:', 'wc-bna-gateway' ); ?></th>
+						<td data-title="<?php _e( 'Last payment date', 'wc-bna-gateway' ); ?>"><?php echo date( 'Y-m-d H:i:s', strtotime( $info['lastPaymentDate'] ) ); ?></td>
+					</tr>
+				<?php } ?>
+				<?php if ( ! empty( $info['remainingPayments'] ) ) { ?>
+					<tr>
+						<th><?php _e( 'Remaining payments:', 'wc-bna-gateway' ); ?></th>
+						<td data-title="<?php _e( 'Remaining payments', 'wc-bna-gateway' ); ?>"><?php echo $info['remainingPayments']; ?></td>
+					</tr>
+				<?php } ?>
+			</tbody>
+		</table>
+		<?php
+	}
+}, 10, 1 );

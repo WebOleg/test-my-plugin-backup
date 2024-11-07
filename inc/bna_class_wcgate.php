@@ -689,7 +689,7 @@ function wc_bna_gateway_init() {
 					$args['serverUrl'] . '/' . $args['protocol'] . '/subscription',
 					$data_subscription,
 					'POST'
-				);
+				);							
 			} else {
 				$response = $api->query(
 					$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentTypeMethod . '/sale',
@@ -701,6 +701,17 @@ function wc_bna_gateway_init() {
 			$response = json_decode( $response, true );
 
 			if ( ! empty( $response['id'] ) ) {
+				
+				// Set subscription order details to post meta
+				if ( isset( $_POST['create_subscription'] ) ) {
+					$bna_subscription_order_info = array();
+					$bna_subscription_order_info['recurrence'] = $response['recurrence'];
+					$bna_subscription_order_info['startPaymentDate'] = $response['startPaymentDate'];
+					$bna_subscription_order_info['nextPaymentDate'] = $response['nextPaymentDate'];
+					$bna_subscription_order_info['lastPaymentDate'] = $response['lastPaymentDate'];
+					$bna_subscription_order_info['remainingPayments'] = $response['remainingPayments'];
+					$order->add_meta_data( 'bna_subscription_order_info', $bna_subscription_order_info );
+				}
 				
 				// save payment if 'save-credit-card' exists				
 				if ( ! empty( $_POST['save-credit-card'] ) && ( ! isset( $_POST['paymentMethodCC'] ) || $_POST['paymentMethodCC'] === 'new-card' ) ) {
@@ -736,11 +747,11 @@ function wc_bna_gateway_init() {
 							$paymentDetails = __( 'Email: ', 'wc-bna-gateway' ) . wp_get_current_user()->user_email;
 							$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
 							break;
-					} 
-					
+					} 					
 					$order->set_payment_method_title( $paymentDetails );
-					$order->save();
-				}
+				}	
+				$order->save();
+				
 				
 				return array(
 					'result' 	=> 'success',
