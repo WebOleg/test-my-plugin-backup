@@ -42,7 +42,6 @@ if ( ! class_exists( 'BNAJsonMsgAnswer' ) ) {
 
         public function __construct() {}
 
-
         public static function send_json_answer( $errNumber )
 		{
 			$message = '';

@@ -433,6 +433,7 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 	font-weight: 600 !important;
 	width: min-content;
 	text-align: center;
+	border-bottom: 1px solid #CCC;
 }
 .woocommerce-account table.my_account_orders > tbody tr td {
 	color: var(--bna-font-color);
@@ -558,9 +559,6 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 	border: 1px solid var(--bna-button-background-color);
 	color: var(--bna-button-background-color);
 }
-.woocommerce table.shop_table {
-	border: none;
-}
 .woocommerce table.shop_table tr.woocommerce-orders-table__row td {
 	padding-top: 10px;
 	padding-bottom: 10px;
@@ -571,12 +569,26 @@ body.woocommerce-order-pay .woocommerce form.bna-form-pay .bna-checkbox-containe
 .woocommerce table.shop_table tr.woocommerce-orders-table__row td[data-title="Manage"]:not(.woocommerce-orders-table__cell-order-actions) {
 	text-align: right;
 }
-.woocommerce table.shop_table td {
-	border-top: 1px solid #CCC;
+
+.woocommerce table.account-orders-table td,
+.woocommerce table.order_details td,
+.woocommerce table.customer_details td,
+.woocommerce table.woocommerce-checkout-review-order-table td {
+	border-top: none;
 }
-.woocommerce table.shop_table tr:last-child td {
+.woocommerce table.account-orders-table td,
+.woocommerce table.order_details th,
+.woocommerce table.order_details td,
+.woocommerce table.customer_details th,
+.woocommerce table.customer_details td,
+.woocommerce table.woocommerce-checkout-review-order-table thead th,
+.woocommerce table.woocommerce-checkout-review-order-table td {
 	border-bottom: 1px solid #CCC;
 }
+.woocommerce table.customer_details th {
+	width: 50%;
+}
+
 button.wp-element-button {
 	background-color: var(--bna-button-background-color);
 	border-color: var(--bna-button-background-color);
@@ -977,7 +989,8 @@ body.woocommerce-checkout .woocommerce .bna-recurring-cards .bna-input-wrapper #
 	width: 100%;
 }
 #checkmark_is_recurring,
-#checkmark_save_customer {
+#checkmark_save_customer,
+#checkmark_privacy_policy {
 	left: 20px;
 }
 body.woocommerce-checkout .woocommerce #bank_name {
@@ -1028,6 +1041,13 @@ body.woocommerce-checkout .woocommerce #bank_name {
 .bna-status-canceled {
 	color: #feb827 !important;
 }
+.bna-status-approved::before,
+.bna-status-error::before,
+.bna-status-declined::before,
+.bna-status-pending::before,
+.bna-status-canceled::before {
+	color: var(--bna-font-color);
+}
 
 /* Subsciption */
 .btn-del-subscription,
@@ -1067,6 +1087,13 @@ body.woocommerce-checkout .woocommerce #bank_name {
 .bna-status-new,
 .bna-status-active {
 	color: #61b505 !important;
+}
+.bna-status-suspended::before,
+.bna-status-deleted::before,
+.bna-status-expired::before,
+.bna-status-new::before,
+.bna-status-active::before {
+	color: var(--bna-font-color);
 }
 
  /* Privacy policy */
@@ -1263,7 +1290,7 @@ h6.bna-details-title::after {
 	background: #fff;
 	min-height: 420px;
 	position: absolute;
-	top: calc( (100% - 420px) / 2);
+	top: calc( (100vh - 420px) / 2);
 	left: calc( (100% - 520px) / 2);
 }
 #bna-desc-body {
