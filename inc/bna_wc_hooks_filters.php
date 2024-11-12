@@ -184,7 +184,7 @@ function bna_checkout_process_validation() {
 		if ( ! $_POST['email_transfer'] ) wc_add_notice( __( '<strong>Interac Email</strong> is a Required Field.', 'wc-bna-gateway' ) , 'error' );
 	}
 	
-	if ( ! $_POST['i-agree'] ) wc_add_notice( __( '<strong>Recurring Payment Agreement</strong> is a Required Checkbox.', 'wc-bna-gateway' ) , 'error' );
+	if ( isset( $_POST['i-agree'] ) && $_POST['i-agree'] !== 'i-agree-on' ) wc_add_notice( __( '<strong>Recurring Payment Agreement</strong> is a Required Checkbox.', 'wc-bna-gateway' ) , 'error' );
 	
 }
 
@@ -357,7 +357,7 @@ add_action( 'template_redirect', function() {
 add_filter( 'default_checkout_billing_state', '__return_null' );
 
 /**
- * Show subscription order details in tankyou page
+ * Show subscription order details
  * 
  * @return string
  */
@@ -403,3 +403,51 @@ add_action( 'woocommerce_after_order_details', function( $order ) {
 		<?php
 	}
 }, 10, 1 );
+
+/**
+ * Cancel transaction in the portal if the order canceled
+ * 
+ * @param int $order_id
+ */
+add_action( 'woocommerce_order_status_cancelled', function( $order_id ) {
+	global $wpdb;
+			
+	$order = wc_get_order( $order_id );
+	if ( ! $order || $order->get_status() !== 'pending' ) {
+		return;
+	}
+	
+	$check_transaction_id =  $wpdb->get_results(
+		"SELECT * FROM " . $wpdb->prefix . BNA_TABLE_TRANSACTIONS . " WHERE order_id='{$order_id}'"
+	);
+	
+	if ( ! empty( $check_transaction_id[0]->transactionToken ) ) {
+		$transactionToken = $check_transaction_id[0]->transactionToken;	
+		$desc = json_decode( $check_transaction_id[0]->transactionDescription );
+		$paymentMethod = strtolower( $desc->paymentMethod );
+		
+		if ( $paymentMethod === 'eft' || $paymentMethod === 'e-transfer' ) {
+			$args = WC_BNA_Gateway::get_merchant_params();
+			if ( empty( $args ) ) {
+				BNAJsonMsgAnswer::send_json_answer( BNA_MSG_ERRORPARAMS );
+				return false;
+			}
+
+			$api = new BNAExchanger( $args );
+			
+			$data = array();
+			$data['transactionTime'] = date('Y-m-d\TH:i:sO');
+			$data['referenceUUID']	= $transactionToken;
+			$data['transactionComment']	= __( 'Manually canceled the transaction from a woocommerce page', 'wc-bna-gateway' );
+			$data['metadata']	= array(
+				'invoiceId' => $order_id,				
+			);
+		
+			$response = $api->query(
+				$args['serverUrl'] . '/' . $args['protocol'] . '/transaction/' . $paymentMethod . '/cancel',  
+				$data, 
+				'POST'
+			);
+		}
+	}
+} );

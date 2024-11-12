@@ -367,6 +367,46 @@ function input_test(input) {
 		});
 		   
     });
+    
+    //$('.bna-cancel-transaction').on('click', function(event){
+        //event.stopPropagation();
+        //event.preventDefault();
+        
+        //let self = $(this);      
+		//self.prop('disabled', true);
+		//startLoadingAnimation();
+
+		//$.ajax({
+			//url         : bnaData.url,
+			//type        : 'POST', 
+			//dataType    : "json",
+			//data        : {
+				//action  : 'suspend_subscription',
+				//nonce   : bnaData.nonce,
+				//id      : self.data('id'),
+				//suspend : self.data('suspend') 
+			//},
+			//success: function( data ) {
+
+				//stopLoadingAnimation();
+				//let message = $('.woocommerce-notices-wrapper');
+				//message.get(0).scrollIntoView();
+				//message.html(data.message);
+				
+				//if( data.success === 'true' ){
+					//setTimeout(()=>{
+						//window.location.reload();
+					//}, 1000);
+				//}
+
+				//self.prop('disabled', false);
+			//},
+			//error: function( data ){
+				////console.log(data);
+			//}
+		//});
+		   
+    //});
    
    // Show description
    $('.btn-show-desc').on('click', function(event){
@@ -380,7 +420,12 @@ function input_test(input) {
 		if( self.data('id') ){ $('#bna-desc-id .bna-desc-p-value').text( self.data('id') ); }
 		if( self.data('created') ){ $('#bna-desc-created .bna-desc-p-value').text( self.data('created') ); }
 		if( self.data('status') ){ $('#bna-desc-status .bna-desc-p-value').text( self.data('status') ); }
-		if( self.data('currency') ){ $('#bna-desc-currency .bna-desc-p-value').text( self.data('currency') ); }
+		if( self.data('currency') ){
+			$('#bna-desc-currency .bna-desc-p-value').text( self.data('currency') );
+			$('#bna-desc-currency').css({'display': 'flex', 'opacity': '1'});
+		} else {
+			$('#bna-desc-currency').css({'display': 'none', 'opacity': '0'});
+		}
 		if( self.data('total') ){ 
 			$('#bna-desc-total .bna-desc-p-value').text( self.data('total') );
 			$('#bna-desc-total').css({'display': 'flex', 'opacity': '1'});
@@ -411,12 +456,23 @@ function input_test(input) {
 		} else {
 			$('#bna-desc-fee').css({'display': 'none', 'opacity': '0'});
 		}
-		if( self.data('payment-method') ){ $('#bna-desc-payment-method .bna-desc-p-value').text( self.data('payment-method') ); }
+		if( self.data('payment-method') ){
+			$('#bna-desc-payment-method .bna-desc-p-value').text( self.data('payment-method') );
+			$('#bna-desc-payment-method').css({'display': 'flex', 'opacity': '1'});
+		} else {
+			$('#bna-desc-payment-method').css({'display': 'none', 'opacity': '0'});
+		}
 		if( self.data('payment-details') ){ 
 			$('#bna-desc-payment-details .bna-desc-p-value').html( self.data('payment-details') );
 			$('#bna-desc-payment-details').css({'display': 'flex', 'opacity': '1'});
 		} else {
 			$('#bna-desc-payment-details').css({'display': 'none', 'opacity': '0'});
+		}
+		if( self.data('interac-url') ){ 
+			$('#bna-desc-interac-url .bna-desc-p-value').html( '<a href="' + self.data('interac-url') + '" target="iframe_' + self.data('interac-url') + '">' + self.data('interac-url') + '</a>' );
+			$('#bna-desc-interac-url').css({'display': 'flex', 'opacity': '1'});
+		} else {
+			$('#bna-desc-interac-url').css({'display': 'none', 'opacity': '0'});
 		}
 		
 		$('#bna-desc-wrapper').css({'display': 'block', 'opacity': '1', 'height': winHeight + 'px'});

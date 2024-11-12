@@ -1292,13 +1292,16 @@ h6.bna-details-title::after {
 	position: absolute;
 	top: calc( (100vh - 420px) / 2);
 	left: calc( (100% - 520px) / 2);
+	display: flex;
+	flex-wrap: wrap;
 }
 #bna-desc-body {
-	position: absolute;
+	/*position: absolute;*/
 	width: 100%;
 	bottom: 0;
 	left: 0;
 	padding: 20px;
+	flex: 0 1 100%;
 }
 #bna-desc-box button {
 	display: inline-block;
@@ -1324,6 +1327,7 @@ h6.bna-details-title::after {
 	text-transform: uppercase;
 	margin: 2.5em 0 1.5em 0;
 	line-height: 1.3em;
+	flex: 0 1 100%;
 }
 #bna-desc-header:after {
 	content: ' ';
