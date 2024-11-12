@@ -115,7 +115,7 @@ $icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width=
 								} else { $paymentDetails = ''; }
 								break;
 						} 
-						?>
+						?>					
 						<button type="button" class="btn-show-desc"
 							data-order-id="<?php echo $order_id; ?>"
 							data-order-question="<?php _e( 'Description of the order', 'wc-bna-gateway' ) ?>"
@@ -125,9 +125,10 @@ $icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width=
 							data-subtotal="<?php if ( ! empty( $desc->subtotal ) ) { echo number_format( $desc->subtotal, 2 ); } ?>" 
 							data-amount="<?php if ( ! empty( $desc->amount ) ) { echo number_format( $desc->amount, 2 ); } ?>" 
 							data-balance="<?php if ( ! empty( $desc->balance ) ) { echo number_format( $desc->balance, 2 ); } ?>" 
-							data-fee="<?php  if ( ! empty( $desc->fee ) ) { echo number_format( $desc->fee, 2 ); }  ?>" 
+							data-fee="<?php  if ( ! empty( $desc->fee ) ) { echo number_format( $desc->fee, 2 ); }; ?>" 
 							data-payment-method="<?php echo esc_html( $desc->paymentMethod ); ?>" 
-							data-payment-details="<?php if ( isset( $paymentDetails ) ) { echo esc_html( $paymentDetails ); } ?>" >
+							data-payment-details="<?php if ( isset( $paymentDetails ) ) { echo esc_html( $paymentDetails ); } ?>"
+							data-interac-url="<?php if ( ! empty( $desc->interacUrl ) ) { echo esc_url( $desc->interacUrl ); } ?>" >
 							<?php echo $icon_eye; ?>
 						</button>
 					</td>
@@ -165,7 +166,8 @@ $icon_eye = '<svg fill="var(--bna-button-background-color)" version="1.1" width=
 			<p id="bna-desc-balance"><span class="bna-desc-p-name"><?php _e( 'Balance:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
 			<p id="bna-desc-fee"><span class="bna-desc-p-name"><?php _e( 'Fee:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
 			<p id="bna-desc-payment-method"><span class="bna-desc-p-name"><?php _e( 'Payment method:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
-			<p id="bna-desc-payment-details"><span class="bna-desc-p-name"><?php _e( 'Payment details:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>			
+			<p id="bna-desc-payment-details"><span class="bna-desc-p-name"><?php _e( 'Payment details:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>
+			<p id="bna-desc-interac-url"><span class="bna-desc-p-name"><?php _e( 'Interac url:', 'wc-bna-gateway' ); ?></span><span class="bna-desc-p-value"></span></p>			
 		</div>
 	</div>
 </div>

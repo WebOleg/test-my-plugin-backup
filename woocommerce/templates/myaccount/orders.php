@@ -86,7 +86,7 @@ do_action( 'woocommerce_before_account_orders', $has_orders ); ?>
 								if ( ! empty( $actions ) ) {
 									foreach ( $actions as $key => $action ) { // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 										if ( $key === 'cancel' ) {
-											echo '<a href="' . esc_url( $action['url'] ) . '" class="woocommerce-button' . esc_attr( $wp_button_class ) . ' ' . sanitize_html_class( $key ) . '">';
+											echo '<a href="' . esc_url( $action['url'] ) . '" class="woocommerce-button' . esc_attr( $wp_button_class ) . ' ' . sanitize_html_class( $key ) . ' bna-cancel-transaction">';
 												echo '<img  class="bna-delete-img" src="' . BNA_PLUGIN_DIR_URL . 'assets/img/trash-solid.svg' . '" >';
 											echo '</a>';
 										} elseif ( $key === 'pay' ) {

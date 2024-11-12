@@ -938,9 +938,11 @@ my_log($result);
 					} else if ( $result['action'] === 'VOID' ) {
 						$order->update_status( 'cancelled', __( 'Order void.', 'wc-bna-gateway' ) );
 					}					
+					break;				
+				case 'CANCELED':
+					$order->update_status( 'cancelled', __( 'Order void.', 'wc-bna-gateway' ) );
 					break;
 				case 'ERROR':
-				case 'CANCELLED':
 				case 'EXPIRED':
 				case 'DECLINED':
 					if ( $result['action'] === 'VOID' ) {
@@ -979,6 +981,11 @@ my_log($result);
 				case 'UNDERPAID':
 				default:
 					$order->update_status( 'pending', __( 'Pending.', 'wc-bna-gateway' ) );
+			}
+			
+			// not recording
+			if ( $result['action'] === 'VOID' && $result['status'] === 'DECLINED' ) {
+				exit();
 			}
 
 			$payorId = get_user_meta( $order->get_user_id(), 'payorID', true );
