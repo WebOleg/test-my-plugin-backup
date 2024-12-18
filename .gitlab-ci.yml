@@ -7,6 +7,7 @@ variables:
 Deploy:
   stage: deploy
   tags: [ wp-demo ]
+  only: [ dev ]
   script:
     - rsync -avC --delete . $WP_PATH_PLUGIN
     - chown -R 82:82 $WP_PATH_PLUGIN
