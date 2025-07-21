@@ -210,6 +210,7 @@ function wc_bna_gateway_init() {
 		* @since		1.0.0
 		*/
 		public function init_form_fields() {
+
 			$woo_currency = get_woocommerce_currency();
 			
 			$this->form_fields = array(	  
@@ -224,6 +225,13 @@ function wc_bna_gateway_init() {
 					'type'        => 'text',
 					'description' => __( 'Name of the payment gateway on the checkout page', 'wc-bna-gateway'),
 					'default'     => __( 'BNA Payment', 'wc-bna-gateway' ),
+					'desc_tip'    => true,
+				),
+				'iframe_url' => array(
+					'title'       => __('iFrame URL', 'bna'),
+					'type'        => 'text',
+					'description' => __('URL for payment iframe', 'bna'),
+					'default'     => '',
 					'desc_tip'    => true,
 				),
 				'description' => array(
@@ -370,31 +378,42 @@ function wc_bna_gateway_init() {
 		public function payment_fields() {
 
 			global $wpdb;
-
+		
+			// Enqueue custom validation and datepicker scripts/styles
 			wp_enqueue_script( 'bna-cc-form-validator' );
 			wp_enqueue_style( 'bna-datepicker-css' );
 			wp_enqueue_script( 'bna-datepicker-js' );
-
+		
+			// Display the payment method description
 			if ( $this->description ) {
 				echo wpautop( wp_kses_post( $this->description ) );
 			}
 			
+			// Retrieve user payment methods from database
 			$paymentMethods = null;
 			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
 			if ( !empty($payorID) ) {
 				$paymentMethods = $wpdb->get_results(
-					"SELECT * FROM " . $wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'"
+					"SELECT * FROM " . $wpdb->prefix . BNA_TABLE_SETTINGS . " WHERE payorId='$payorID'"
 				);
 			}
-
+		
+			// Render custom checkout fields template
 			ob_start();
-			
-			include_once  dirname(__FILE__) . '/../tpl/tpl_checkout_fields.php';
-
-			$answer = ob_get_contents();
-			ob_end_clean();
-
+			include_once dirname(__FILE__) . '/../tpl/tpl_checkout_fields.php';
+			$answer = ob_get_clean();
+		
 			echo $answer;
+		
+			// Display iframe using the configured URL from admin settings
+			$iframe_url = $this->get_option('iframe_url');
+			if ( $iframe_url ) {
+				echo '<iframe src="' . esc_url($iframe_url) . '" width="100%" height="600" style="border: none; margin-top:20px;"></iframe>';
+			}
+		}
+
+		public function is_available() {
+			return true;
 		}
 
 		/**
@@ -1030,4 +1049,7 @@ my_log($result);
 		}
 			
   	}	//end of class
+	
 } //class_exists
+
+
