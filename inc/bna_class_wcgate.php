@@ -227,12 +227,23 @@ function wc_bna_gateway_init() {
 					'default'     => __( 'BNA Payment', 'wc-bna-gateway' ),
 					'desc_tip'    => true,
 				),
-				'iframe_url' => array(
-					'title'       => __('iFrame URL', 'bna'),
+				'iframe_id' => array(
+					'title'       => 'iFrame ID',
 					'type'        => 'text',
-					'description' => __('URL for payment iframe', 'bna'),
+					'description' => 'Enter the iFrame ID from BNA Smart Payment',
 					'default'     => '',
-					'desc_tip'    => true,
+				),
+				'access_key' => array(
+					'title'       => 'Access Key',
+					'type'        => 'text',
+					'description' => 'API access key (login)',
+					'default'     => '',
+				),
+				'secret_key' => array(
+					'title'       => 'Secret Key',
+					'type'        => 'password',
+					'description' => 'API secret key (password)',
+					'default'     => '',
 				),
 				'description' => array(
 					'title'       => __( 'Description', 'wc-bna-gateway' ),
@@ -253,7 +264,7 @@ function wc_bna_gateway_init() {
 					'type'    => 'checkbox',
 					'label'   => __( 'Apply BNA Payment Fee', 'wc-bna-gateway' ),
 					'default' => 'false'
-				),		
+				),
 				'environment' => array(
 					'title'   => __( 'Environment', 'wc-bna-gateway' ),
 					'type'    => 'select',
@@ -375,42 +386,115 @@ function wc_bna_gateway_init() {
 		 * @param WC_Order $order
 		 * @param bool $plain_text
 		 */
-		public function payment_fields() {
+		public function payment_fields()
+		{
+			wp_enqueue_script('bna-cc-form-validator');
+			wp_enqueue_style('bna-datepicker-css');
+			wp_enqueue_script('bna-datepicker-js');
+		
+			if ($this->description) {
+				echo wpautop(wp_kses_post($this->description));
+			}
+		
+			$iframe_id  = $this->get_option('iframe_id');
+			$access_key = $this->get_option('access_key');
+			$secret_key = $this->get_option('secret_key');
 
-			global $wpdb;
-		
-			// Enqueue custom validation and datepicker scripts/styles
-			wp_enqueue_script( 'bna-cc-form-validator' );
-			wp_enqueue_style( 'bna-datepicker-css' );
-			wp_enqueue_script( 'bna-datepicker-js' );
-		
-			// Display the payment method description
-			if ( $this->description ) {
-				echo wpautop( wp_kses_post( $this->description ) );
+			$env = $this->get_option('environment');
+
+			$env_map = [
+				'https://dev-api-service.bnasmartpayment.com' => [
+					'api_url'  => 'https://stage-api-service.bnasmartpayment.com/v1/checkout',
+					'base_url' => 'https://payment-test-iframe.bnasmartpayment.com'
+				],
+				'https://production-api-service.bnasmartpayment.com' => [
+					'api_url'  => 'https://api.bnasmartpayment.com/v1/checkout',
+					'base_url' => 'https://payment-iframe.bnasmartpayment.com'
+				]
+			];
+			
+			if (!isset($env_map[$env])) {
+				echo '<div style="color:red;">❗ Unknown environment selected.</div>';
+				return;
 			}
 			
-			// Retrieve user payment methods from database
-			$paymentMethods = null;
-			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-			if ( !empty($payorID) ) {
-				$paymentMethods = $wpdb->get_results(
-					"SELECT * FROM " . $wpdb->prefix . BNA_TABLE_SETTINGS . " WHERE payorId='$payorID'"
-				);
+			$api_url  = $env_map[$env]['api_url'];
+			$base_url = $env_map[$env]['base_url'];
+			
+		
+			if (!$iframe_id || !$access_key || !$secret_key) {
+				echo '<div style="color:red;">❗ iFrame ID, Access Key or Secret Key is missing.</div>';
+				return;
 			}
 		
-			// Render custom checkout fields template
-			ob_start();
-			include_once dirname(__FILE__) . '/../tpl/tpl_checkout_fields.php';
-			$answer = ob_get_clean();
+			$customer = WC()->customer;
+			$billing_email     = $customer->get_billing_email();
+			$billing_firstname = $customer->get_billing_first_name();
+			$billing_lastname  = $customer->get_billing_last_name();
+			$billing_city      = $customer->get_billing_city();
+			$billing_state     = $customer->get_billing_state();
+			$billing_country   = $customer->get_billing_country();
+			$billing_postcode  = $customer->get_billing_postcode();
+			$billing_address   = $customer->get_billing_address();
 		
-			echo $answer;
+			$street_number = '1';
+			$street_name = $billing_address;
+			if (preg_match('/^\s*(\d+)[\s,]+(.+)$/', $billing_address, $matches)) {
+				$street_number = $matches[1];
+				$street_name = $matches[2];
+			}
 		
-			// Display iframe using the configured URL from admin settings
-			$iframe_url = $this->get_option('iframe_url');
-			if ( $iframe_url ) {
-				echo '<iframe src="' . esc_url($iframe_url) . '" width="100%" height="600" style="border: none; margin-top:20px;"></iframe>';
+			$body = [
+				'iframeId' => $iframe_id,
+				'customerInfo' => [
+					'type' => 'Personal',
+					'email' => $billing_email,
+					'firstName' => $billing_firstname,
+					'lastName' => $billing_lastname,
+					'address' => [
+						'streetName' => $street_name,
+						'streetNumber' => $street_number,
+						'city' => $billing_city,
+						'province' => $billing_state,
+						'country' => $billing_country,
+						'postalCode' => $billing_postcode
+					]
+				],
+				'items' => [
+					[
+						'description' => 'WooCommerce Order',
+						'sku' => 'WC-ORDER',
+						'price' => 10.00,
+						'quantity' => 1,
+						'amount' => 10.00
+					]
+				],
+				'subtotal' => 10.00
+			];
+		
+			$args = [
+				'headers' => [
+					'Authorization' => 'Basic ' . base64_encode($access_key . ':' . $secret_key),
+					'Content-Type' => 'application/json'
+				],
+				'body' => json_encode($body)
+			];
+		
+			$response = wp_remote_post($api_url, $args);
+		
+			if (!is_wp_error($response) && isset($response['body'])) {
+				$result = json_decode($response['body'], true);
+				if (!empty($result['token'])) {
+					echo '<iframe src="' . esc_url($base_url . '/v1/checkout/' . $result['token']) . '" width="100%" height="600" style="border:none;margin-top:20px;"></iframe>';
+				} else {
+					echo '<div style="color:red;">❗ Failed to get iFrame token from API.</div>';
+				}
+			} else {
+				error_log('BNA API error: ' . print_r($response, true));
+				echo '<div style="color:red;">❗ Failed to connect to payment API.</div>';
 			}
 		}
+		
 
 		public function is_available() {
 			return true;
