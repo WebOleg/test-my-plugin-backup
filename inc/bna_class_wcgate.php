@@ -388,113 +388,97 @@ function wc_bna_gateway_init() {
 		 */
 		public function payment_fields()
 		{
-			wp_enqueue_script('bna-cc-form-validator');
-			wp_enqueue_style('bna-datepicker-css');
-			wp_enqueue_script('bna-datepicker-js');
-		
-			if ($this->description) {
-				echo wpautop(wp_kses_post($this->description));
-			}
-		
-			$iframe_id  = $this->get_option('iframe_id');
-			$access_key = $this->get_option('access_key');
-			$secret_key = $this->get_option('secret_key');
+		    wp_enqueue_script('bna-cc-form-validator');
+		    wp_enqueue_style('bna-datepicker-css');
+		    wp_enqueue_script('bna-datepicker-js');
 
-			$env = $this->get_option('environment');
+		    if ($this->description) {
+		        echo wpautop(wp_kses_post($this->description));
+		    }
 
-			$env_map = [
-				'https://dev-api-service.bnasmartpayment.com' => [
-					'api_url'  => 'https://stage-api-service.bnasmartpayment.com/v1/checkout',
-					'base_url' => 'https://payment-test-iframe.bnasmartpayment.com'
-				],
-				'https://production-api-service.bnasmartpayment.com' => [
-					'api_url'  => 'https://api.bnasmartpayment.com/v1/checkout',
-					'base_url' => 'https://payment-iframe.bnasmartpayment.com'
-				]
-			];
+			$paymentMethods = null;
+			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
+			if ( !empty($payorID) ) {
+				$paymentMethods = $wpdb->get_results(
+					"SELECT * FROM " . $wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'"
+				);
+			}
+
+			ob_start();
 			
-			if (!isset($env_map[$env])) {
-				echo '<div style="color:red;">❗ Unknown environment selected.</div>';
-				return;
-			}
-			
-			$api_url  = $env_map[$env]['api_url'];
-			$base_url = $env_map[$env]['base_url'];
-			
-		
-			if (!$iframe_id || !$access_key || !$secret_key) {
-				echo '<div style="color:red;">❗ iFrame ID, Access Key or Secret Key is missing.</div>';
-				return;
-			}
-		
-			$customer = WC()->customer;
-			$billing_email     = $customer->get_billing_email();
-			$billing_firstname = $customer->get_billing_first_name();
-			$billing_lastname  = $customer->get_billing_last_name();
-			$billing_city      = $customer->get_billing_city();
-			$billing_state     = $customer->get_billing_state();
-			$billing_country   = $customer->get_billing_country();
-			$billing_postcode  = $customer->get_billing_postcode();
-			$billing_address   = $customer->get_billing_address();
-		
-			$street_number = '1';
-			$street_name = $billing_address;
-			if (preg_match('/^\s*(\d+)[\s,]+(.+)$/', $billing_address, $matches)) {
-				$street_number = $matches[1];
-				$street_name = $matches[2];
-			}
-		
-			$body = [
-				'iframeId' => $iframe_id,
-				'customerInfo' => [
-					'type' => 'Personal',
-					'email' => $billing_email,
-					'firstName' => $billing_firstname,
-					'lastName' => $billing_lastname,
-					'address' => [
-						'streetName' => $street_name,
-						'streetNumber' => $street_number,
-						'city' => $billing_city,
-						'province' => $billing_state,
-						'country' => $billing_country,
-						'postalCode' => $billing_postcode
-					]
-				],
-				'items' => [
-					[
-						'description' => 'WooCommerce Order',
-						'sku' => 'WC-ORDER',
-						'price' => 10.00,
-						'quantity' => 1,
-						'amount' => 10.00
-					]
-				],
-				'subtotal' => 10.00
-			];
-		
-			$args = [
-				'headers' => [
-					'Authorization' => 'Basic ' . base64_encode($access_key . ':' . $secret_key),
-					'Content-Type' => 'application/json'
-				],
-				'body' => json_encode($body)
-			];
-		
-			$response = wp_remote_post($api_url, $args);
-		
-			if (!is_wp_error($response) && isset($response['body'])) {
-				$result = json_decode($response['body'], true);
-				if (!empty($result['token'])) {
-					echo '<iframe src="' . esc_url($base_url . '/v1/checkout/' . $result['token']) . '" width="100%" height="600" style="border:none;margin-top:20px;"></iframe>';
-				} else {
-					echo '<div style="color:red;">❗ Failed to get iFrame token from API.</div>';
-				}
-			} else {
-				error_log('BNA API error: ' . print_r($response, true));
-				echo '<div style="color:red;">❗ Failed to connect to payment API.</div>';
-			}
+			include_once  dirname(__FILE__) . '/../tpl/tpl_checkout_fields.php';
+
+			$answer = ob_get_contents();
+			ob_end_clean();
+
+			echo $answer;
+
+		    // Iframe
+		    $access_key = $this->get_option('access_key');
+		    $secret_key = $this->get_option('secret_key');
+		    $api_url    = 'https://stage-api-service.bnasmartpayment.com/v1/checkout';
+		    $iframe_url = 'https://stage-api-service.bnasmartpayment.com/v1/checkout/';
+
+		    if (!$access_key || !$secret_key) {
+		        echo '<div style="color:red;">❗ Access Key or Secret Key is missing.</div>';
+		        return;
+		    } 
+
+		    $body = [
+		        'iframeId' => 'ab337bb1-0ef0-4d6c-825f-1cd64ae0de4f',
+		        'customerInfo' => [
+		            'type' => 'Personal',
+		            'email' => 'business@best-store.com',
+		            'firstName' => 'Angelica',
+		            'lastName' => 'Sloan',
+		            'phoneCode' => '+1',
+		            'phoneNumber' => '0989602398',
+		            'birthDate' => '1994-12-15',
+		            'address' => [
+		                'streetName' => 'Ackroyd Road',
+		                'streetNumber' => '7788',
+		                'city' => 'Richmond',
+		                'province' => 'British Columbia',
+		                'country' => 'Canada',
+		                'postalCode' => 'V6X 2C9'
+		            ]
+		        ],
+		        'items' => [
+		            [
+		                'description' => 'Test Product',
+		                'sku' => 'SKU123',
+		                'price' => 10.00,
+		                'quantity' => 1,
+		                'amount' => 10.00
+		            ]
+		        ],
+		        'subtotal' => 10.00
+		    ];
+
+		    $args = [
+		        'headers' => [
+		            'Authorization' => 'Basic ' . base64_encode($access_key . ':' . $secret_key),
+		            'Content-Type'  => 'application/json'
+		        ],
+		        'body' => json_encode($body)
+		    ];
+
+		    $response = wp_remote_post($api_url, $args);
+
+		    if (!is_wp_error($response) && isset($response['body'])) {
+		        $result = json_decode($response['body'], true);
+
+		        if (!empty($result['token'])) {
+		            echo '<iframe src="' . esc_url($iframe_url . $result['token']) . '" width="100%" height="600" style="border:none;margin-top:20px;"></iframe>';
+		        } else {
+		            echo '<div style="color:red;">❗ Failed to get iFrame token from API.</div>';
+		        }
+		    } else {
+		        error_log('BNA API error: ' . print_r($response, true));
+		        echo '<div style="color:red;">❗ Failed to connect to payment API.</div>';
+		    }
 		}
-		
+
 
 		public function is_available() {
 			return true;
