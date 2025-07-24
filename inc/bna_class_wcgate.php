@@ -396,64 +396,85 @@ function wc_bna_gateway_init() {
 		        echo wpautop(wp_kses_post($this->description));
 		    }
 
-			$paymentMethods = null;
-			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-			if ( !empty($payorID) ) {
-				$paymentMethods = $wpdb->get_results(
-					"SELECT * FROM " . $wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'"
-				);
-			}
+		    $access_key  = $this->get_option('access_key');
+		    $secret_key  = $this->get_option('secret_key');
+		    $env_value   = rtrim($this->get_option('environment'), '/');
+		    $iframe_id   = $this->get_option('iframe_id');
 
-			ob_start();
-			
-			include_once  dirname(__FILE__) . '/../tpl/tpl_checkout_fields.php';
-
-			$answer = ob_get_contents();
-			ob_end_clean();
-
-			echo $answer;
-
-		    // Iframe
-		    $access_key = $this->get_option('access_key');
-		    $secret_key = $this->get_option('secret_key');
-		    $api_url    = 'https://stage-api-service.bnasmartpayment.com/v1/checkout';
-		    $iframe_url = 'https://stage-api-service.bnasmartpayment.com/v1/checkout/';
-
-		    if (!$access_key || !$secret_key) {
-		        echo '<div style="color:red;">❗ Access Key or Secret Key is missing.</div>';
+		    if (!$access_key || !$secret_key || !$iframe_id || !$env_value) {
+		        echo '<div style="color:red;">❗ Access Key, Secret Key, Environment or iFrame ID is missing.</div>';
 		        return;
-		    } 
+		    }
+
+		    switch ($env_value) {
+		        case 'https://dev-api-service.bnasmartpayment.com':
+		            $base_url = 'https://stage-api-service.bnasmartpayment.com';
+		            break;
+		        case 'https://production-api-service.bnasmartpayment.com':
+		            $base_url = 'https://api.bnasmartpayment.com';
+		            break;
+		        default:
+		            echo '<div style="color:red;">❗ Invalid environment setting.</div>';
+		            return;
+		    }
+
+		    $api_url    = $base_url . '/v1/checkout';
+		    $iframe_url = $base_url . '/v1/checkout/';
+
+		    $customer  = WC()->customer;
+		    $user_id   = get_current_user_id();
+
+		    $billing_email      = $customer->get_billing_email();
+		    $billing_firstname  = $customer->get_billing_first_name();
+		    $billing_lastname   = $customer->get_billing_last_name();
+		    $billing_city       = $customer->get_billing_city();
+		    $billing_state      = $customer->get_billing_state();
+		    $billing_country    = $customer->get_billing_country();
+		    $billing_postcode   = $customer->get_billing_postcode();
+		    $billing_phone      = $customer->get_billing_phone();
+		    $billing_street     = get_user_meta($user_id, 'billing_address_1', true);
+		    $billing_birth      = get_user_meta($user_id, 'billing_birth_date', true);
+		    $billing_phone_code = '+1';
+
+		    $customer_id = get_user_meta($user_id, 'bna_customer_id', true);
+
+		    $total = floatval(WC()->cart->get_total('edit'));
 
 		    $body = [
-		        'iframeId' => 'ab337bb1-0ef0-4d6c-825f-1cd64ae0de4f',
-		        'customerInfo' => [
-		            'type' => 'Personal',
-		            'email' => 'business@best-store.com',
-		            'firstName' => 'Angelica',
-		            'lastName' => 'Sloan',
-		            'phoneCode' => '+1',
-		            'phoneNumber' => '0989602398',
-		            'birthDate' => '1994-12-15',
-		            'address' => [
-		                'streetName' => 'Ackroyd Road',
-		                'streetNumber' => '7788',
-		                'city' => 'Richmond',
-		                'province' => 'British Columbia',
-		                'country' => 'Canada',
-		                'postalCode' => 'V6X 2C9'
-		            ]
-		        ],
+		        'iframeId' => $iframe_id,
 		        'items' => [
 		            [
-		                'description' => 'Test Product',
-		                'sku' => 'SKU123',
-		                'price' => 10.00,
-		                'quantity' => 1,
-		                'amount' => 10.00
+		                'description' => 'WooCommerce Order',
+		                'sku'         => 'WC-' . time(),
+		                'price'       => $total,
+		                'quantity'    => 1,
+		                'amount'      => $total
 		            ]
 		        ],
-		        'subtotal' => 10.00
+		        'subtotal' => $total
 		    ];
+
+		    if (!empty($customer_id)) {
+		        $body['customerId'] = $customer_id;
+		    } else {
+		        $body['customerInfo'] = [
+		            'type'        => 'Personal',
+		            'email'       => $billing_email,
+		            'firstName'   => $billing_firstname,
+		            'lastName'    => $billing_lastname,
+		            'phoneCode'   => $billing_phone_code,
+		            'phoneNumber' => $billing_phone,
+		            'birthDate'   => $billing_birth,
+		            'address'     => [
+		                'streetName'   => $billing_street,
+		                'streetNumber' => '1',
+		                'city'         => $billing_city,
+		                'province'     => $billing_state,
+		                'country'      => $billing_country,
+		                'postalCode'   => $billing_postcode
+		            ]
+		        ];
+		    }
 
 		    $args = [
 		        'headers' => [
@@ -478,7 +499,6 @@ function wc_bna_gateway_init() {
 		        echo '<div style="color:red;">❗ Failed to connect to payment API.</div>';
 		    }
 		}
-
 
 		public function is_available() {
 			return true;
@@ -1119,5 +1139,3 @@ my_log($result);
   	}	//end of class
 	
 } //class_exists
-
-

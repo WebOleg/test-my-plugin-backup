@@ -64,6 +64,42 @@ define( 'BNA_CARD_ALLOWED_CURRENCY', array( 'USD', 'CAD' ) ) ;
 define( 'BNA_EFT_ALLOWED_CURRENCY', array( 'CAD' ) ) ;
 define( 'BNA_E_TRANSFER_ALLOWED_CURRENCY', array( 'CAD' ) ) ;
 
+
+add_filter('woocommerce_checkout_fields', 'bna_add_custom_checkout_fields');
+function bna_add_custom_checkout_fields($fields) {
+    $fields['billing']['billing_birth_date'] = [
+        'type'     => 'date',
+        'label'    => __('Date of Birth', 'woocommerce'),
+        'required' => false,
+        'class'    => ['form-row-wide'],
+        'priority' => 120
+    ];
+    return $fields;
+}
+
+add_action('woocommerce_checkout_update_user_meta', 'bna_save_custom_checkout_field');
+function bna_save_custom_checkout_field($user_id) {
+    if (!empty($_POST['billing_birth_date'])) {
+        update_user_meta($user_id, 'billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
+    }
+}
+
+add_action('woocommerce_checkout_create_order', 'bna_save_birthdate_to_order', 10, 2);
+function bna_save_birthdate_to_order($order, $data) {
+    if (!empty($_POST['billing_birth_date'])) {
+        $order->update_meta_data('_billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
+    }
+}
+
+add_action('woocommerce_admin_order_data_after_billing_address', 'bna_show_custom_field_in_admin', 10, 1);
+function bna_show_custom_field_in_admin($order){
+    $birth_date = get_post_meta($order->get_id(), '_billing_birth_date', true);
+    if ($birth_date) {
+        echo '<p><strong>' . __('Birth Date') . ':</strong> ' . esc_html($birth_date) . '</p>';
+    }
+}
+
+
 /**
 * BNA plugin management class
 */
