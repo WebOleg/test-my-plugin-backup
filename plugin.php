@@ -87,6 +87,17 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			}
 			add_filter( 'woocommerce_states', array( $this, 'custom_woocommerce_states' ) );
 			add_filter( 'woocommerce_countries', array( $this, 'custom_woocommerce_countries' ) );
+
+			add_action('init', [$this, 'remove_privacy_policy']);
+			add_filter('woocommerce_order_button_html', array( $this, 'disable_place_order_button_bna_gateway' ));
+		}
+
+		public function disable_place_order_button_bna_gateway($button) {
+		    return '';
+		}
+
+		public function remove_privacy_policy() {
+		    remove_action('woocommerce_checkout_terms_and_conditions', 'wc_checkout_privacy_policy_text', 20);
 		}
 
 		/**

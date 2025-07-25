@@ -103,7 +103,9 @@ function wc_bna_gateway_init() {
 					add_action( 'admin_notices', array( $this, 'bna_admin_notice' ) );
 				}
 			}
+
 		}
+
 
 		/**
 		* Loading the list of styles and scripts
@@ -210,6 +212,7 @@ function wc_bna_gateway_init() {
 		* @since		1.0.0
 		*/
 		public function init_form_fields() {
+
 			$woo_currency = get_woocommerce_currency();
 			
 			$this->form_fields = array(	  
@@ -225,6 +228,24 @@ function wc_bna_gateway_init() {
 					'description' => __( 'Name of the payment gateway on the checkout page', 'wc-bna-gateway'),
 					'default'     => __( 'BNA Payment', 'wc-bna-gateway' ),
 					'desc_tip'    => true,
+				),
+				'iframe_id' => array(
+					'title'       => 'iFrame ID',
+					'type'        => 'text',
+					'description' => 'Enter the iFrame ID from BNA Smart Payment',
+					'default'     => '',
+				),
+				'access_key' => array(
+					'title'       => 'Access Key',
+					'type'        => 'text',
+					'description' => 'API access key (login)',
+					'default'     => '',
+				),
+				'secret_key' => array(
+					'title'       => 'Secret Key',
+					'type'        => 'password',
+					'description' => 'API secret key (password)',
+					'default'     => '',
 				),
 				'description' => array(
 					'title'       => __( 'Description', 'wc-bna-gateway' ),
@@ -245,7 +266,7 @@ function wc_bna_gateway_init() {
 					'type'    => 'checkbox',
 					'label'   => __( 'Apply BNA Payment Fee', 'wc-bna-gateway' ),
 					'default' => 'false'
-				),		
+				),
 				'environment' => array(
 					'title'   => __( 'Environment', 'wc-bna-gateway' ),
 					'type'    => 'select',
@@ -367,34 +388,75 @@ function wc_bna_gateway_init() {
 		 * @param WC_Order $order
 		 * @param bool $plain_text
 		 */
-		public function payment_fields() {
+		public function payment_fields()
+		{
+		    echo '<div id="bna-iframe-wrapper"></div>';
+		    ?>
+		    <script>
+		        jQuery(function($) {
+		            function isBillingFormValid() {
+		                const requiredFields = [
+		                    '#billing_first_name',
+		                    '#billing_last_name',
+		                    '#billing_email',
+		                    '#billing_phone',
+		                    '#billing_city',
+		                    '#billing_state',
+		                    '#billing_postcode',
+		                    '#billing_country'
+		                ];
 
-			global $wpdb;
+		                for (let i = 0; i < requiredFields.length; i++) {
+		                    const field = $(requiredFields[i]);
+		                    if (!field.length || !field.val().trim()) {
+		                        return false;
+		                    }
+		                }
+		                return true;
+		            }
 
-			wp_enqueue_script( 'bna-cc-form-validator' );
-			wp_enqueue_style( 'bna-datepicker-css' );
-			wp_enqueue_script( 'bna-datepicker-js' );
+		            function loadBnaIframe() {
+		                if (!isBillingFormValid()) {
+		                    $('#bna-iframe-container').html('<div style="color:red;">❗ Please complete all required billing details.</div>');
+		                    return;
+		                }
 
-			if ( $this->description ) {
-				echo wpautop( wp_kses_post( $this->description ) );
-			}
-			
-			$paymentMethods = null;
-			$payorID = get_user_meta( get_current_user_id(), 'payorID', true );
-			if ( !empty($payorID) ) {
-				$paymentMethods = $wpdb->get_results(
-					"SELECT * FROM " . $wpdb->prefix.BNA_TABLE_SETTINGS." WHERE payorId='$payorID'"
-				);
-			}
+		                let data = {
+		                    action: 'load_bna_iframe',
+		                    nonce: '<?php echo wp_create_nonce("bna_iframe_nonce"); ?>',
+		                    customer: $('form.checkout').serialize()
+		                };
 
-			ob_start();
-			
-			include_once  dirname(__FILE__) . '/../tpl/tpl_checkout_fields.php';
+		                $.post('<?php echo admin_url("admin-ajax.php"); ?>', data, function (response) {
+		                    $('#bna-iframe-container').html(response);
+		                });
+		            }
 
-			$answer = ob_get_contents();
-			ob_end_clean();
+		            $('form.checkout').on('change blur', 'input, select', function () {
+		                if ($('input[name="payment_method"]:checked').val() === 'bna_gateway') {
+		                    loadBnaIframe();
+		                }
+		            });
 
-			echo $answer;
+		            $('form.checkout').on('change', 'input[name="payment_method"]', function () {
+		                if ($(this).val() === 'bna_gateway') {
+		                    loadBnaIframe();
+		                } else {
+		                    $('#bna-iframe-container').html('');
+		                }
+		            });
+
+		            // Initial check if selected
+		            if ($('input[name="payment_method"]:checked').val() === 'bna_gateway') {
+		                loadBnaIframe();
+		            }
+		        });
+		    </script>
+		    <?php
+		}
+
+		public function is_available() {
+			return true;
 		}
 
 		/**
@@ -1030,4 +1092,149 @@ my_log($result);
 		}
 			
   	}	//end of class
+	
 } //class_exists
+
+add_action('wp_ajax_load_bna_iframe', 'load_bna_iframe_callback');
+add_action('wp_ajax_nopriv_load_bna_iframe', 'load_bna_iframe_callback');
+
+function load_bna_iframe_callback() {
+    check_ajax_referer('bna_iframe_nonce', 'nonce');
+
+    $settings    = get_option('woocommerce_bna_gateway_settings');
+    $access_key  = $settings['access_key'] ?? '';
+    $secret_key  = $settings['secret_key'] ?? '';
+    $iframe_id   = $settings['iframe_id'] ?? '';
+    $environment = $settings['environment'] ?? 'https://dev-api-service.bnasmartpayment.com';
+
+    $base_url = match ($environment) {
+        'https://production-api-service.bnasmartpayment.com' => 'https://api.bnasmartpayment.com',
+        'https://dev-api-service.bnasmartpayment.com' => 'https://stage-api-service.bnasmartpayment.com',
+        default => 'https://stage-api-service.bnasmartpayment.com',
+    };
+
+    // Read dynamic billing values from POST
+    $email      = isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '';
+    $first_name = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
+    $last_name  = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
+    $post_code  = isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '';
+    $birth_date = isset($_POST['billing_birth_date']) ? sanitize_text_field($_POST['billing_birth_date']) : '';
+
+    $cart = WC()->cart;
+    $items = [];
+    $subtotal = 0;
+
+    if ($cart && !empty($cart->get_cart())) {
+        foreach ($cart->get_cart() as $cart_item) {
+            $product  = $cart_item['data'];
+            $price    = wc_get_price_including_tax($product);
+            $quantity = $cart_item['quantity'];
+            $amount   = $price * $quantity;
+
+            $items[] = [
+                'description' => $product->get_name(),
+                'sku'         => $product->get_sku() ?: (string) $product->get_id(),
+                'price'       => round($price, 2),
+                'quantity'    => $quantity,
+                'amount'      => round($amount, 2),
+            ];
+
+            $subtotal += $amount;
+        }
+    }
+
+    // Payload with dynamic user data
+    $payload = [
+        'iframeId'     => $iframe_id,
+        'customerInfo' => [
+            'type'       => 'Personal',
+            'email'      => $email,
+            'firstName'  => $first_name,
+            'lastName'   => $last_name,
+            'phoneCode'  => '+1',
+            'phoneNumber'=> '0989602398',
+            'birthDate'  => $birth_date,
+            'address'    => [
+                'streetName'   => 'Ackroyd Road',
+                'streetNumber' => '7788',
+                'city'         => 'Richmond',
+                'province'     => 'British Columbia',
+                'country'      => 'Canada',
+                'postalCode'   => $post_code,
+            ],
+        ],
+        'items'    => $items,
+        'subtotal' => round($subtotal, 2),
+    ];
+
+    $response = wp_remote_post("{$base_url}/v1/checkout", [
+        'headers' => [
+            'Authorization' => 'Basic ' . base64_encode("{$access_key}:{$secret_key}"),
+            'Content-Type'  => 'application/json',
+        ],
+        'body' => json_encode($payload),
+    ]);
+
+    if (!is_wp_error($response)) {
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        if (!empty($body['token'])) {
+            echo '<iframe src="' . esc_url("{$base_url}/v1/checkout/{$body['token']}") . '" width="100%" height="600" style="border:none;margin-top:20px;"></iframe>';
+        } else {
+            echo '<div style="color:red;">❗ iFrame token not returned by API.</div>';
+        }
+    } else {
+        echo '<div style="color:red;">❗ Failed to connect to API.</div>';
+    }
+
+    wp_die();
+}
+
+
+add_action('wp_enqueue_scripts', 'bna_enqueue_iframe_script');
+function bna_enqueue_iframe_script() {
+    if (is_checkout()) {
+        wp_enqueue_script('jquery');
+		wp_register_script(
+		    'bna-dynamic-iframe',
+		    plugin_dir_url(__DIR__) . 'assets/js/bna-dynamic-iframe.js',
+		    ['jquery'], null, true
+		);
+
+        wp_localize_script('bna-dynamic-iframe', 'bna_iframe_data', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('bna_iframe_nonce'),
+        ]);
+
+        wp_enqueue_script('bna-dynamic-iframe');
+    }
+}
+
+
+// Add custom "Birthdate" field to the Billing Details section
+add_filter('woocommerce_checkout_fields', 'bna_add_birthday_checkout_field');
+function bna_add_birthday_checkout_field($fields) {
+    $fields['billing']['billing_birth_date'] = array(
+        'type'        => 'date',
+        'label'       => __('Birthdate', 'wc-bna-gateway'),
+        'required'    => true,
+        'class'       => array('form-row-wide'),
+        'priority'    => 40,
+    );
+    return $fields;
+}
+
+// Save the "Birthdate" field into user meta after checkout
+add_action('woocommerce_checkout_update_user_meta', 'bna_save_birthday_checkout_field');
+function bna_save_birthday_checkout_field($user_id) {
+    if (!empty($_POST['billing_birth_date'])) {
+        update_user_meta($user_id, 'billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
+    }
+}
+
+// Save the "Birthdate" field into order meta
+add_action('woocommerce_checkout_create_order', 'bna_save_birthday_to_order_meta', 20, 2);
+function bna_save_birthday_to_order_meta($order, $data) {
+    if (!empty($_POST['billing_birth_date'])) {
+        $order->update_meta_data('billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
+    }
+}
