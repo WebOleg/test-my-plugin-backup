@@ -388,116 +388,69 @@ function wc_bna_gateway_init() {
 		 */
 		public function payment_fields()
 		{
-		    wp_enqueue_script('bna-cc-form-validator');
-		    wp_enqueue_style('bna-datepicker-css');
-		    wp_enqueue_script('bna-datepicker-js');
+		    echo '<div id="bna-iframe-container"></div>';
+		    ?>
+		    <script>
+		        jQuery(function($) {
+		            function isBillingFormValid() {
+		                const requiredFields = [
+		                    '#billing_first_name',
+		                    '#billing_last_name',
+		                    '#billing_email',
+		                    '#billing_phone',
+		                    '#billing_city',
+		                    '#billing_state',
+		                    '#billing_postcode',
+		                    '#billing_country'
+		                ];
 
-		    if ($this->description) {
-		        echo wpautop(wp_kses_post($this->description));
-		    }
+		                for (let i = 0; i < requiredFields.length; i++) {
+		                    const field = $(requiredFields[i]);
+		                    if (!field.length || !field.val().trim()) {
+		                        return false;
+		                    }
+		                }
+		                return true;
+		            }
 
-		    $access_key  = $this->get_option('access_key');
-		    $secret_key  = $this->get_option('secret_key');
-		    $env_value   = rtrim($this->get_option('environment'), '/');
-		    $iframe_id   = $this->get_option('iframe_id');
+		            function loadBnaIframe() {
+		                if (!isBillingFormValid()) {
+		                    $('#bna-iframe-container').html('<div style="color:red;">❗ Please complete all required billing details.</div>');
+		                    return;
+		                }
 
-		    if (!$access_key || !$secret_key || !$iframe_id || !$env_value) {
-		        echo '<div style="color:red;">❗ Access Key, Secret Key, Environment or iFrame ID is missing.</div>';
-		        return;
-		    }
+		                let data = {
+		                    action: 'load_bna_iframe',
+		                    nonce: '<?php echo wp_create_nonce("bna_iframe_nonce"); ?>',
+		                    customer: $('form.checkout').serialize()
+		                };
 
-		    switch ($env_value) {
-		        case 'https://dev-api-service.bnasmartpayment.com':
-		            $base_url = 'https://stage-api-service.bnasmartpayment.com';
-		            break;
-		        case 'https://production-api-service.bnasmartpayment.com':
-		            $base_url = 'https://api.bnasmartpayment.com';
-		            break;
-		        default:
-		            echo '<div style="color:red;">❗ Invalid environment setting.</div>';
-		            return;
-		    }
+		                $.post('<?php echo admin_url("admin-ajax.php"); ?>', data, function (response) {
+		                    $('#bna-iframe-container').html(response);
+		                });
+		            }
 
-		    $api_url    = $base_url . '/v1/checkout';
-		    $iframe_url = $base_url . '/v1/checkout/';
+		            $('form.checkout').on('change blur', 'input, select', function () {
+		                if ($('input[name="payment_method"]:checked').val() === 'bna_gateway') {
+		                    loadBnaIframe();
+		                }
+		            });
 
-		    $customer  = WC()->customer;
-		    $user_id   = get_current_user_id();
+		            $('form.checkout').on('change', 'input[name="payment_method"]', function () {
+		                if ($(this).val() === 'bna_gateway') {
+		                    loadBnaIframe();
+		                } else {
+		                    $('#bna-iframe-container').html('');
+		                }
+		            });
 
-		    $billing_email      = $customer->get_billing_email();
-		    $billing_firstname  = $customer->get_billing_first_name();
-		    $billing_lastname   = $customer->get_billing_last_name();
-		    $billing_city       = $customer->get_billing_city();
-		    $billing_state      = $customer->get_billing_state();
-		    $billing_country    = $customer->get_billing_country();
-		    $billing_postcode   = $customer->get_billing_postcode();
-		    $billing_phone      = $customer->get_billing_phone();
-		    $billing_street     = get_user_meta($user_id, 'billing_address_1', true);
-		    $billing_birth      = get_user_meta($user_id, 'billing_birth_date', true);
-		    $billing_phone_code = '+1';
-
-		    $customer_id = get_user_meta($user_id, 'bna_customer_id', true);
-
-		    $total = floatval(WC()->cart->get_total('edit'));
-
-		    $body = [
-		        'iframeId' => $iframe_id,
-		        'items' => [
-		            [
-		                'description' => 'WooCommerce Order',
-		                'sku'         => 'WC-' . time(),
-		                'price'       => $total,
-		                'quantity'    => 1,
-		                'amount'      => $total
-		            ]
-		        ],
-		        'subtotal' => $total
-		    ];
-
-		    if (!empty($customer_id)) {
-		        $body['customerId'] = $customer_id;
-		    } else {
-		        $body['customerInfo'] = [
-		            'type'        => 'Personal',
-		            'email'       => $billing_email,
-		            'firstName'   => $billing_firstname,
-		            'lastName'    => $billing_lastname,
-		            'phoneCode'   => $billing_phone_code,
-		            'phoneNumber' => $billing_phone,
-		            'birthDate'   => $billing_birth,
-		            'address'     => [
-		                'streetName'   => $billing_street,
-		                'streetNumber' => '1',
-		                'city'         => $billing_city,
-		                'province'     => $billing_state,
-		                'country'      => $billing_country,
-		                'postalCode'   => $billing_postcode
-		            ]
-		        ];
-		    }
-
-		    $args = [
-		        'headers' => [
-		            'Authorization' => 'Basic ' . base64_encode($access_key . ':' . $secret_key),
-		            'Content-Type'  => 'application/json'
-		        ],
-		        'body' => json_encode($body)
-		    ];
-
-		    $response = wp_remote_post($api_url, $args);
-
-		    if (!is_wp_error($response) && isset($response['body'])) {
-		        $result = json_decode($response['body'], true);
-
-		        if (!empty($result['token'])) {
-		            echo '<iframe src="' . esc_url($iframe_url . $result['token']) . '" width="100%" height="600" style="border:none;margin-top:20px;"></iframe>';
-		        } else {
-		            echo '<div style="color:red;">❗ Failed to get iFrame token from API.</div>';
-		        }
-		    } else {
-		        error_log('BNA API error: ' . print_r($response, true));
-		        echo '<div style="color:red;">❗ Failed to connect to payment API.</div>';
-		    }
+		            // Initial check if selected
+		            if ($('input[name="payment_method"]:checked').val() === 'bna_gateway') {
+		                loadBnaIframe();
+		            }
+		        });
+		    </script>
+		    <?php
 		}
 
 		public function is_available() {
@@ -1139,3 +1092,89 @@ my_log($result);
   	}	//end of class
 	
 } //class_exists
+
+add_action('wp_ajax_load_bna_iframe', 'load_bna_iframe_callback');
+add_action('wp_ajax_nopriv_load_bna_iframe', 'load_bna_iframe_callback');
+
+function load_bna_iframe_callback() {
+    check_ajax_referer('bna_iframe_nonce', 'nonce');
+
+    $settings = get_option('woocommerce_bna_gateway_settings');
+    $access_key  = $settings['access_key'] ?? '';
+    $secret_key  = $settings['secret_key'] ?? '';
+    $iframe_id   = $settings['iframe_id'] ?? '';
+    $environment = $settings['environment'] ?? 'https://dev-api-service.bnasmartpayment.com';
+
+    $base_url = match ($environment) {
+        'https://production-api-service.bnasmartpayment.com' => 'https://api.bnasmartpayment.com',
+        'https://dev-api-service.bnasmartpayment.com' => 'https://stage-api-service.bnasmartpayment.com',
+        default => 'https://stage-api-service.bnasmartpayment.com',
+    };
+
+    $cart = WC()->cart;
+    $items = [];
+    $subtotal = 0;
+
+    if ($cart && !empty($cart->get_cart())) {
+        foreach ($cart->get_cart() as $cart_item) {
+            $product = $cart_item['data'];
+            $price   = wc_get_price_including_tax($product);
+            $quantity = $cart_item['quantity'];
+            $amount = $price * $quantity;
+
+            $items[] = [
+                'description' => $product->get_name(),
+                'sku'         => $product->get_sku() ?: (string) $product->get_id(),
+                'price'       => round($price, 2),
+                'quantity'    => $quantity,
+                'amount'      => round($amount, 2),
+            ];
+
+            $subtotal += $amount;
+        }
+    }
+
+    $payload = [
+        'iframeId' => $iframe_id,
+        'customerInfo' => [
+            'type' => 'Personal',
+            'email' => 'business@best-store.com',
+            'firstName' => 'Angelica',
+            'lastName' => 'Sloan',
+            'phoneCode' => '+1',
+            'phoneNumber' => '0989602398',
+            'birthDate' => '1994-12-15',
+            'address' => [
+                'streetName'   => 'Ackroyd Road',
+                'streetNumber' => '7788',
+                'city'         => 'Richmond',
+                'province'     => 'British Columbia',
+                'country'      => 'Canada',
+                'postalCode'   => 'V6X 2C9',
+            ],
+        ],
+        'items' => $items,
+        'subtotal' => round($subtotal, 2),
+    ];
+
+    $response = wp_remote_post("{$base_url}/v1/checkout", [
+        'headers' => [
+            'Authorization' => 'Basic ' . base64_encode("{$access_key}:{$secret_key}"),
+            'Content-Type'  => 'application/json',
+        ],
+        'body' => json_encode($payload),
+    ]);
+
+    if (!is_wp_error($response)) {
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        if (!empty($body['token'])) {
+            echo '<iframe src="' . esc_url("{$base_url}/v1/checkout/{$body['token']}") . '" width="100%" height="600" style="border:none;margin-top:20px;"></iframe>';
+        } else {
+            echo '<div style="color:red;">❗ iFrame token not returned by API.</div>';
+        }
+    } else {
+        echo '<div style="color:red;">❗ Failed to connect to API.</div>';
+    }
+
+    wp_die();
+}
