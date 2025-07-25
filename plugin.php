@@ -89,6 +89,11 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 			add_filter( 'woocommerce_countries', array( $this, 'custom_woocommerce_countries' ) );
 
 			add_action('init', [$this, 'remove_privacy_policy']);
+			add_filter('woocommerce_order_button_html', array( $this, 'disable_place_order_button_bna_gateway' ));
+		}
+
+		public function disable_place_order_button_bna_gateway($button) {
+		    return '';
 		}
 
 		public function remove_privacy_policy() {
@@ -352,5 +357,3 @@ global $BNAAccountManager, $BNAPluginManager, $BNAJsonMsgAnswer, $BNASubscriptio
 $BNAPluginManager  = new BNAPluginManager();
 $BNAAccountManager = new BNAAccountManager();
 $BNASubscriptions = new BNASubscriptions();
-
-

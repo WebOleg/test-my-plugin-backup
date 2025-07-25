@@ -103,7 +103,9 @@ function wc_bna_gateway_init() {
 					add_action( 'admin_notices', array( $this, 'bna_admin_notice' ) );
 				}
 			}
+
 		}
+
 
 		/**
 		* Loading the list of styles and scripts
@@ -388,7 +390,7 @@ function wc_bna_gateway_init() {
 		 */
 		public function payment_fields()
 		{
-		    echo '<div id="bna-iframe-container"></div>';
+		    echo '<div id="bna-iframe-wrapper"></div>';
 		    ?>
 		    <script>
 		        jQuery(function($) {
@@ -1099,7 +1101,7 @@ add_action('wp_ajax_nopriv_load_bna_iframe', 'load_bna_iframe_callback');
 function load_bna_iframe_callback() {
     check_ajax_referer('bna_iframe_nonce', 'nonce');
 
-    $settings = get_option('woocommerce_bna_gateway_settings');
+    $settings    = get_option('woocommerce_bna_gateway_settings');
     $access_key  = $settings['access_key'] ?? '';
     $secret_key  = $settings['secret_key'] ?? '';
     $iframe_id   = $settings['iframe_id'] ?? '';
@@ -1111,16 +1113,23 @@ function load_bna_iframe_callback() {
         default => 'https://stage-api-service.bnasmartpayment.com',
     };
 
+    // Read dynamic billing values from POST
+    $email      = isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '';
+    $first_name = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
+    $last_name  = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
+    $post_code  = isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '';
+    $birth_date = isset($_POST['billing_birth_date']) ? sanitize_text_field($_POST['billing_birth_date']) : '';
+
     $cart = WC()->cart;
     $items = [];
     $subtotal = 0;
 
     if ($cart && !empty($cart->get_cart())) {
         foreach ($cart->get_cart() as $cart_item) {
-            $product = $cart_item['data'];
-            $price   = wc_get_price_including_tax($product);
+            $product  = $cart_item['data'];
+            $price    = wc_get_price_including_tax($product);
             $quantity = $cart_item['quantity'];
-            $amount = $price * $quantity;
+            $amount   = $price * $quantity;
 
             $items[] = [
                 'description' => $product->get_name(),
@@ -1134,26 +1143,27 @@ function load_bna_iframe_callback() {
         }
     }
 
+    // Payload with dynamic user data
     $payload = [
-        'iframeId' => $iframe_id,
+        'iframeId'     => $iframe_id,
         'customerInfo' => [
-            'type' => 'Personal',
-            'email' => 'business@best-store.com',
-            'firstName' => 'Angelica',
-            'lastName' => 'Sloan',
-            'phoneCode' => '+1',
-            'phoneNumber' => '0989602398',
-            'birthDate' => '1994-12-15',
-            'address' => [
+            'type'       => 'Personal',
+            'email'      => $email,
+            'firstName'  => $first_name,
+            'lastName'   => $last_name,
+            'phoneCode'  => '+1',
+            'phoneNumber'=> '0989602398',
+            'birthDate'  => $birth_date,
+            'address'    => [
                 'streetName'   => 'Ackroyd Road',
                 'streetNumber' => '7788',
                 'city'         => 'Richmond',
                 'province'     => 'British Columbia',
                 'country'      => 'Canada',
-                'postalCode'   => 'V6X 2C9',
+                'postalCode'   => $post_code,
             ],
         ],
-        'items' => $items,
+        'items'    => $items,
         'subtotal' => round($subtotal, 2),
     ];
 
@@ -1177,4 +1187,54 @@ function load_bna_iframe_callback() {
     }
 
     wp_die();
+}
+
+
+add_action('wp_enqueue_scripts', 'bna_enqueue_iframe_script');
+function bna_enqueue_iframe_script() {
+    if (is_checkout()) {
+        wp_enqueue_script('jquery');
+		wp_register_script(
+		    'bna-dynamic-iframe',
+		    plugin_dir_url(__DIR__) . 'assets/js/bna-dynamic-iframe.js',
+		    ['jquery'], null, true
+		);
+
+        wp_localize_script('bna-dynamic-iframe', 'bna_iframe_data', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('bna_iframe_nonce'),
+        ]);
+
+        wp_enqueue_script('bna-dynamic-iframe');
+    }
+}
+
+
+// Add custom "Birthdate" field to the Billing Details section
+add_filter('woocommerce_checkout_fields', 'bna_add_birthday_checkout_field');
+function bna_add_birthday_checkout_field($fields) {
+    $fields['billing']['billing_birth_date'] = array(
+        'type'        => 'date',
+        'label'       => __('Birthdate', 'wc-bna-gateway'),
+        'required'    => true,
+        'class'       => array('form-row-wide'),
+        'priority'    => 40,
+    );
+    return $fields;
+}
+
+// Save the "Birthdate" field into user meta after checkout
+add_action('woocommerce_checkout_update_user_meta', 'bna_save_birthday_checkout_field');
+function bna_save_birthday_checkout_field($user_id) {
+    if (!empty($_POST['billing_birth_date'])) {
+        update_user_meta($user_id, 'billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
+    }
+}
+
+// Save the "Birthdate" field into order meta
+add_action('woocommerce_checkout_create_order', 'bna_save_birthday_to_order_meta', 20, 2);
+function bna_save_birthday_to_order_meta($order, $data) {
+    if (!empty($_POST['billing_birth_date'])) {
+        $order->update_meta_data('billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
+    }
 }
