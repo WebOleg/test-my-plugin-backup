@@ -1095,6 +1095,24 @@ my_log($result);
 	
 } //class_exists
 
+function is_strict_valid_email($email) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $domain = substr(strrchr($email, "@"), 1);
+
+    if (!preg_match('/^[a-z0-9.-]+\.[a-z]{2,10}$/i', $domain)) {
+        return false;
+    }
+
+    if (!checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A')) {
+        return false;
+    }
+
+    return true;
+}
+
 add_action('wp_ajax_load_bna_iframe', 'load_bna_iframe_callback');
 add_action('wp_ajax_nopriv_load_bna_iframe', 'load_bna_iframe_callback');
 
@@ -1130,6 +1148,34 @@ function load_bna_iframe_callback() {
 	$city       = isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : '';
 	$country    = isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : '';
 	$province   = isset($_POST['billing_state']) ? sanitize_text_field($_POST['billing_state']) : '';
+
+    // === VALIDATION ===
+    $errors = [];
+
+	if (empty($email) || !is_strict_valid_email($email)) {
+	    $errors[] = 'Invalid or unreachable email address.';
+	}
+
+    if (empty($first_name) || empty($last_name)) {
+        $errors[] = 'First name and last name are required.';
+    }
+
+    if (!empty($birth_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $birth_date)) {
+        $errors[] = 'Birth date must be in YYYY-MM-DD format.';
+    }
+
+    if (empty($phone)) {
+        $errors[] = 'Phone number is required.';
+    }
+
+    if (empty($post_code) || empty($country)) {
+        $errors[] = 'Postal code and country are required.';
+    }
+
+    if (!empty($errors)) {
+        echo '<div style="color:red;"><strong>Validation error:</strong><br>' . implode('<br>', array_map('esc_html', $errors)) . '</div>';
+        wp_die();
+    }
 
     $cart = WC()->cart;
     $items = [];
