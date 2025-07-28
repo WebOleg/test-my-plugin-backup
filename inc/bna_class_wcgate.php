@@ -1114,11 +1114,22 @@ function load_bna_iframe_callback() {
     };
 
     // Read dynamic billing values from POST
+    $type = isset($_POST['billing_type']) && $_POST['billing_type'] === 'Business' ? 'Business' : 'Personal';
+
     $email      = isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '';
     $first_name = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
     $last_name  = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
     $post_code  = isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '';
     $birth_date = isset($_POST['billing_birth_date']) ? sanitize_text_field($_POST['billing_birth_date']) : '';
+    $phone      = isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : '';
+	$phone_code = isset($_POST['billing_phone_code']) 
+	    ? preg_replace('/[^+0-9]/', '', $_POST['billing_phone_code']) 
+	    : '+1';
+	$streetName = isset($_POST['billing_street_name']) ? sanitize_text_field($_POST['billing_street_name']) : '';
+	$streetNumber = isset($_POST['billing_street_number']) ? sanitize_text_field($_POST['billing_street_number']) : '';
+	$city       = isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : '';
+	$country    = isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : '';
+	$province   = isset($_POST['billing_state']) ? sanitize_text_field($_POST['billing_state']) : '';
 
     $cart = WC()->cart;
     $items = [];
@@ -1147,19 +1158,19 @@ function load_bna_iframe_callback() {
     $payload = [
         'iframeId'     => $iframe_id,
         'customerInfo' => [
-            'type'       => 'Personal',
+            'type'       => $type,
             'email'      => $email,
             'firstName'  => $first_name,
             'lastName'   => $last_name,
-            'phoneCode'  => '+1',
-            'phoneNumber'=> '0989602398',
+            'phoneNumber'=> $phone,
+            'phoneCode'  => $phone_code,
             'birthDate'  => $birth_date,
             'address'    => [
-                'streetName'   => 'Ackroyd Road',
-                'streetNumber' => '7788',
-                'city'         => 'Richmond',
-                'province'     => 'British Columbia',
-                'country'      => 'Canada',
+                'streetName'   => $streetName,
+                'streetNumber' => $streetNumber,
+                'city'         => $city,
+                'province'     => $province,
+                'country'      => $country,
                 'postalCode'   => $post_code,
             ],
         ],
