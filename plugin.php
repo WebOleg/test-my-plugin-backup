@@ -46,6 +46,8 @@ require_once dirname( __FILE__ ) . "/inc/bna_class_jsonmessage.php";
 require_once dirname( __FILE__ ) . "/inc/bna_wc_hooks_filters.php";
 require_once dirname( __FILE__ ) . "/inc/bna_functions.php";
 
+
+
 // Make sure WooCommerce is active
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 	return;
@@ -372,6 +374,7 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 
 	}
 }
+
 
 global $BNAAccountManager, $BNAPluginManager, $BNAJsonMsgAnswer, $BNASubscriptions;
 $BNAPluginManager  = new BNAPluginManager();

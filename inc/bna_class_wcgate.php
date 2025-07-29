@@ -10,6 +10,8 @@
 if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
+require_once plugin_dir_path(__FILE__) . 'bna-migration.php';
+require_once plugin_dir_path(__FILE__) . 'bna_webhook_handler_full.php';
 
 /**
  * Registering the BNA Gateway
@@ -235,6 +237,13 @@ function wc_bna_gateway_init() {
 					'description' => 'Enter the iFrame ID from BNA Smart Payment',
 					'default'     => '',
 				),
+				'webhook_secret' => [
+				    'title'       => __('Webhook Secret', 'woocommerce'),
+				    'type'        => 'text',
+				    'description' => __('Secret key used to validate incoming BNA webhook requests.', 'woocommerce'),
+				    'desc_tip'    => true,
+				    'default'     => '',
+				],
 				'access_key' => array(
 					'title'       => 'Access Key',
 					'type'        => 'text',
@@ -1295,3 +1304,63 @@ function bna_save_birthday_to_order_meta($order, $data) {
         $order->update_meta_data('billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
     }
 }
+
+
+// Add a new section with the "Run Migrations" button to the plugin settings
+add_filter('woocommerce_get_settings_checkout', function($settings) {
+    if (isset($_GET['section']) && $_GET['section'] === 'bna_gateway') {
+        $settings[] = array(
+            'type' => 'title',
+            'name' => __('Database Management', 'woocommerce'),
+            'desc' => __('Run database migrations manually for BNA integration.', 'woocommerce'),
+            'id'   => 'bna_migration_section_title'
+        );
+
+        $settings[] = array(
+            'title' => __('Run Database Migrations', 'woocommerce'),
+            'type'  => 'bna_migration_button',
+            'desc'  => __('Click to create or update the required BNA database tables.', 'woocommerce'),
+            'id'    => 'bna_run_migration_btn'
+        );
+
+        $settings[] = array('type' => 'sectionend', 'id' => 'bna_migration_section_title');
+    }
+    return $settings;
+}, 99);
+
+
+// Register a custom field type for the "Run Migrations" button
+add_action('woocommerce_admin_field_bna_migration_button', function($value) {
+    ?>
+    <tr valign="top">
+        <th scope="row" class="titledesc">
+            <label><?php echo esc_html($value['title']); ?></label>
+        </th>
+        <td class="forminp">
+            <fieldset>
+                <p class="description"><?php echo esc_html($value['desc']); ?></p>
+                <form method="post">
+                    <?php wp_nonce_field('bna_run_migrations_action', 'bna_run_migrations_nonce'); ?>
+                    <input type="submit" name="bna_run_migrations" class="button button-secondary" value="<?php esc_attr_e('Run Migrations Now', 'woocommerce'); ?>" />
+                </form>
+            </fieldset>
+        </td>
+    </tr>
+    <?php
+});
+
+
+// Handle the migration form submission
+add_action('admin_init', function() {
+	if (isset($_POST['bna_run_migrations']) && check_admin_referer('bna_run_migrations_action', 'bna_run_migrations_nonce')) {
+	    require_once plugin_dir_path(__FILE__) . 'bna-migration.php';
+	    bna_run_migrations();
+
+	    // Success message
+	    add_action('admin_notices', function () {
+	        echo '<div class="notice notice-success is-dismissible">
+	                <p><strong>BNA:</strong> Database migrations completed successfully.</p>
+	              </div>';
+	    });
+	}
+});
