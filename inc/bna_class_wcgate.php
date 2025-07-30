@@ -12,6 +12,7 @@ if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
 require_once plugin_dir_path(__FILE__) . 'bna-migration.php';
 require_once plugin_dir_path(__FILE__) . 'bna_webhook_handler_full.php';
+require_once plugin_dir_path(__FILE__) . 'bna_generate_payloads.php';
 
 /**
  * Registering the BNA Gateway
