@@ -10,6 +10,9 @@
 if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 require_once dirname(__FILE__). "/bna_class_jsonmessage.php";
+require_once plugin_dir_path(__FILE__) . 'bna-migration.php';
+require_once plugin_dir_path(__FILE__) . 'bna_webhook_handler_full.php';
+require_once plugin_dir_path(__FILE__) . 'bna_generate_payloads.php';
 
 /**
  * Registering the BNA Gateway
@@ -235,6 +238,13 @@ function wc_bna_gateway_init() {
 					'description' => 'Enter the iFrame ID from BNA Smart Payment',
 					'default'     => '',
 				),
+				'webhook_secret' => [
+				    'title'       => __('Webhook Secret', 'woocommerce'),
+				    'type'        => 'text',
+				    'description' => __('Secret key used to validate incoming BNA webhook requests.', 'woocommerce'),
+				    'desc_tip'    => true,
+				    'default'     => '',
+				],
 				'access_key' => array(
 					'title'       => 'Access Key',
 					'type'        => 'text',
@@ -1095,6 +1105,24 @@ my_log($result);
 	
 } //class_exists
 
+function is_strict_valid_email($email) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $domain = substr(strrchr($email, "@"), 1);
+
+    if (!preg_match('/^[a-z0-9.-]+\.[a-z]{2,10}$/i', $domain)) {
+        return false;
+    }
+
+    if (!checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A')) {
+        return false;
+    }
+
+    return true;
+}
+
 add_action('wp_ajax_load_bna_iframe', 'load_bna_iframe_callback');
 add_action('wp_ajax_nopriv_load_bna_iframe', 'load_bna_iframe_callback');
 
@@ -1114,11 +1142,50 @@ function load_bna_iframe_callback() {
     };
 
     // Read dynamic billing values from POST
+    $type = isset($_POST['billing_type']) && $_POST['billing_type'] === 'Business' ? 'Business' : 'Personal';
+
     $email      = isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '';
     $first_name = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
     $last_name  = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
     $post_code  = isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '';
     $birth_date = isset($_POST['billing_birth_date']) ? sanitize_text_field($_POST['billing_birth_date']) : '';
+    $phone      = isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : '';
+	$phone_code = isset($_POST['billing_phone_code']) 
+	    ? preg_replace('/[^+0-9]/', '', $_POST['billing_phone_code']) 
+	    : '+1';
+	$streetName = isset($_POST['billing_street_name']) ? sanitize_text_field($_POST['billing_street_name']) : '';
+	$streetNumber = isset($_POST['billing_street_number']) ? sanitize_text_field($_POST['billing_street_number']) : '';
+	$city       = isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : '';
+	$country    = isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : '';
+	$province   = isset($_POST['billing_state']) ? sanitize_text_field($_POST['billing_state']) : '';
+
+    // === VALIDATION ===
+    $errors = [];
+
+	if (empty($email) || !is_strict_valid_email($email)) {
+	    $errors[] = 'Invalid or unreachable email address.';
+	}
+
+    if (empty($first_name) || empty($last_name)) {
+        $errors[] = 'First name and last name are required.';
+    }
+
+    if (!empty($birth_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $birth_date)) {
+        $errors[] = 'Birth date must be in YYYY-MM-DD format.';
+    }
+
+    if (empty($phone)) {
+        $errors[] = 'Phone number is required.';
+    }
+
+    if (empty($post_code) || empty($country)) {
+        $errors[] = 'Postal code and country are required.';
+    }
+
+    if (!empty($errors)) {
+        echo '<div style="color:red;"><strong>Validation error:</strong><br>' . implode('<br>', array_map('esc_html', $errors)) . '</div>';
+        wp_die();
+    }
 
     $cart = WC()->cart;
     $items = [];
@@ -1147,19 +1214,19 @@ function load_bna_iframe_callback() {
     $payload = [
         'iframeId'     => $iframe_id,
         'customerInfo' => [
-            'type'       => 'Personal',
+            'type'       => $type,
             'email'      => $email,
             'firstName'  => $first_name,
             'lastName'   => $last_name,
-            'phoneCode'  => '+1',
-            'phoneNumber'=> '0989602398',
+            'phoneNumber'=> $phone,
+            'phoneCode'  => $phone_code,
             'birthDate'  => $birth_date,
             'address'    => [
-                'streetName'   => 'Ackroyd Road',
-                'streetNumber' => '7788',
-                'city'         => 'Richmond',
-                'province'     => 'British Columbia',
-                'country'      => 'Canada',
+                'streetName'   => $streetName,
+                'streetNumber' => $streetNumber,
+                'city'         => $city,
+                'province'     => $province,
+                'country'      => $country,
                 'postalCode'   => $post_code,
             ],
         ],
@@ -1238,3 +1305,63 @@ function bna_save_birthday_to_order_meta($order, $data) {
         $order->update_meta_data('billing_birth_date', sanitize_text_field($_POST['billing_birth_date']));
     }
 }
+
+
+// Add a new section with the "Run Migrations" button to the plugin settings
+add_filter('woocommerce_get_settings_checkout', function($settings) {
+    if (isset($_GET['section']) && $_GET['section'] === 'bna_gateway') {
+        $settings[] = array(
+            'type' => 'title',
+            'name' => __('Database Management', 'woocommerce'),
+            'desc' => __('Run database migrations manually for BNA integration.', 'woocommerce'),
+            'id'   => 'bna_migration_section_title'
+        );
+
+        $settings[] = array(
+            'title' => __('Run Database Migrations', 'woocommerce'),
+            'type'  => 'bna_migration_button',
+            'desc'  => __('Click to create or update the required BNA database tables.', 'woocommerce'),
+            'id'    => 'bna_run_migration_btn'
+        );
+
+        $settings[] = array('type' => 'sectionend', 'id' => 'bna_migration_section_title');
+    }
+    return $settings;
+}, 99);
+
+
+// Register a custom field type for the "Run Migrations" button
+add_action('woocommerce_admin_field_bna_migration_button', function($value) {
+    ?>
+    <tr valign="top">
+        <th scope="row" class="titledesc">
+            <label><?php echo esc_html($value['title']); ?></label>
+        </th>
+        <td class="forminp">
+            <fieldset>
+                <p class="description"><?php echo esc_html($value['desc']); ?></p>
+                <form method="post">
+                    <?php wp_nonce_field('bna_run_migrations_action', 'bna_run_migrations_nonce'); ?>
+                    <input type="submit" name="bna_run_migrations" class="button button-secondary" value="<?php esc_attr_e('Run Migrations Now', 'woocommerce'); ?>" />
+                </form>
+            </fieldset>
+        </td>
+    </tr>
+    <?php
+});
+
+
+// Handle the migration form submission
+add_action('admin_init', function() {
+	if (isset($_POST['bna_run_migrations']) && check_admin_referer('bna_run_migrations_action', 'bna_run_migrations_nonce')) {
+	    require_once plugin_dir_path(__FILE__) . 'bna-migration.php';
+	    bna_run_migrations();
+
+	    // Success message
+	    add_action('admin_notices', function () {
+	        echo '<div class="notice notice-success is-dismissible">
+	                <p><strong>BNA:</strong> Database migrations completed successfully.</p>
+	              </div>';
+	    });
+	}
+});

@@ -46,6 +46,8 @@ require_once dirname( __FILE__ ) . "/inc/bna_class_jsonmessage.php";
 require_once dirname( __FILE__ ) . "/inc/bna_wc_hooks_filters.php";
 require_once dirname( __FILE__ ) . "/inc/bna_functions.php";
 
+
+
 // Make sure WooCommerce is active
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 	return;
@@ -90,6 +92,27 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 
 			add_action('init', [$this, 'remove_privacy_policy']);
 			add_filter('woocommerce_order_button_html', array( $this, 'disable_place_order_button_bna_gateway' ));
+
+		}
+
+		public function get_all_country_codes_select() {
+		    $countries = WC()->countries->get_countries();
+
+		    $json_file = plugin_dir_path(__FILE__) . 'assets/data/country-codes.json';
+		    $code_map = file_exists($json_file) ? json_decode(file_get_contents($json_file), true) : [];
+
+		    $options = ['' => __('Select country code', 'wc-bna-gateway')];
+
+		    foreach ($code_map as $phone_code => $iso_list) {
+		        foreach ($iso_list as $iso) {
+		            if (isset($countries[$iso])) {
+		                $country_name = $countries[$iso];
+		                $options[$phone_code] = $country_name . " (" . $phone_code . ")";
+		            }
+		        }
+		    }
+
+		    return $options;
 		}
 
 		public function disable_place_order_button_bna_gateway($button) {
@@ -287,15 +310,14 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 				'required' => false,
 				'class' => array('form-row-wide'),
 			);
+
 			$fields['billing']['billing_phone_code'] = array(
-				'type' => 'text', 
-				'label' => __( 'Country Phone Code', 'wc-bna-gateway' ),
-				'placeholder' => __( '+1', 'wc-bna-gateway' ),
-				'required' => true,
-				'maxlength' => 6,
-				'class' => array( 'form-row', 'form-row-wide' ),
-				'input_class' => array( 'input-text' ),
-				'default' => '+1'
+			    'type'    => 'select',
+			    'label'   => __( 'Country Phone Code', 'wc-bna-gateway' ),
+			    'required'=> true,
+			    'class'   => array('form-row', 'form-row-wide'),
+			    'options' => $this->get_all_country_codes_select(),
+			    'priority'=> 34,
 			);
 			
 			$billing_state = get_user_meta( get_current_user_id(), 'billing_state', true );
@@ -352,6 +374,7 @@ if ( ! class_exists( 'BNAPluginManager' ) ) {
 
 	}
 }
+
 
 global $BNAAccountManager, $BNAPluginManager, $BNAJsonMsgAnswer, $BNASubscriptions;
 $BNAPluginManager  = new BNAPluginManager();
